@@ -5,7 +5,6 @@ data/
 *.txt
 *.xlsx
 *.xls
-*.parquet
 *.feather
 *.pkl
 *.h5
@@ -22,7 +21,6 @@ data/
 
 # ---- 산출물 ----
 # outputs/ 는 커밋한다 (EDA 결과·표 공유용). 무거운 중간 산출물만 제외.
-outputs/**/*.parquet
 outputs/**/*.pkl
 submissions/
 models/

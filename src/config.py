@@ -16,7 +16,7 @@ SUBMISSIONS = ROOT / "submissions"
 
 # --- SK 유동인구: '|' 구분, UTF-8 BOM ---
 SK_DIR = RAW / "sk_flow_pop"
-SK_READ_KWARGS = {"sep": "|", "encoding": "utf-8-sig"}
+SK_READ_KWARGS = {"sep": "|", "encoding": "utf-8-sig", "dtype": {"BLOCK_CD": "string"}}
 SK_KEYS = ["STD_YM", "BLOCK_CD", "X_COORD", "Y_COORD"]
 SK_KINDS = ("flow_age_pop", "flow_time_pop", "flow_wkdy_pop")
 SK_MONTHS = [f"2025{m:02d}" for m in range(7, 13)]

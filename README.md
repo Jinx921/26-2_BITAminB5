@@ -20,9 +20,14 @@ src/loaders.py          # 원천 데이터 로더
 ## 세팅
 
 ```bash
-conda create -n bitamin python=3.12 -y && conda activate bitamin
+python3 -m venv .venv
+source .venv/bin/activate
 pip install -r requirements.txt
 ```
+
+주피터에서는 커널 **Python (BITAmin B5)** 를 고른다 (`python -m ipykernel install --user --name bitamin-b5`).
+
+현재 환경: Python 3.12.5 / pandas 3.0.5 / numpy 2.5.3 / geopandas 1.1.4 / lightgbm 4.7.0
 
 ## 데이터 읽기
 

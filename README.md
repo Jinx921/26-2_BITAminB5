@@ -17,6 +17,18 @@ src/loaders.py          # 원천 데이터 로더
 `interim` / `processed` / `external` / `outputs` / `submissions` 경로는 `config.py` 에 상수로만 정의돼 있고,
 실제로 쓰는 시점에 생긴다 (`loaders.cache()` 는 저장할 때 알아서 만든다). 빈 폴더를 미리 두지 않는다.
 
+## 문서
+
+| 문서 | 내용 |
+| --- | --- |
+| `outputs/eda_report.html` | 표 22개 + 차트 13개. 브라우저로 열면 된다 (`open outputs/eda_report.html`) |
+| [같은 페이지 온라인 링크](https://claude.ai/artifact/QtLETb7adVcx7M9HWCgSNj) | Claude Artifact. 기본 비공개이므로 공유 설정이 필요하다 |
+| `docs/data_interpretation.md` | 분석 전 합의할 해석 규칙 4가지 — **먼저 읽을 것** |
+| `docs/EDA_summary.md` | 관측 결과 요약 |
+
+표 원본은 `outputs/tables/*.csv` (UTF-8 BOM, 엑셀에서 바로 열림).
+`python3 notebooks/run_eda.py` 로 표와 manifest가 재생성된다.
+
 ## 세팅
 
 ```bash

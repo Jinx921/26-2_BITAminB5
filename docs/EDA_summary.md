@@ -2,6 +2,9 @@
 
 2025년 7~12월 · 서울 강남구 / 강원 춘천시 · SK 통신 유동인구(50m 격자) + 신한카드 결제
 
+표 22개와 차트 전체: [EDA 결과 페이지](https://claude.ai/artifact/QtLETb7adVcx7M9HWCgSNj)
+해석 전제는 `data_interpretation.md` 를 먼저 볼 것.
+
 ## 데이터 개요
 
 | 데이터 | 규모 | 단위 |

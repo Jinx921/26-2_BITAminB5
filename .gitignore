@@ -18,9 +18,12 @@ data/
 # 문서용 텍스트는 예외
 !README.md
 !requirements.txt
+!outputs/tables/*.csv
 
 # ---- 산출물 ----
-outputs/
+# outputs/ 는 커밋한다 (EDA 결과·표 공유용). 무거운 중간 산출물만 제외.
+outputs/**/*.parquet
+outputs/**/*.pkl
 submissions/
 models/
 reports/*.html

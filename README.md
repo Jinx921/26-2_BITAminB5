@@ -7,15 +7,26 @@ SK 통신 유동인구 + 신한카드 소비 데이터 기반 분석 프로젝�
 ```
 data/raw/sk_flow_pop/   # SK 유동인구 CSV 18개 ('|' 구분, UTF-8 BOM)
 data/raw/shinhan_card/  # 신한카드 txt 2개 (탭 구분, CP949)
-notebooks/              # 탐색용 노트북
 src/config.py           # 경로 · 인코딩 · 구분자 상수
 src/loaders.py          # 원천 데이터 로더
+src/eda.py              # EDA 표 22개 계산 로직
+notebooks/run_eda.py    # 실행 → 터미널 출력 + outputs/ 갱신
+docs/                   # 해석 가이드 · 결과 요약
+outputs/                # EDA 산출물 (표 CSV · HTML 리포트) — 커밋된다
+preprocessed/           # 전처리 결과 parquet — 커밋된다
 ```
 
-`data/`, `outputs/`, `submissions/` 는 git에 올라가지 않는다 (원천 ~350MB).
+`preprocessed/` 내용:
 
-`interim` / `processed` / `external` / `outputs` / `submissions` 경로는 `config.py` 에 상수로만 정의돼 있고,
-실제로 쓰는 시점에 생긴다 (`loaders.cache()` 는 저장할 때 알아서 만든다). 빈 폴더를 미리 두지 않는다.
+| 파일 | 크기 | 내용 |
+| --- | --- | --- |
+| `card_clean.parquet` | 983,413행 × 13열 | 카드 데이터1 정제 (법인 제외, `age`·`ticket`·`is_social` 파생) |
+| `flow_cell.parquet` | 48,546행 × 50열 | 격자 단위 집계 (`peer` 그룹, `dev_*` 이탈 지표, `trend`) |
+
+`data/` 와 `submissions/` 는 git에 올라가지 않는다 (원천 데이터 ~350MB).
+
+`interim` / `processed` / `external` 경로는 `config.py` 에 상수로만 정의돼 있고 실제로 쓰는 시점에 생긴다
+(`loaders.cache()` 는 저장할 때 알아서 만든다). 빈 폴더를 미리 두지 않는다.
 
 ## 문서
 
@@ -59,7 +70,12 @@ mct = load_shinhan("mct")
 
 ## 데이터 메모
 
-- 공통 공간 키가 다름: SK는 **50m 격자**(`BLOCK_CD`, `X_COORD`/`Y_COORD`), 신한카드는 **시군구 코드**.
-  결합하려면 격자 → 시군구 매핑이 선행돼야 함 (행정구역 shapefile을 `data/external/` 에).
-- SK 좌표계는 EPSG:5179 추정 — 아직 검증 안 됨.
-- 기간: 2025-07 ~ 2025-12.
+- 기간은 2025-07 ~ 2025-12, 대상은 서울 강남구와 강원 춘천시 두 곳뿐이다.
+- 공간 키가 다름: SK는 **50m 격자**(`BLOCK_CD`, `X_COORD`/`Y_COORD`), 신한카드는 **시군구**(2개).
+  직접 결합은 불가능하므로 각 데이터가 답할 수 있는 범위에서 따로 분석한다.
+- SK 좌표계는 **UTM-K(EPSG:5179)** — 테이블 정의서에 명시돼 있다.
+- SK 값은 일별 시계열이 아니라 **월별 "일평균"** 이다. 격자당 관측 시점이 6개뿐이다.
+- 신한카드 `데이터2.txt` 는 정의서상 8컬럼이어야 하나 실제로는 5컬럼이다.
+  `TA_YMD` · `MCT_SGG_CD` · `MCT_RY_CD` 누락. 운영측 재배포 요청 대상.
+
+해석상 주의사항은 `docs/data_interpretation.md` 에 정리돼 있다. 분석 전에 먼저 읽을 것.

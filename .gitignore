@@ -1,3 +1,89 @@
+# 데이터 (원천 ~350MB, 커밋 금지)
 data/
+*.csv
+*.tsv
+*.txt
+*.xlsx
+*.xls
+*.parquet
+*.feather
+*.pkl
+*.h5
+*.db
+*.sqlite3
+*.zip
+*.7z
+*.tar.gz
 
+# 문서용 텍스트는 예외
+!README.md
+!requirements.txt
+
+# ---- 산출물 ----
+outputs/
+submissions/
+models/
+reports/*.html
+*.log
+
+# ---- Python ----
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+build/
+dist/
+*.egg-info/
+.eggs/
+.installed.cfg
+
+# ---- 가상환경 ----
+.venv/
+venv/
+env/
+ENV/
+.conda/
+.python-version
+
+# ---- Jupyter ----
+.ipynb_checkpoints/
+*/.ipynb_checkpoints/*
+profile_default/
+ipython_config.py
+Untitled*.ipynb
+
+# ---- 테스트 / 린트 캐시 ----
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+.coverage
+.coverage.*
+htmlcov/
+.tox/
+
+# ---- 에디터 / IDE ----
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+.cursorignore
+
+# ---- OS ----
 .DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+Thumbs.db
+desktop.ini
+
+# ---- 시크릿 ----
+.env
+.env.*
+!.env.example
+*.pem
+*.key
+credentials.json
+secrets.yaml

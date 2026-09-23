@@ -180,32 +180,65 @@ def card_tables() -> list[tuple[str, pd.DataFrame, str]]:
 
 
 def card2_tables() -> list[tuple[str, pd.DataFrame, str]]:
-    d2 = load_shinhan('cln')
-    d2['AGE_CCD'] = d2.AGE_CCD.str.replace(' ', '', regex=False)
+    """데이터2(2026-09 재배포본). 일별 × 가맹점지역 × 업종 × 고객거주지 × 성 × 연령."""
+    d = load_shinhan('cln')
+    d['AGE_CCD'] = d.AGE_CCD.str.replace(' ', '', regex=False)
+    d['date'] = pd.to_datetime(d.TA_YMD, format='%Y%m%d')
+    d['month'] = d.date.dt.to_period('M').astype(str)
+    d['region'] = d.MCT_SGG_CD.map({'서울 강남구': '강남', '강원 춘천시': '춘천'})
+    home = {'강남': '서울', '춘천': '강원'}
+    d['local'] = d.region.map(home) == d.CLN_SGG_CD
     out = []
-    r = d2.groupby('CLN_SGG_CD').agg(결제액=('TS_AT', 'sum'), 건수=('USE_CNT', 'sum'))
-    r['건수비중%'] = (r.건수 / r.건수.sum() * 100).round(2)
-    out.append(('이용고객 거주지 분포', r.sort_values('건수', ascending=False).reset_index(),
-                '데이터2에만 있는 정보. 서울 36.9% / 경기 25.5% / 강원 9.2%.'))
 
-    top = r.nlargest(5, '건수').index
-    c = d2[d2.CLN_SGG_CD.isin(top)].pivot_table(index='AGE_CCD', columns='CLN_SGG_CD',
-                                                values='USE_CNT', aggfunc='sum')
-    out.append(('연령대별 거주지 구성 (%, 상위 5개 지역)', ((c.T / c.sum(axis=1) * 100).T).round(2).reset_index(),
-                '80~90대는 서울 거주 비중이 62~73%로 급등한다. 다만 가맹점 지역 컬럼이 없어 확정은 불가.'))
+    def local_rate(g):
+        return g[g.local].USE_CNT.sum() / g.USE_CNT.sum() * 100
 
-    g = d2.groupby(['CLN_SGG_CD', 'SEX_CCD', 'AGE_CCD'])
-    out.append(('⚠ 데이터2 결함 요약', pd.DataFrame([
-        {'항목': '정의서상 컬럼 수', '값': '8'},
-        {'항목': '실제 컬럼 수', '값': '5'},
-        {'항목': '누락 컬럼', '값': 'TA_YMD, MCT_SGG_CD, MCT_RY_CD'},
-        {'항목': '실제 행 수', '값': f'{len(d2):,}'},
-        {'항목': '고유 키 조합', '값': f'{g.ngroups}'},
-        {'항목': '키당 평균 중복 행', '값': f'{len(d2)/g.ngroups:,.0f}'},
-        {'항목': '데이터1(법인제외) 결제액', '값': '30,151,084,830,915'},
-        {'항목': '데이터2 결제액', '값': '30,151,084,828,052'},
-    ]), '두 파일의 결제액 총합이 일치한다. 같은 모집단인데 집계 키가 305개뿐이므로, '
-        '출력되지 않은 차원(일자·지역·업종)이 실재한다는 뜻이다.'))
+    t = d.pivot_table(index='CLN_SGG_CD', columns='region', values='USE_CNT', aggfunc='sum')
+    t = (t / t.sum() * 100).round(2).sort_values('춘천', ascending=False)
+    out.append(('가맹점 지역별 고객 거주지 분포 (%)', t.reset_index(),
+                '춘천 가맹점 결제의 82.1%가 강원 거주자인 반면, 강남은 39.9%만 서울 거주자다. '
+                '춘천은 닫힌 생활권, 강남은 외지 유입이 60%인 상업 중심지다.'))
+
+    t = (d.groupby(['region', 'AGE_CCD'], observed=True).apply(local_rate, include_groups=False)
+           .unstack('region').round(2))
+    out.append(('연령별 로컬 결제 비율 (%)', t.reset_index(),
+                '거주지와 가맹점 지역이 일치하는 결제의 비중. 고령일수록 생활 반경이 좁아지는지 본다.'))
+
+    t = (d.groupby(['region', 'month'], observed=True).apply(local_rate, include_groups=False)
+           .unstack('region').round(2))
+    out.append(('월별 로컬 결제 비율 (%)', t.reset_index(),
+                '6개월간 생활 반경이 좁아지는 추세가 있는지 확인한다.'))
+
+    for reg in ['춘천', '강남']:
+        s_ = d[d.region == reg]
+        g = s_.groupby('MCT_RY_CD', observed=True).apply(
+            lambda x: pd.Series({'로컬비율%': local_rate(x), '건수': x.USE_CNT.sum()}),
+            include_groups=False)
+        g = g[g.건수 > g.건수.sum() * 0.003]
+        t = pd.concat([g.nlargest(8, '로컬비율%'), g.nsmallest(8, '로컬비율%')]).round(2)
+        note = ('로컬 비율이 높은 업종이 생활 밀착 업종이다. 낮은 쪽은 관광·통과 수요다.'
+                if reg == '춘천' else
+                '강남은 대부분의 업종에서 외지인 비중이 높다. 로컬 비율이 높은 업종이 주거 생활권 신호다.')
+        out.append((f'[{reg}] 업종별 로컬 결제 비율 (%, 상·하위 8)', t.reset_index(), note))
+
+    t = d.pivot_table(index='AGE_CCD', columns='region', values='USE_CNT', aggfunc='sum')
+    t = (t / t.sum() * 100).round(2)
+    out.append(('연령별 건수 비중 (%, 법인 제외)', t.reset_index(),
+                '데이터2는 법인카드가 제외돼 있어 개인 소비 구조를 그대로 보여준다.'))
+
+    dow = d.pivot_table(index=d.date.dt.dayofweek, columns='region', values='USE_CNT', aggfunc='sum')
+    t = (dow / dow.iloc[:5].mean() * 100).round(1)
+    t.index = KOR_DOW
+    out.append(('요일별 결제건수 지수 (평일 평균=100, 데이터2)', t.rename_axis('요일').reset_index(),
+                '데이터1과 같은 방향이다. 춘천은 주말에 늘고 강남은 준다.'))
+
+    out.append(('데이터2 재배포 전후 비교', pd.DataFrame([
+        {'항목': '컬럼 수', '구(결함본)': '5', '신(재배포본)': '8'},
+        {'항목': '누락 컬럼', '구(결함본)': 'TA_YMD, MCT_SGG_CD, MCT_RY_CD', '신(재배포본)': '없음'},
+        {'항목': '행 수', '구(결함본)': '1,806,800', '신(재배포본)': '1,806,800'},
+        {'항목': '고유 키 조합', '구(결함본)': '305', '신(재배포본)': f'{d.groupby(["TA_YMD","MCT_SGG_CD","MCT_RY_CD","CLN_SGG_CD","SEX_CCD","AGE_CCD"]).ngroups:,}'},
+        {'항목': '결제액 합계', '구(결함본)': '30,151,084,828,052', '신(재배포본)': f'{d.TS_AT.sum():,}'},
+    ]), '행 수와 결제액이 그대로이고 컬럼만 복구됐다. 진단대로 파일 생성 오류였고 정의서가 옳았다.'))
     return out
 
 

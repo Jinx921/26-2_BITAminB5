@@ -20,7 +20,10 @@ def load_sk(kind: str, months: list[str] | None = None, **kwargs) -> pd.DataFram
     for ym in months:
         path = C.SK_DIR / f"{kind}_{ym}.csv"
         frames.append(pd.read_csv(path, **{**C.SK_READ_KWARGS, **kwargs}))
-    return pd.concat(frames, ignore_index=True)
+    df = pd.concat(frames, ignore_index=True)
+    # 202512의 time·wkdy 파일은 전체 행이 정확히 2번씩 들어 있다 (운영측 공지,
+    # 2026-09 재배포본에서도 그대로). 중복 행의 값이 완전히 동일해 제거가 안전하다.
+    return df.drop_duplicates(subset=C.SK_KEYS, ignore_index=True)
 
 
 def load_shinhan(which: str = "mct", **kwargs) -> pd.DataFrame:

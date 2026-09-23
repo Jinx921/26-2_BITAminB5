@@ -26,4 +26,4 @@ SK_CRS = "EPSG:5179"  # 50m 격자 추정값 — 검증 필요
 SHINHAN_DIR = RAW / "shinhan_card"
 SHINHAN_READ_KWARGS = {"sep": "\t", "encoding": "cp949"}
 SHINHAN_MCT = SHINHAN_DIR / "신한카드_빅콘테스트2026_데이터1.txt"  # 가맹점 기준
-SHINHAN_CLN = SHINHAN_DIR / "신한카드_빅콘테스트2026_데이터2.txt"  # 고객 거주지 기준
+SHINHAN_CLN = SHINHAN_DIR / "신한카드_빅콘테스트2026_데이터2_수정.txt"  # 일별×업종×거주지 (2026-09 재배포본)

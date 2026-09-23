@@ -22,6 +22,9 @@ data/
 # ---- 산출물 ----
 # outputs/ 는 커밋한다 (EDA 결과·표 공유용). 무거운 중간 산출물만 제외.
 outputs/**/*.pkl
+preprocessed/sgis_grid.parquet
+preprocessed/cell_grid_map.parquet
+preprocessed/card2_clean.parquet
 submissions/
 models/
 reports/*.html

@@ -205,19 +205,35 @@ def _candidate_analysis(
         on=["GRID_CD", "region"],
         how="left",
     )
+    # 고령 상위 25% 모집단: 후보와 같은 지속 조건(4개월 이상)으로 고령 조건만 통과한 거주 셀
+    senior_top25_months = (
+        work[work["resident_cell"] & work["senior_top25"]]
+        .groupby(["region", "cell_id"])["STD_YM"]
+        .nunique()
+    )
+    senior_top25_keys = senior_top25_months[senior_top25_months >= 4].index
+    senior_top25_cells = resident_cells.set_index(["region", "cell_id"]).loc[
+        lambda frame: frame.index.isin(senior_top25_keys)
+    ].reset_index()
+    validity_populations = {
+        "all_resident": (resident_cells, "비후보 거주 셀"),
+        "senior_top25": (senior_top25_cells, "비후보 고령상위 셀"),
+    }
     validity_rows = []
-    for (region, candidate), group in resident_cells.groupby(["region", "candidate"]):
-        for metric in ["senior65_share", "hh_1p_share"]:
-            values = group[metric].dropna()
-            validity_rows.append({
-                "region": region,
-                "cell_group": "후보" if candidate else "비후보 거주 셀",
-                "metric": metric,
-                "n": len(values),
-                "median": values.median(),
-                "p25": values.quantile(0.25),
-                "p75": values.quantile(0.75),
-            })
+    for population, (cells, non_candidate_label) in validity_populations.items():
+        for (region, candidate), group in cells.groupby(["region", "candidate"]):
+            for metric in ["senior65_share", "hh_1p_share"]:
+                values = group[metric].dropna()
+                validity_rows.append({
+                    "population": population,
+                    "region": region,
+                    "cell_group": "후보" if candidate else non_candidate_label,
+                    "metric": metric,
+                    "n": len(values),
+                    "median": values.median(),
+                    "p25": values.quantile(0.25),
+                    "p75": values.quantile(0.75),
+                })
     threshold_rows = []
     for threshold in [1, 5, 10, 50]:
         eligible = work[work["tot_time"] >= threshold]

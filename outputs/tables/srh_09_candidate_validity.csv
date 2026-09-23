@@ -1,9 +1,17 @@
-﻿region,cell_group,metric,n,median,p25,p75
-강남,비후보 거주 셀,senior65_share,560,0.16699,0.13699,0.20611
-강남,비후보 거주 셀,hh_1p_share,560,0.30325,0.22363,0.48261
-강남,후보,senior65_share,65,0.19803,0.17388,0.23508
-강남,후보,hh_1p_share,65,0.25352,0.14173,0.34673
-춘천,비후보 거주 셀,senior65_share,1760,0.31807,0.20237,0.38744
-춘천,비후보 거주 셀,hh_1p_share,1760,0.3392,0.27662,0.42636
-춘천,후보,senior65_share,192,0.38971,0.35338,0.47239
-춘천,후보,hh_1p_share,192,0.30233,0.26471,0.375
+﻿population,region,cell_group,metric,n,median,p25,p75
+all_resident,강남,비후보 거주 셀,senior65_share,560,0.16699,0.13699,0.20611
+all_resident,강남,비후보 거주 셀,hh_1p_share,560,0.30325,0.22363,0.48261
+all_resident,강남,후보,senior65_share,65,0.19803,0.17388,0.23508
+all_resident,강남,후보,hh_1p_share,65,0.25352,0.14173,0.34673
+all_resident,춘천,비후보 거주 셀,senior65_share,1760,0.31807,0.20237,0.38744
+all_resident,춘천,비후보 거주 셀,hh_1p_share,1760,0.3392,0.27662,0.42636
+all_resident,춘천,후보,senior65_share,192,0.38971,0.35338,0.47239
+all_resident,춘천,후보,hh_1p_share,192,0.30233,0.26471,0.375
+senior_top25,강남,비후보 고령상위 셀,senior65_share,89,0.19803,0.16742,0.26009
+senior_top25,강남,비후보 고령상위 셀,hh_1p_share,89,0.23667,0.13793,0.44619
+senior_top25,강남,후보,senior65_share,65,0.19803,0.17388,0.23508
+senior_top25,강남,후보,hh_1p_share,65,0.25352,0.14173,0.34673
+senior_top25,춘천,비후보 고령상위 셀,senior65_share,218,0.375,0.31858,0.43394
+senior_top25,춘천,비후보 고령상위 셀,hh_1p_share,218,0.32525,0.27775,0.38806
+senior_top25,춘천,후보,senior65_share,192,0.38971,0.35338,0.47239
+senior_top25,춘천,후보,hh_1p_share,192,0.30233,0.26471,0.375

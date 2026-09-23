@@ -158,6 +158,7 @@ footer code{font-family:"IBM Plex Mono",monospace; background:var(--surface-2); 
       <a href="#sk">SK 유동인구</a>
       <a href="#card1">카드 데이터1</a>
       <a href="#card2">카드 데이터2</a>
+      <a href="#ext">외부 데이터</a>
     </nav>
   </div>
 </header>
@@ -468,12 +469,58 @@ const CHARTS = {
     series: [{ n: '강남', c: C().gn, v: col(t, '강남') }, { n: '춘천', c: C().cc, v: col(t, '춘천') }],
     fmt: v => v.toFixed(0) });
 },
+'자원 공백 격자 (300m 내 기회 자원 0개)': host => {
+  const t = byTitle('자원 공백 격자 (300m 내 기회 자원 0개)');
+  groupedBar(host, { cats: col(t, 'region'),
+    series: [{ n: '공백 격자 비율', c: C().gn, v: col(t, '공백비율%') },
+             { n: '공백 격자의 유동인구 비중', c: C().cc, v: col(t, '공백_유동인구비중%') }],
+    unit: '%' });
+},
+'고령 비율과 자원 접근성의 상관 (Spearman)': host => {
+  const t = byTitle('고령 비율과 자원 접근성의 상관 (Spearman)');
+  const lab = [], val = [];
+  t.rows.forEach(r => { lab.push(r[0] + ' · 강남'); val.push(r[1]);
+                        lab.push(r[0] + ' · 춘천'); val.push(r[3]); });
+  hBar(host, { labels: lab, values: val, diverging: true, fmt: v => v.toFixed(3) });
+  legend(host, [{ n: '양(+) — 고령 지역에 자원이 더 많다', c: C().cc },
+                { n: '음(−) — 고령 지역에 자원이 적다', c: C().gn }]);
+},
+'고령 5분위별 300m내 민간 체육시설 수': host => {
+  const t = byTitle('고령 5분위별 300m내 민간 체육시설 수');
+  lineChart(host, { x: col(t, '고령5분위'),
+    series: [{ n: '강남', c: C().gn, v: col(t, '강남') }, { n: '춘천', c: C().cc, v: col(t, '춘천') }],
+    fmt: v => v.toFixed(1), unit: '개' });
+},
+'고령 5분위별 300m내 공공 체육시설 수': host => {
+  const t = byTitle('고령 5분위별 300m내 공공 체육시설 수');
+  lineChart(host, { x: col(t, '고령5분위'),
+    series: [{ n: '강남', c: C().gn, v: col(t, '강남') }, { n: '춘천', c: C().cc, v: col(t, '춘천') }],
+    fmt: v => v.toFixed(1), unit: '개' });
+},
+'고령 5분위별 자원 접근성': host => {
+  const t = byTitle('고령 5분위별 자원 접근성');
+  const cats = [...new Set(col(t, '고령5분위'))];
+  const pick = reg => cats.map(c => { const r = t.rows.find(x => x[0] === reg && x[1] === c); return r ? r[6] : 0; });
+  groupedBar(host, { cats, series: [{ n: '강남 공백 비율', c: C().gn, v: pick('강남') },
+                                    { n: '춘천 공백 비율', c: C().cc, v: pick('춘천') }],
+    fmt: v => v.toFixed(0), unit: '%' });
+},
+'유동인구 규모를 통제한 비교': host => {
+  const t = byTitle('유동인구 규모를 통제한 비교');
+  const cats = ['1','2','3','4','5'];
+  const pick = reg => cats.map(c => { const r = t.rows.find(x => x[0] === reg && String(x[1]) === c); return r ? r[5] : 0; });
+  groupedBar(host, { cats, series: [{ n: '강남', c: C().gn, v: pick('강남') },
+                                    { n: '춘천', c: C().cc, v: pick('춘천') }],
+    fmt: v => v.toFixed(2), unit: '개' });
+  legend(host, [{ n: '양수 = 고령 지역에 자원이 더 많다', c: css('--ink-3') }]);
+},
 };
 
 const GROUPS = [
   { id: 'sk', name: 'SK 유동인구', meta: '격자 111,351 · 6개월' },
   { id: 'card1', name: '신한카드 데이터1', meta: '1,044,710행 · 90업종' },
   { id: 'card2', name: '신한카드 데이터2', meta: '1,806,800행 · 재배포본' },
+  { id: 'ext', name: '외부 데이터 (기회 자원)', meta: '격자 19,229 · 공공데이터포털 6종' },
 ];
 const main = document.getElementById('main');
 function render(){

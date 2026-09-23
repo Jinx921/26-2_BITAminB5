@@ -16,7 +16,7 @@ SOURCES = {
     '도시공원': ['도시공원', '공원정보'],
     '체육시설': ['체육시설'],
     '공공시설개방': ['공공시설개방', '시설개방'],
-    '박물관미술관': ['박물관', '미술관'],
+    '문화시설': ['박물관', '미술관'],   # 박물관·미술관 + 공공 연습공간
     '실외운동기구': ['실외운동기구', '운동기구'],
     '사회복지시설': ['사회복지시설'],
     '경로당': ['경로당', '마을회관'],
@@ -39,6 +39,20 @@ TARGET_SGG = {'강남구': '강남', '춘천시': '춘천'}
 KIND_SPLIT = {
     '체육시설': (['faci_gb_nm', '시설구분명'], {'공공': '공공', '신고': '민간'}),
 }
+
+# 원본 유형을 다른 유형으로 재배치한다. {유형: 판정함수(df) -> 새 유형 Series}
+# 공공시설개방은 실제 내용이 대부분 체육시설이고, 일부만 문화·연습 공간이다.
+_CULTURE = '문화재단|예술|연습공간|공연'
+
+
+def _remap_open_facility(df: pd.DataFrame) -> pd.Series:
+    txt = (df.get('관리기관명', '').astype(str) + ' '
+           + df.get('개방시설명', '').astype(str) + ' '
+           + df.get('개방장소명', '').astype(str))
+    return np.where(txt.str.contains(_CULTURE, na=False), '문화시설', '체육시설(공공)')
+
+
+KIND_REMAP = {'공공시설개방': _remap_open_facility}
 
 
 def _pick(df: pd.DataFrame, cands: list[str]) -> str | None:
@@ -87,6 +101,11 @@ def load_external() -> pd.DataFrame:
             'lat': pd.to_numeric(df[lat], errors='coerce'),
             'lon': pd.to_numeric(df[lon], errors='coerce'),
         })
+        # 다른 유형으로 재배치 (예: 공공시설개방 → 체육시설(공공) / 문화시설)
+        if kind in KIND_REMAP:
+            out['kind'] = KIND_REMAP[kind](df)
+            print('        재배치: ' + ' / '.join(
+                f'{k} {v:,}' for k, v in out['kind'].value_counts().items()))
         # 유형 내부 분할 (예: 체육시설 → 공공 / 민간)
         if kind in KIND_SPLIT:
             cands, mapping = KIND_SPLIT[kind]
@@ -152,3 +171,24 @@ def accessibility(ext: pd.DataFrame, cells: pd.DataFrame,
                     float((dist <= r).mean()) * 100, 1)
             res.append(row)
     return pd.DataFrame(res)
+
+
+def consolidate(ext: pd.DataFrame, tol_m: int = 10, verbose: bool = True) -> pd.DataFrame:
+    """같은 지점에 여러 번 등록된 시설을 유형 안에서 한 점으로 합친다.
+
+    - 접근성(거리)에서는 같은 좌표의 두 시설이 한 지점이므로 합쳐야 한다.
+    - 다만 합쳐진 개수를 `n_at_point` 로 남겨 '지점 수'와 '시설 수'를 모두 쓸 수 있게 한다.
+    - 서로 다른 유형이 같은 좌표에 있는 것은 남긴다. 도서관과 체육관이 한 건물이어도
+      서로 다른 기회 자원이다.
+    """
+    d = ext.copy()
+    d['_px'] = (d.x / tol_m).round().astype('int64')
+    d['_py'] = (d.y / tol_m).round().astype('int64')
+    key = ['kind', 'region', '_px', '_py']
+    d['n_at_point'] = d.groupby(key, dropna=False).x.transform('size')
+    before = len(d)
+    d = d.drop_duplicates(subset=key, keep='first')
+    if verbose:
+        print(f"  {tol_m}m 내 동일 유형 중복 제거: {before:,}건 → {len(d):,}지점 "
+              f"({before - len(d):,}건 합쳐짐)")
+    return d.drop(columns=['_px', '_py']).reset_index(drop=True)

@@ -88,3 +88,6 @@ desktop.ini
 *.key
 credentials.json
 secrets.yaml
+
+# 외부 데이터 원본은 커밋하지 않는다 (출처·수집일은 docs에 기록)
+data/external/

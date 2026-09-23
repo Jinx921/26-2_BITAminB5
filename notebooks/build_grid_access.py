@@ -55,8 +55,15 @@ def main():
         print(f"  {kind:<12} 계산된 격자 비율: " +
               " / ".join(f"{k} {v:.0f}%" for k, v in ok.items()))
 
-    # 기회 자원 통합 (민간 제외)
-    pub = [k for k in KINDS if k != '체육시설(민간)']
+    # 기회 자원 통합 지표에 넣을 유형.
+    #  - 민간 체육시설 제외: '사회적 관계를 만들 기회'로 보기 어렵다.
+    #  - 도시공원 제외: 전국표준데이터가 지자체 등록에 의존해 커버리지가 불균등하다.
+    #    강남 0건, 강원 전체 78건(18개 시군 중 9개만 등록), 춘천 24건.
+    #    한쪽만 보완하면 수집 차이가 지역 격차로 둔갑하므로 지역 비교 지표에서 뺀다.
+    #    컬럼 자체는 남겨 두어 춘천 내부 참고용으로 쓸 수 있게 한다.
+    EXCLUDE = {'체육시설(민간)', '도시공원'}
+    pub = [k for k in KINDS if k not in EXCLUDE]
+    print(f"\n[통합 지표 구성] {' + '.join(pub)}  (제외: {', '.join(sorted(EXCLUDE))})")
     for r in RADII:
         cols = [f'n{r}_' + k.replace('(', '_').replace(')', '') for k in pub]
         out[f'opp_n{r}'] = out[cols].fillna(0).sum(axis=1).astype(int)

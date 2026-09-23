@@ -5,15 +5,18 @@ SK 통신 유동인구 + 신한카드 소비 데이터 기반 분석 프로젝�
 ## 구조
 
 ```
-data/raw/sk_flow_pop/   # SK 유동인구 CSV 18개 ('|' 구분, UTF-8 BOM)
-data/raw/shinhan_card/  # 신한카드 txt 2개 (탭 구분, CP949)
-src/config.py           # 경로 · 인코딩 · 구분자 상수
-src/loaders.py          # 원천 데이터 로더
-src/eda.py              # EDA 표 22개 계산 로직
-notebooks/run_eda.py    # 실행 → 터미널 출력 + outputs/ 갱신
-docs/                   # 해석 가이드 · 결과 요약
-outputs/                # EDA 산출물 (표 CSV · HTML 리포트) — 커밋된다
-preprocessed/           # 전처리 결과 parquet — 커밋된다
+data/raw/sk_flow_pop/         # SK 유동인구 CSV 18개 ('|' 구분, UTF-8 BOM)
+data/raw/shinhan_card/        # 신한카드 txt 2개 (탭 구분, CP949)
+data/_zip/                    # 원본 배포 zip 보관 (git 제외)
+src/config.py                 # 경로 · 인코딩 · 구분자 상수
+src/loaders.py                # 원천 데이터 로더 (202512 중복 자동 제거)
+src/eda.py                    # EDA 표 27개 계산 로직
+notebooks/run_eda.py          # 실행 → 터미널 출력 + outputs/ 갱신
+notebooks/build_report.py     # 템플릿 + manifest → HTML 리포트
+notebooks/report_template.html
+docs/                         # 해석 가이드 · 결과 요약
+outputs/                      # EDA 산출물 (표 CSV · HTML 리포트) — 커밋된다
+preprocessed/                 # 전처리 결과 parquet — 커밋된다
 ```
 
 `preprocessed/` 내용:
@@ -32,13 +35,17 @@ preprocessed/           # 전처리 결과 parquet — 커밋된다
 
 | 문서 | 내용 |
 | --- | --- |
-| `outputs/eda_report.html` | 표 22개 + 차트 13개. 브라우저로 열면 된다 (`open outputs/eda_report.html`) |
+| `outputs/eda_report.html` | 표 27개 + 차트 18개. 브라우저로 열면 된다 (`open outputs/eda_report.html`) |
 | [같은 페이지 온라인 링크](https://claude.ai/artifact/QtLETb7adVcx7M9HWCgSNj) | Claude Artifact. 기본 비공개이므로 공유 설정이 필요하다 |
 | `docs/data_interpretation.md` | 분석 전 합의할 해석 규칙 4가지 — **먼저 읽을 것** |
 | `docs/EDA_summary.md` | 관측 결과 요약 |
 
 표 원본은 `outputs/tables/*.csv` (UTF-8 BOM, 엑셀에서 바로 열림).
-`python3 notebooks/run_eda.py` 로 표와 manifest가 재생성된다.
+
+```bash
+python3 notebooks/run_eda.py       # 표 27개 + manifest 재생성
+python3 notebooks/build_report.py  # manifest → HTML 리포트
+```
 
 ## 세팅
 
@@ -61,8 +68,9 @@ import sys; sys.path.insert(0, "../src")
 
 from loaders import load_sk, load_shinhan
 
-age = load_sk("flow_age_pop", months=["202507"])
-mct = load_shinhan("mct")
+age = load_sk("flow_age_pop", months=["202507"])   # 중복 제거된 상태로 반환
+mct = load_shinhan("mct")   # 데이터1 — 시간대(TIME_GB) 있음, 법인 포함
+cln = load_shinhan("cln")   # 데이터2 — 고객 거주지(CLN_SGG_CD) 있음, 법인 제외
 ```
 
 인코딩/구분자는 `src/config.py` 에만 둔다. 직접 `pd.read_csv` 하지 말 것.
@@ -75,7 +83,13 @@ mct = load_shinhan("mct")
   직접 결합은 불가능하므로 각 데이터가 답할 수 있는 범위에서 따로 분석한다.
 - SK 좌표계는 **UTM-K(EPSG:5179)** — 테이블 정의서에 명시돼 있다.
 - SK 값은 일별 시계열이 아니라 **월별 "일평균"** 이다. 격자당 관측 시점이 6개뿐이다.
-- 신한카드 `데이터2.txt` 는 정의서상 8컬럼이어야 하나 실제로는 5컬럼이다.
-  `TA_YMD` · `MCT_SGG_CD` · `MCT_RY_CD` 누락. 운영측 재배포 요청 대상.
+- **신한카드 데이터2는 2026-09 재배포본**(`데이터2_수정.txt`)을 쓴다. 최초 배포본은
+  `TA_YMD` · `MCT_SGG_CD` · `MCT_RY_CD` 가 누락된 5컬럼이었고, 재배포로 8컬럼이 복구됐다.
+  행 수와 결제액 합계는 동일하다.
+- 두 카드 파일의 역할이 다르다. **데이터1**은 시간대(`TIME_GB`)가 있고 법인카드를 포함한다.
+  **데이터2**는 고객 거주지(`CLN_SGG_CD`)가 있고 법인카드가 빠져 있다 — 우리 부문용 파일이다.
+- **`flow_time_pop_202512` 와 `flow_wkdy_pop_202512` 에는 중복 행이 있다.** 전체 행이 정확히
+  2번씩 들어 있다 (185,090→92,545 / 242,534→121,267). `load_sk()` 가 자동 제거하지만
+  원천 CSV를 직접 읽을 때는 직접 걷어내야 한다.
 
 해석상 주의사항은 `docs/data_interpretation.md` 에 정리돼 있다. 분석 전에 먼저 읽을 것.

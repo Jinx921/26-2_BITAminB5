@@ -1,0 +1,7 @@
+﻿region,resident_definition,night_share_threshold,housing_threshold,resident_cells,all_cells,resident_share,candidate_cells
+강남,night_only,0.07,200,669,698,0.9584527220630372,65
+춘천,night_only,0.03,30,5688,7393,0.7693764371702962,466
+강남,housing_only,0.07,200,651,698,0.9326647564469914,69
+춘천,housing_only,0.03,30,2158,7393,0.29189774110645206,215
+강남,night_and_housing,0.07,200,625,698,0.8954154727793696,65
+춘천,night_and_housing,0.03,30,1952,7393,0.2640335452455025,192

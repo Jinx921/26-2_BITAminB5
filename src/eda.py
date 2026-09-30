@@ -242,5 +242,101 @@ def card2_tables() -> list[tuple[str, pd.DataFrame, str]]:
     return out
 
 
+def external_tables() -> list[tuple[str, pd.DataFrame, str]]:
+    """외부 데이터(사회적 기회 자원) EDA. preprocessed/grid_access_senior.parquet 필요."""
+    f = C.ROOT / 'preprocessed' / 'grid_access_senior.parquet'
+    if not f.exists():
+        print('  [건너뜀] grid_access_senior.parquet 없음 — notebooks/eda_external.py 먼저 실행')
+        return []
+    from scipy.stats import spearmanr
+    d = pd.read_parquet(f)
+    d['공백'] = d.opp_n300 == 0
+    out = []
+
+    piv = lambda col, fn: d.pivot_table(index='구분', columns='region', values=col, aggfunc=fn)
+
+    q = [.1, .25, .5, .75, .9]
+    rows = []
+    for name, col in [('최근접 거리(m)', 'opp_dist_min'), ('300m내 자원 수', 'opp_n300'),
+                      ('500m내 자원 수', 'opp_n500'), ('300m내 자원 유형 수', 'opp_kinds_300')]:
+        for lab, v in zip(['10%', '25%', '50%', '75%', '90%'], q):
+            r = d.groupby('region')[col].quantile(v)
+            rows.append({'지표': name, '분위': lab, '강남': round(r['강남'], 1), '춘천': round(r['춘천'], 1)})
+    out.append(('기회 자원 접근성 분위수', pd.DataFrame(rows),
+                '민간 체육시설을 제외한 통합 기회 자원 기준. 춘천이 전반적으로 가깝고 많지만 '
+                '상위 분위에서 격차가 벌어진다.'))
+
+    t = d.groupby('region').agg(격자수=('cell_id', 'size'), 공백격자=('공백', 'sum'))
+    t['공백비율%'] = (t.공백격자 / t.격자수 * 100).round(1)
+    t['공백_유동인구비중%'] = (d[d.공백].groupby('region').flow_mean.sum()
+                          / d.groupby('region').flow_mean.sum() * 100).round(1)
+    out.append(('자원 공백 격자 (300m 내 기회 자원 0개)', t.reset_index(),
+                '강남 격자의 29.4%가 공백이고 유동인구 기준으로도 29.6%다. '
+                '사람이 적은 곳만 비어 있는 것이 아니다.'))
+
+    rows = []
+    pairs = [('opp_n300', '300m내 자원 수'), ('opp_dist_min', '최근접 거리'),
+             ('n300_체육시설_공공', '300m내 공공체육'), ('n300_체육시설_민간', '300m내 민간체육')]
+    for col, lab in pairs:
+        r = {'관계': f'고령비율 × {lab}'}
+        for reg, g in d.groupby('region'):
+            m = g.senior_ratio.notna() & g[col].notna()
+            rho, pv = spearmanr(g.senior_ratio[m], g[col][m])
+            r[reg] = round(rho, 3)
+            r[f'{reg} p'] = f'{pv:.0e}'
+        rows.append(r)
+    out.append(('고령 비율과 자원 접근성의 상관 (Spearman)', pd.DataFrame(rows),
+                "'고령층이 많을수록 자원이 부족하다'는 가설과 반대로 부호가 양수다. "
+                '유일하게 강한 신호는 민간 체육시설의 음의 상관(강남 -0.681)이다.'))
+
+    lab5 = ['Q1(낮음)', 'Q2', 'Q3', 'Q4', 'Q5(높음)']
+    d['고령5분위'] = d.groupby('region').senior_ratio.transform(
+        lambda x: pd.qcut(x, 5, labels=lab5))
+    g5 = (d.groupby(['region', '고령5분위'], observed=True)
+            .agg(고령비율=('senior_ratio', 'mean'), 자원수_300m=('opp_n300', 'mean'),
+                 공공체육_300m=('n300_체육시설_공공', 'mean'),
+                 민간체육_300m=('n300_체육시설_민간', 'mean'),
+                 공백비율=('공백', lambda x: x.mean() * 100)).round(1).reset_index())
+    out.append(('고령 5분위별 자원 접근성', g5,
+                '고령 비율이 가장 높은 Q5가 자원이 가장 많고 공백이 가장 적다. 가설과 반대다.'))
+
+    for col, lab, note in [
+        ('민간체육_300m', '민간', '고령층이 적은 곳에 민간 시설이 몰려 있다. 강남은 Q1 34.5개 → Q5 7.2개로 5배 차이.'),
+        ('공공체육_300m', '공공', '민간과 정반대다. 공공이 민간의 공백을 메우고 있다는 뜻이다.')]:
+        t = g5.pivot(index='고령5분위', columns='region', values=col).reindex(lab5)
+        out.append((f'고령 5분위별 300m내 {lab} 체육시설 수', t.reset_index(), note))
+
+    rows = []
+    d['규모5분위'] = d.groupby('region').flow_mean.transform(lambda x: pd.qcut(x, 5, labels=[1,2,3,4,5]))
+    for (reg, qn), g in d.groupby(['region', '규모5분위'], observed=True):
+        hi = g[g.senior_ratio >= g.senior_ratio.quantile(.75)].opp_n300.mean()
+        lo = g[g.senior_ratio <= g.senior_ratio.quantile(.25)].opp_n300.mean()
+        rows.append({'region': reg, '유동인구 규모분위': int(qn), '격자수': len(g),
+                     '고령상위25% 자원수': round(hi, 2), '고령하위25% 자원수': round(lo, 2),
+                     '차이': round(hi - lo, 2)})
+    out.append(('유동인구 규모를 통제한 비교', pd.DataFrame(rows),
+                '규모가 큰 분위(3~5)에서는 오히려 고령 지역이 자원이 더 많다. 규모 효과로 설명되지 않는다.'))
+
+    rows = []
+    for reg, g in d.groupby('region'):
+        gap = g[(g.senior_ratio >= g.senior_ratio.quantile(.75))
+                & (g.opp_n300 <= g.opp_n300.quantile(.25))]
+        rows.append({'region': reg, '전체 격자': len(g), 'Gap 격자': len(gap),
+                     '비율%': round(len(gap) / len(g) * 100, 1),
+                     'Gap 고령비율': round(gap.senior_ratio.mean(), 1),
+                     '전체 고령비율': round(g.senior_ratio.mean(), 1),
+                     'Gap 최근접거리 중앙값m': round(gap.opp_dist_min.median(), 0),
+                     'Gap 유동인구 합': round(gap.flow_mean.sum(), 0)})
+    out.append(('Resource Gap 후보 격자 (고령 상위 25% × 자원 하위 25%)', pd.DataFrame(rows),
+                '합계 1,600개 격자가 해당된다. 다만 두 축의 사분면 교집합이라 상관이 0이어도 '
+                '기계적으로 나오는 수치다. 구조적 패턴이 아니라 개별 우선 지원 목록으로 다뤄야 한다.'))
+    return out
+
+
 def all_tables():
-    return [('SK 유동인구', sk_tables()), ('신한카드 데이터1', card_tables()), ('신한카드 데이터2', card2_tables())]
+    groups = [('SK 유동인구', sk_tables()), ('신한카드 데이터1', card_tables()),
+              ('신한카드 데이터2', card2_tables())]
+    ext = external_tables()
+    if ext:
+        groups.append(('외부 데이터 (기회 자원)', ext))
+    return groups

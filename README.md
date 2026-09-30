@@ -10,7 +10,7 @@ data/raw/shinhan_card/        # 신한카드 txt 2개 (탭 구분, CP949)
 data/_zip/                    # 원본 배포 zip 보관 (git 제외)
 src/config.py                 # 경로 · 인코딩 · 구분자 상수
 src/loaders.py                # 원천 데이터 로더 (202512 중복 자동 제거)
-src/eda.py                    # EDA 표 27개 계산 로직
+src/eda.py                    # EDA 표 35개 계산 로직
 notebooks/run_eda.py          # 실행 → 터미널 출력 + outputs/ 갱신
 notebooks/build_report.py     # 템플릿 + manifest → HTML 리포트
 notebooks/report_template.html

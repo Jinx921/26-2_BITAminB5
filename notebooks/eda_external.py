@@ -2,9 +2,9 @@
 
 격자 단위는 팀 표준 250m(`preprocessed/flow_cell.parquet`)를 따른다.
 세 층위로 나눠 본다.
-  ① 전체 250m 격자      — 채원의 복지시설 접근성과 동일 모집단
-  ② 야간비중 기준 통과   — 사랑의 거주셀 조건 (a)만 적용한 근사치
-  ③ 사랑의 후보셀 257개  — 고령 상위 25% + 활동위축 지속
+  ① 전체 250m 격자      — 복지시설 접근성 분석과 동일 모집단
+  ② 야간비중 기준 통과   — 거주셀 조건 (a)만 적용한 근사치
+  ③ 활동위축 후보셀 257개 — 고령 상위 25% + 이탈 지속 (srh_07)
 """
 import sys, pathlib
 sys.path.insert(0, str(pathlib.Path(__file__).resolve().parents[1] / "src"))
@@ -13,7 +13,7 @@ from scipy.stats import spearmanr
 import config as C
 
 pd.set_option('display.width', 220)
-NIGHT_THR = {'강남': 0.07, '춘천': 0.03}      # 사랑의 거주셀 조건 (a)
+NIGHT_THR = {'강남': 0.07, '춘천': 0.03}      # 거주셀 조건 (a)
 
 
 def sec(t): print(f"\n{'='*78}\n{t}\n{'='*78}")
@@ -31,7 +31,7 @@ def main():
                                 야간통과=('야간통과', 'sum'),
                                 후보셀=('is_candidate', 'sum'))
     print(t.to_string())
-    print("  ※ 사랑의 거주셀(야간 AND 주택)은 강남 625 / 춘천 1,952.")
+    print("  ※ 거주셀(야간 AND 주택) 최종 정의는 강남 625 / 춘천 1,952.")
     print("     주택 조건은 SGIS 데이터가 필요해 여기서는 야간 조건만 적용한 근사치다.")
 
     sec("1. 기회 자원 접근성 분포 (전체 250m 격자)")
@@ -40,7 +40,7 @@ def main():
 
     sec("2. 자원 공백 격자 — 층위별")
     rows = []
-    for lab, sub in [('전체 250m', d), ('야간통과', d[d.야간통과]), ('후보셀', d[d.is_candidate])]:
+    for lab, sub in [('전체 250m', d), ('야간통과', d[d.야간통과]), ('활동위축 후보셀', d[d.is_candidate])]:
         for reg, g in sub.groupby('region'):
             rows.append({'층위': lab, 'region': reg, '격자수': len(g),
                          '공백격자': int(g.공백.sum()),
@@ -80,7 +80,7 @@ def main():
                 민간체육_300m=('n300_체육시설_민간', 'mean'),
                 공백비율=('공백', lambda x: x.mean() * 100)).round(2).to_string())
 
-    sec("6. 사랑의 후보셀은 자원도 부족한가")
+    sec("6. 활동위축 후보셀은 자원도 부족한가")
     rows = []
     for reg, g in d.groupby('region'):
         cand, non = g[g.is_candidate], g[~g.is_candidate & g.야간통과]

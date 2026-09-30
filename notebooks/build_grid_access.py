@@ -4,7 +4,7 @@
 
 **격자 단위는 팀 표준인 250m(`preprocessed/flow_cell.parquet`)를 따른다.**
 cell_id = floor(X/250)_floor(Y/250) 이며, 거리 계산의 기준점은 격자 중심
-(floor*250 + 125)이다. 채원의 복지시설 접근성과 같은 기준이라 결과를 바로 합칠 수 있다.
+(floor*250 + 125)이다. 복지시설 접근성 분석과 같은 기준이라 결과를 바로 합칠 수 있다.
 
 격자 하나당
   dist_<유형>            최근접 지점까지의 거리(m)
@@ -37,7 +37,7 @@ def team_cells() -> pd.DataFrame:
                 neg_months=('neg_months', 'first'),
                 trend=('trend', 'first'))
            .reset_index())
-    # cell_id → 격자 중심 좌표 (채원과 동일 기준)
+    # cell_id → 격자 중심 좌표
     ij = g.cell_id.str.split('_', expand=True).astype('int64')
     g['x'] = ij[0] * CELL_M + CELL_M / 2
     g['y'] = ij[1] * CELL_M + CELL_M / 2
@@ -46,7 +46,7 @@ def team_cells() -> pd.DataFrame:
 
 
 def candidates() -> pd.DataFrame:
-    """사랑의 활동위축 후보셀 (srh_07). 없으면 빈 프레임."""
+    """활동위축 후보셀 (srh_07). 없으면 빈 프레임."""
     f = C.TABLES / 'srh_07_candidate_cells.csv'
     if not f.exists():
         print("  [건너뜀] srh_07_candidate_cells.csv 없음 — 후보 플래그 미부착")
@@ -69,7 +69,7 @@ def main():
     if len(cand):
         cells = cells.merge(cand, on=['region', 'cell_id'], how='left')
         cells['is_candidate'] = cells.is_candidate.fillna(False)
-        print(f"  사랑 후보셀 결합: {int(cells.is_candidate.sum())}개")
+        print(f"  활동위축 후보셀 결합: {int(cells.is_candidate.sum())}개")
 
     print("\n[3] 유형별 접근성 계산 (격자 중심 기준)")
     out = cells.copy()

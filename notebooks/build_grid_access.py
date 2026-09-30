@@ -1,21 +1,58 @@
-"""격자 × 자원유형 접근성 테이블 생성 → preprocessed/grid_access.parquet
+"""격자 × 자원유형 접근성 테이블 → preprocessed/grid_access.parquet
 
   python3 notebooks/build_grid_access.py
 
+**격자 단위는 팀 표준인 250m(`preprocessed/flow_cell.parquet`)를 따른다.**
+cell_id = floor(X/250)_floor(Y/250) 이며, 거리 계산의 기준점은 격자 중심
+(floor*250 + 125)이다. 채원의 복지시설 접근성과 같은 기준이라 결과를 바로 합칠 수 있다.
+
 격자 하나당
-  dist_<유형>   최근접 지점까지의 거리(m)
-  n300/500/1000_<유형>  반경 내 지점 수 (합쳐진 시설 수 기준)
+  dist_<유형>            최근접 지점까지의 거리(m)
+  n300/500/1000_<유형>   반경 내 시설 수
+  opp_*                  통합 기회 자원 (민간 체육시설·도시공원 제외)
 """
 import sys, pathlib
 sys.path.insert(0, str(pathlib.Path(__file__).resolve().parents[1] / "src"))
 import numpy as np, pandas as pd
 from scipy.spatial import cKDTree
 import config as C
-from external import load_external, consolidate, valid_cells
+from external import load_external, consolidate
 
 RADII = (300, 500, 1000)
-# 분석에 쓸 유형 (판정에서 채택/보조된 것)
 KINDS = ['체육시설(공공)', '도서관', '문화시설', '도시공원', '체육시설(민간)']
+CELL_M = 250
+
+
+def team_cells() -> pd.DataFrame:
+    """팀 표준 250m 격자. flow_cell.parquet 의 6개월치를 격자 단위로 요약한다."""
+    f = pd.read_parquet(C.ROOT / 'preprocessed' / 'flow_cell.parquet')
+    f['region'] = f.sgg_nm.map({'강남구': '강남', '춘천시': '춘천'})
+    g = (f.groupby(['region', 'cell_id'])
+           .agg(n_months=('STD_YM', 'nunique'),
+                flow_mean=('tot_age', 'mean'),
+                senior_ratio=('senior_ratio', 'mean'),
+                night_share=('night_share', 'mean'),
+                weekend_ratio=('weekend_ratio', 'mean'),
+                peer=('peer', 'first'),
+                neg_months=('neg_months', 'first'),
+                trend=('trend', 'first'))
+           .reset_index())
+    # cell_id → 격자 중심 좌표 (채원과 동일 기준)
+    ij = g.cell_id.str.split('_', expand=True).astype('int64')
+    g['x'] = ij[0] * CELL_M + CELL_M / 2
+    g['y'] = ij[1] * CELL_M + CELL_M / 2
+    g['senior_ratio'] = (g.senior_ratio * 100).round(2)   # % 로 통일
+    return g
+
+
+def candidates() -> pd.DataFrame:
+    """사랑의 활동위축 후보셀 (srh_07). 없으면 빈 프레임."""
+    f = C.TABLES / 'srh_07_candidate_cells.csv'
+    if not f.exists():
+        print("  [건너뜀] srh_07_candidate_cells.csv 없음 — 후보 플래그 미부착")
+        return pd.DataFrame(columns=['region', 'cell_id', 'persistent_months'])
+    d = pd.read_csv(f, encoding='utf-8-sig')
+    return d[['region', 'cell_id', 'persistent_months']].assign(is_candidate=True)
 
 
 def main():
@@ -23,22 +60,26 @@ def main():
     ext = consolidate(load_external())
     ext = ext[ext.region.notna()]
 
-    print("\n[2] 분석 대상 격자")
-    cells = valid_cells()
-    print(cells.groupby('region').size().to_string())
+    print(f"\n[2] 팀 표준 250m 격자 (preprocessed/flow_cell.parquet)")
+    cells = team_cells()
+    print(cells.groupby('region').agg(격자수=('cell_id', 'size'),
+                                      일평균유동인구_중앙값=('flow_mean', 'median')).round(1).to_string())
 
-    print("\n[3] 유형별 접근성 계산")
-    out = cells.rename(columns={'X_COORD': 'x', 'Y_COORD': 'y',
-                                'n': 'n_months', 'mean': 'flow_mean'}).copy()
-    out['cell_id'] = out.x.astype('int64').astype(str) + '_' + out.y.astype('int64').astype(str)
+    cand = candidates()
+    if len(cand):
+        cells = cells.merge(cand, on=['region', 'cell_id'], how='left')
+        cells['is_candidate'] = cells.is_candidate.fillna(False)
+        print(f"  사랑 후보셀 결합: {int(cells.is_candidate.sum())}개")
 
+    print("\n[3] 유형별 접근성 계산 (격자 중심 기준)")
+    out = cells.copy()
     for kind in KINDS:
         dist = pd.Series(np.nan, index=out.index)
         cnt = {r: pd.Series(np.nan, index=out.index) for r in RADII}
         for region, cg in out.groupby('region'):
             eg = ext[(ext.region == region) & (ext.kind == kind)]
             if eg.empty:
-                continue                       # 해당 지역에 자원 없음 → NaN 유지
+                continue
             tree = cKDTree(eg[['x', 'y']].to_numpy())
             pts = cg[['x', 'y']].to_numpy()
             d, _ = tree.query(pts, k=1)
@@ -55,12 +96,9 @@ def main():
         print(f"  {kind:<12} 계산된 격자 비율: " +
               " / ".join(f"{k} {v:.0f}%" for k, v in ok.items()))
 
-    # 기회 자원 통합 지표에 넣을 유형.
+    # 기회 자원 통합 지표.
     #  - 민간 체육시설 제외: '사회적 관계를 만들 기회'로 보기 어렵다.
     #  - 도시공원 제외: 전국표준데이터가 지자체 등록에 의존해 커버리지가 불균등하다.
-    #    강남 0건, 강원 전체 78건(18개 시군 중 9개만 등록), 춘천 24건.
-    #    한쪽만 보완하면 수집 차이가 지역 격차로 둔갑하므로 지역 비교 지표에서 뺀다.
-    #    컬럼 자체는 남겨 두어 춘천 내부 참고용으로 쓸 수 있게 한다.
     EXCLUDE = {'체육시설(민간)', '도시공원'}
     pub = [k for k in KINDS if k not in EXCLUDE]
     print(f"\n[통합 지표 구성] {' + '.join(pub)}  (제외: {', '.join(sorted(EXCLUDE))})")
@@ -72,12 +110,10 @@ def main():
     out['opp_kinds_300'] = (out[[f'n300_' + k.replace('(', '_').replace(')', '')
                                  for k in pub]].fillna(0) > 0).sum(axis=1)
 
-    C.PROCESSED.mkdir(parents=True, exist_ok=True)
-    path = pathlib.Path('preprocessed'); path.mkdir(exist_ok=True)
-    f = path / 'grid_access.parquet'
+    f = pathlib.Path('preprocessed/grid_access.parquet')
     out.to_parquet(f, index=False)
     print(f"\n[4] 저장 → {f}  ({len(out):,}행 × {out.shape[1]}열)")
-    print("\n통합 지표 요약 (기회 자원 = 민간 체육시설 제외)")
+    print("\n통합 지표 요약")
     print(out.groupby('region')[['opp_dist_min', 'opp_n300', 'opp_n500', 'opp_kinds_300']]
              .describe(percentiles=[.25, .5, .75]).T.round(1).to_string())
 

@@ -3,7 +3,7 @@
 2025년 7~12월 · 서울 강남구 / 강원 춘천시 · SK 통신 유동인구(50m 격자) + 신한카드 결제
 2026-09 재배포본 기준 · 202512 중복 제거 후
 
-표 27개와 차트 전체: [EDA 결과 페이지](https://claude.ai/artifact/QtLETb7adVcx7M9HWCgSNj)
+표 35개와 차트 전체: [EDA 결과 페이지](https://claude.ai/artifact/QtLETb7adVcx7M9HWCgSNj)
 해석 전제는 `data_interpretation.md` 를 먼저 볼 것.
 
 ## 데이터 개요
@@ -30,6 +30,11 @@ SK 좌표계는 UTM-K(EPSG:5179), 카드는 시군구 2개뿐이라 두 데이�
 춘천 격자의 75%가 일평균 5.7명 이하다. 면적이 28배인데 인구는 1/4이라 생긴 결과다.
 
 6개월 전부 관측된 격자는 78.6%지만 인구로는 99%를 담는다. 결측이 소규모 격자에 몰려 있기 때문이다. 여기에 일평균 30명 임계를 걸면 강남 10,865 / 춘천 8,364격자로 양쪽 표본 크기가 비슷해진다.
+
+> ⚠ **이 필터는 쓰지 않는다.** 50m + 30명은 춘천 격자의 91%를 잘라내고, 제거된 격자가
+> 고령·자원공백이 높은 외곽이라 결론을 뒤집는다(`external_data.md` 참조).
+> **격자 분석의 팀 표준은 250m** (`preprocessed/flow_cell.parquet`, 강남 698 / 춘천 7,393)다.
+> 본 문서의 격자 수치는 원천 데이터의 50m 원본 구조를 설명한 것이다.
 
 ## 2. 격자 변동의 상당 부분은 표본 노이즈다
 
@@ -225,5 +230,5 @@ Shannon entropy 7월→12월 변화다.
 
 SK 데이터는 일별 시계열이 아니라 **월별 "일평균"** 값이다. 격자당 관측 시점이 6개뿐이다.
 
-재현: `python3 notebooks/run_eda.py` → 표 27개가 `outputs/tables/*.csv` 로 저장된다.
+재현: `python3 notebooks/run_eda.py` → 표 35개가 `outputs/tables/*.csv` 로 저장된다.
 페이지 갱신: `python3 notebooks/build_report.py`

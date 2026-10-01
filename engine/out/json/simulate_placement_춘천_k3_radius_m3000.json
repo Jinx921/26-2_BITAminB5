@@ -1,0 +1,138 @@
+{
+ "tool": "simulate_placement",
+ "region": "춘천",
+ "result": {
+  "chosen_sites": [
+   {
+    "cell_id": "4043_8018",
+    "emd_name": "사북면",
+    "x": 1010875.0,
+    "y": 2004625.0,
+    "lat": 38.0416,
+    "lon": 127.6239,
+    "covers": 14
+   },
+   {
+    "cell_id": "4064_7964",
+    "emd_name": "서면",
+    "x": 1016125.0,
+    "y": 1991125.0,
+    "lat": 37.9199,
+    "lon": 127.6835,
+    "covers": 10
+   },
+   {
+    "cell_id": "4086_7979",
+    "emd_name": "신북읍",
+    "x": 1021625.0,
+    "y": 1994875.0,
+    "lat": 37.9536,
+    "lon": 127.7462,
+    "covers": 10
+   }
+  ],
+  "n_target_cells": 55,
+  "covered_cells": 34,
+  "covered_senior_share": 0.7314,
+  "k_curve": [
+   {
+    "k": 1,
+    "covered_cells": 10,
+    "covered_cells_share": 0.1818,
+    "covered_senior_share": 0.295,
+    "optimal": true
+   },
+   {
+    "k": 2,
+    "covered_cells": 24,
+    "covered_cells_share": 0.4364,
+    "covered_senior_share": 0.5453,
+    "optimal": true
+   },
+   {
+    "k": 3,
+    "covered_cells": 34,
+    "covered_cells_share": 0.6182,
+    "covered_senior_share": 0.7314,
+    "optimal": true
+   },
+   {
+    "k": 4,
+    "covered_cells": 41,
+    "covered_cells_share": 0.7455,
+    "covered_senior_share": 0.8516,
+    "optimal": true
+   },
+   {
+    "k": 5,
+    "covered_cells": 43,
+    "covered_cells_share": 0.7818,
+    "covered_senior_share": 0.9031,
+    "optimal": true
+   }
+  ],
+  "type_after": {
+   "연계형(이동형 도달)": 34,
+   "긴급방문형": 21
+  }
+ },
+ "evidence": [
+  {
+   "metric": "n_target_cells",
+   "value": 55
+  },
+  {
+   "metric": "covered_cells_k3",
+   "value": 34
+  },
+  {
+   "metric": "covered_senior_share_k3",
+   "value": 0.7314
+  },
+  {
+   "metric": "covered_senior_share_k1",
+   "value": 0.295
+  },
+  {
+   "metric": "covered_senior_share_k2",
+   "value": 0.5453
+  },
+  {
+   "metric": "covered_senior_share_k3",
+   "value": 0.7314
+  },
+  {
+   "metric": "covered_senior_share_k4",
+   "value": 0.8516
+  },
+  {
+   "metric": "covered_senior_share_k5",
+   "value": 0.9031
+  }
+ ],
+ "caveats": [
+  "통신 유동인구는 머무는 사람 기준이며 거주자와 같지 않다. 거주 여부는 현장 확인이 필요하다.",
+  "개인이 아니라 250m 칸 단위 집계 결과다.",
+  "거리는 칸 중심에서 시설까지 직선거리다. 실제 이동 시간·경사·교통편은 반영하지 않는다.",
+  "수요 가중치는 60대 이상 유동인구(체류)이며 거주 고령 인구가 아니다.",
+  "커버는 반경 안 도달 가능성만 뜻하며 고립 감소 효과를 뜻하지 않는다.",
+  "거주 칸 = 팀 기준(야간 비중 + SGIS 1km 주택 수) 통과 칸 중 GIS 주거·용도미상 건물이 있는 칸.",
+  "SGIS 값(주택 수·고령·1인가구)은 1km 격자 단위라 같은 1km 안의 250m 칸이 같은 값을 공유한다. 춘천은 신뢰 격자가 적다."
+ ],
+ "figures": [
+  "out\\sim_춘천_k3_r3000.png",
+  "out\\curve_춘천_r3000.png"
+ ],
+ "geojson": "out\\sim_춘천_k3_r3000.geojson",
+ "params": {
+  "k": 3,
+  "radius_m": 3000,
+  "target_types": [
+   "긴급방문형"
+  ],
+  "weight": "60대+ 일평균 유동",
+  "sites": "거주 칸 중심",
+  "solver": "scipy.milp (HiGHS)",
+  "all_optimal": true
+ }
+}

@@ -510,7 +510,7 @@ def region_context(region: str) -> dict:
     return _pack('region_context', region,
                  {'local_payment_pct': local, 'local_payment_by_age_pct': age_local.to_dict(),
                   'senior60_card_time_pct': time60.to_dict(), 'population': pop,
-                  'lens': '활동 위축형(고령·통신)' if region == '춘천' else '관계 부재형 비중 큼(청년·중장년 1인가구·카드)',
+                  'lens': '활동 위축형(고령·통신)' if region == '춘천' else '관계 부재형 가능성(청년·중장년 1인가구 구조)',
                   'type_counts': u.type.value_counts().to_dict()},
                  [{'metric': 'local_payment_pct', 'value': local},
                   {'metric': 'pop_65plus_share', 'value': pop['p65']},

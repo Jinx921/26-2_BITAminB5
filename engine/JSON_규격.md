@@ -109,7 +109,7 @@
 ### region_context: 지역 맥락 (2차, 시군구 단위)
 | 필드 | 형식 | 내용 |
 |---|---|---|
-| `local_payment_pct` | float | 지역 내 결제 비율(%) |
+| `local_payment_pct` | float | 지역 가맹점 결제 중 같은 시도 거주자 비중(%). 주민이 다른 지역에서 쓴 결제는 포함되지 않음 |
 | `local_payment_by_age_pct` | {연령대: float} | |
 | `senior60_card_time_pct` | {시간대: float} | 60대+ 결제 시간대 비중 |
 | `population` | dict | `pop, p65, p85, solo65, solo_mid_male, solo_top_age` |

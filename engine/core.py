@@ -516,7 +516,9 @@ def region_context(region: str) -> dict:
                   {'metric': 'pop_65plus_share', 'value': pop['p65']},
                   {'metric': 'solo_65plus_households', 'value': pop['solo65']}] +
                  [{'metric': f'senior60_card_time_{k}', 'value': v} for k, v in time60.items()],
-                 {}, caveats=['카드·인구는 시군구 단위라 칸에 내리지 않고 해석 맥락으로만 쓴다.'])
+                 {}, caveats=['카드·인구는 시군구 단위라 칸에 내리지 않고 해석 맥락으로만 쓴다.',
+                              '로컬 결제 비율은 이 지역 가맹점 결제 중 같은 시도 거주자 비중이다. 주민이 다른 지역에서 쓴 결제는 '
+                              '보이지 않으므로 생활 반경·고립 신호로 해석하지 않고 도시 성격(강남 방문 도시 / 춘천 주민 생활권) 구분에만 쓴다.'])
 
 
 TOOLS = {f.__name__: f for f in [find_candidates, check_residential, lookup_resources, classify,

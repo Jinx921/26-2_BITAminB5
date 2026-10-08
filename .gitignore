@@ -29,6 +29,7 @@ submissions/
 models/
 reports/*.html
 *.log
+agent/out/
 
 # ---- Python ----
 __pycache__/

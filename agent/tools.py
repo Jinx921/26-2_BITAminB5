@@ -16,6 +16,7 @@ import sys
 
 from agent.agent_tools import SCHEMAS as AGENT_SCHEMAS
 from agent.agent_tools import COMPARE, FIELD_CHECK, FIND_FACILITY, SENIOR_HOURS
+from agent.documents import DOC_SPECS, SUBMIT_DOC
 from agent.engine_client import ENGINE_DIR
 
 # Sonnet 이 바꾸지 못하게 스키마에서 빼는 기준값 인자
@@ -41,6 +42,7 @@ MODE_TOOLS = {
 }
 
 SUBMIT = 'submit_answer'
+SUBMITS = {'admin': (SUBMIT, SUBMIT_DOC), 'citizen': (SUBMIT,)}    # 모드별 제출 도구 (문서는 관리자만)
 
 _SOURCE = {
     'type': 'object',
@@ -98,6 +100,35 @@ SUBMIT_SCHEMA = {
 }
 
 
+_CITATIONS = SUBMIT_SCHEMA['input_schema']['properties']['citations']
+_DOC_HEADINGS = '; '.join(f"{k}({v['name']}): {' / '.join(v['sections'])}" for k, v in DOC_SPECS.items())
+
+SUBMIT_DOC_SCHEMA = {
+    'name': SUBMIT_DOC,
+    'description': ('문서를 제출한다 (사업 제안서 proposal / 현황 보고 report / 주민 안내문 notice). '
+                    '필요한 도구를 부른 뒤 마지막에 한 번 부른다. 목차는 정해진 이름과 순서 그대로 쓴다: ' + _DOC_HEADINGS + '. '
+                    '본문에 쓴 숫자는 하나도 빠짐없이 citations 에 출처를 적는다. 모르는 정보는 [날짜] [장소] [연락처]처럼 빈칸으로 둔다.'),
+    'strict': True,
+    'input_schema': {
+        'type': 'object',
+        'properties': {
+            'doc_type': {'type': 'string', 'enum': list(DOC_SPECS)},
+            'title': {'type': 'string', 'description': '문서 제목'},
+            'sections': {'type': 'array', 'description': '목차 순서대로', 'items': {
+                'type': 'object',
+                'properties': {'heading': {'type': 'string'}, 'body': {'type': 'string'}},
+                'required': ['heading', 'body'], 'additionalProperties': False}},
+            'caveats_reflected': {'type': 'array', 'items': {'type': 'string'},
+                                  'description': '도구 결과의 caveats 중 문서에 쉬운 말로 반영한 것의 번호'},
+            'citations': _CITATIONS,
+            'map_ref': {'type': 'string', 'description': '지도에 그릴 도구 결과 번호. 없으면 빈 문자열'},
+        },
+        'required': ['doc_type', 'title', 'sections', 'caveats_reflected', 'citations', 'map_ref'],
+        'additionalProperties': False,
+    },
+}
+
+
 def _engine_schemas() -> list[dict]:
     if str(ENGINE_DIR) not in sys.path:
         sys.path.insert(0, str(ENGINE_DIR))
@@ -125,12 +156,13 @@ def tools_for(mode: str) -> list[dict]:
         region = s['input_schema']['properties'].get('region')
         if region is not None:
             region['enum'] = service_regions()
-    return engine + agent + [copy.deepcopy(SUBMIT_SCHEMA)]
+    submits = {SUBMIT: SUBMIT_SCHEMA, SUBMIT_DOC: SUBMIT_DOC_SCHEMA}
+    return engine + agent + [copy.deepcopy(submits[n]) for n in SUBMITS[mode]]
 
 
 def is_allowed(mode: str, tool: str) -> bool:
     """실행 직전 확인: 모드 목록에 없는 도구 호출은 거절한다."""
-    return tool == SUBMIT or tool in MODE_TOOLS.get(mode, ())
+    return tool in SUBMITS.get(mode, ()) or tool in MODE_TOOLS.get(mode, ())
 
 
 def strip_locked(tool: str, args: dict, mode: str = 'admin') -> tuple[dict, list[str]]:

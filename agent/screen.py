@@ -10,6 +10,7 @@ from __future__ import annotations
 
 import re
 
+from agent.documents import DOC_SPECS, doc_fields, to_markdown
 from agent.verifier import Context, VerifyResult
 
 # 검증에 실패했을 때 화면에 보이는 안내 (모드마다 지도가 보여주는 것이 다르다)
@@ -128,24 +129,35 @@ def build_screen(question: str, mode: str, answer: dict | None, check: VerifyRes
     if notice is not None:
         return {'mode': mode, 'question': question, 'region': None,
                 'display': {'headline': notice, 'details': [], 'caution': '', 'confidence': None, 'map': None,
-                            'chart': None},
+                            'chart': None, 'document': None},
                 'internal': {'verification': {'passed': False, 'attempts': 0, 'errors': [], 'warnings': []},
                              'confidence_basis': {}, 'citations': [], 'caveats': [], 'tool_trace': []}}
     ok = answer is not None and check is not None and check.passed
     grade = check.grade if check else '낮음'
     note = check.grade_note if check else ''
-    if ok:
+    is_doc = answer is not None and 'doc_type' in answer
+    if ok and is_doc:
+        spec = DOC_SPECS[answer['doc_type']]
+        display = {'headline': f"{spec['name']} 초안을 만들었습니다: {answer['title'].strip()}", 'details': [], 'caution': '',
+                   'document': {'type': answer['doc_type'], 'type_name': spec['name'], 'title': answer['title'].strip(),
+                                'sections': [{'heading': s['heading'].strip(), 'body': s['body'].strip()}
+                                             for s in answer['sections']],
+                                'markdown': to_markdown(answer)}}
+    elif ok:
         display = {
             'headline': answer['headline'].strip(),
             'details': [p.strip() for p in re.split(r'\n+', answer['details']) if p.strip()],
             'caution': answer['caution'].strip(),
+            'document': None,
         }
     else:
-        display = {'headline': FALLBACK_TEXT[mode], 'details': [], 'caution': ''}
+        display = {'headline': FALLBACK_TEXT[mode], 'details': [], 'caution': '', 'document': None}
     # 신뢰도는 분석 결과가 기준에 따라 흔들리는 정도라 관리자 화면에만 보인다
     display['confidence'] = {'label': grade, 'note': note} if mode == 'admin' else None
     parts = {'headline': [display['headline']], 'details': display['details'], 'caution': [display['caution']]}
     shown = ' '.join(t for f in HIGHLIGHT_FROM[mode] for t in parts[f]) if ok else ''
+    if ok and is_doc:                                             # 문서는 본문 전체에서 언급한 곳을 강조
+        shown = ' '.join(doc_fields(answer).values())
     display['map'] = _map(ctx, answer['map_ref'] if answer else None, shown)
     display['chart'] = _chart(ctx) if ok and mode == 'admin' else None
 

@@ -18,8 +18,9 @@ from agent.location import detect_region
 from agent.prompts import build_system
 from agent.screen import CITIZEN_NOTICE, LOCATION_KEYS, REGION_NAMES, build_screen
 from agent.store import ResultStore
-from agent.tools import FIXED_ARGS, SUBMIT, is_allowed, service_regions, strip_locked, tools_for
-from agent.verifier import Context, VerifyResult, feedback, verify
+from agent.documents import SUBMIT_DOC
+from agent.tools import FIXED_ARGS, SUBMITS, is_allowed, service_regions, strip_locked, tools_for
+from agent.verifier import Context, VerifyResult, feedback, verify, verify_document
 
 MODEL = 'claude-sonnet-5-5'
 EFFORT = 'medium'          # 여러 단계 도구 사용에 권장되는 시작값
@@ -107,7 +108,8 @@ class Orchestrator:
         self._ensure_robustness(turn)
         turn.attempts += 1
         turn.answer = dict(block.input)
-        turn.check = verify(turn.answer, turn.context())
+        check = verify_document if block.name == SUBMIT_DOC else verify
+        turn.check = check(turn.answer, turn.context())
         if turn.check.passed:
             turn.end = 'passed'
             return None
@@ -169,7 +171,7 @@ class Orchestrator:
                 continue
             results = []
             for b in uses:
-                if b.name == SUBMIT:
+                if b.name in SUBMITS[self.mode]:
                     r = self._submit(turn, b)
                     if r is None:
                         break
@@ -194,4 +196,9 @@ def save_run(screen: dict, turn: Turn) -> Path:
     """agent/out/runs/ 에 엔진 원본(r*.json)과 화면 조각(screen.json)을 저장한다."""
     run = turn.store.save()
     (run / 'screen.json').write_text(json.dumps(screen, ensure_ascii=False, indent=1), encoding='utf-8')
+    doc_md = run / 'document.md'
+    if screen['display'].get('document'):
+        doc_md.write_text(screen['display']['document']['markdown'], encoding='utf-8')
+    elif doc_md.exists():
+        doc_md.unlink()                                            # 이전 실행의 문서가 남지 않게
     return run

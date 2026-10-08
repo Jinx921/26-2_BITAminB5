@@ -15,6 +15,7 @@ import re
 from dataclasses import dataclass, field
 
 from agent.agent_tools import SENIOR_HOURS_NOTE, slot_label
+from agent.documents import DOC_SPECS, PLACEHOLDERS, SUBMIT_DOC, doc_fields
 from agent.store import ResultStore
 from agent.terms import CITIZEN_BANNED
 from agent.tools import AGENT_SCHEMAS, MODE_TOOLS, SUBMIT
@@ -180,7 +181,10 @@ def _value_ok(text: str, op: str, values: list[float]) -> bool:
 
 
 # ------------------------------------------------------------------ 검사
-def _check_numbers(ans: dict, ctx: Context, res: VerifyResult) -> None:
+def _check_numbers(ans: dict, ctx: Context, res: VerifyResult, texts: dict | None = None,
+                   params_in: tuple = ()) -> None:
+    """texts: 검사할 문장 {필드: 문장} (없으면 답변의 화면 필드). params_in: 기준값을 써도 되는 필드 (제안서 '근거 데이터')."""
+    texts = texts if texts is not None else {f: ans[f] for f in DISPLAY_FIELDS}
     allowed = {n for n, _ in _numbers(ctx.question)}            # 사용자가 질문에 쓴 숫자
     names = sorted(place_names(ctx.store), key=len, reverse=True)
     cited = {}
@@ -188,8 +192,13 @@ def _check_numbers(ans: dict, ctx: Context, res: VerifyResult) -> None:
         ns = _numbers(c['text'])
         if ns:
             cited.setdefault(ns[0], c)
-    for f in DISPLAY_FIELDS:
-        text = _strip_names(ans[f], names)                      # 이름 속 숫자는 출처가 필요 없다
+    where = {}                                                  # 숫자 → 나온 필드들
+    for f, raw in texts.items():
+        text = _strip_names(raw, names)                         # 이름 속 숫자는 출처가 필요 없다
+        for nu in _numbers(text):
+            where.setdefault(nu, set()).add(f)
+    for f, raw in texts.items():
+        text = _strip_names(raw, names)
         for num, unit in _numbers(text):
             if num in allowed:
                 continue
@@ -214,6 +223,11 @@ def _check_numbers(ans: dict, ctx: Context, res: VerifyResult) -> None:
             values.append(float(v))
             tool = ctx.store.get(s['ref']).tool
             allowed_param = s['metric'] in ALLOWED_PARAMS.get(ctx.mode, ())
+            if s['metric'].startswith(PROCESS_METRIC_PREFIX) and params_in and not allowed_param:
+                shown_in = where.get(_numbers(c['text'])[0], set()) if _numbers(c['text']) else set()
+                if shown_in - set(params_in):
+                    res.errors.append(f'기준값은 {"·".join(params_in)} 목차에만 쓴다: "{c["text"]}" ({", ".join(sorted(shown_in))})')
+                continue
             if tool in PROCESS_TOOLS or (s['metric'].startswith(PROCESS_METRIC_PREFIX) and not allowed_param):
                 res.errors.append(f'과정 수치를 화면에 씀: "{c["text"]}" ({tool} 결과 또는 기준값). '
                                   '기준값이나 기준을 바꾼 결과는 쓰지 않고 "현장 확인이 필요하다"처럼 쉬운 말로 쓴다')
@@ -225,11 +239,13 @@ def _check_numbers(ans: dict, ctx: Context, res: VerifyResult) -> None:
             res.errors.append(f'값이 출처와 다름: "{c["text"]}" ({c["op"]}, 출처 값 {values})')
 
 
-def _check_banned(ans: dict, ctx: Context, res: VerifyResult) -> None:
-    tool_names = set(MODE_TOOLS['admin']) | set(AGENT_SCHEMAS) | {SUBMIT}
-    for f in DISPLAY_FIELDS:
-        t = ans[f]
-        found = [w for w in BANNED_WORDS + BANNED_BY_MODE.get(ctx.mode, ()) if w in t]
+def _check_banned(ans: dict, ctx: Context, res: VerifyResult, texts: dict | None = None,
+                   audience: str | None = None) -> None:
+    """audience: 금지어 기준 (문서는 읽는 사람 기준. 주민 안내문은 관리자 모드에서 만들어도 시민 기준)."""
+    texts = texts if texts is not None else {f: ans[f] for f in DISPLAY_FIELDS}
+    tool_names = set(MODE_TOOLS['admin']) | set(AGENT_SCHEMAS) | {SUBMIT, SUBMIT_DOC}
+    for f, t in texts.items():
+        found = [w for w in BANNED_WORDS + BANNED_BY_MODE.get(audience or ctx.mode, ()) if w in t]
         found += [n for n in tool_names if n in t]
         found += _CELL_ID.findall(t) + _REF.findall(t)
         found += [w for w in _IDENT.findall(t) if w not in tool_names]
@@ -237,19 +253,20 @@ def _check_banned(ans: dict, ctx: Context, res: VerifyResult) -> None:
             res.errors.append(f'화면에 쓰면 안 되는 표현: "{w}" ({f}). 내부 이름·용어 대신 쉬운 말로 쓴다')
 
 
-def _check_caveats(ans: dict, ctx: Context, res: VerifyResult) -> None:
+def _check_caveats(ans: dict, ctx: Context, res: VerifyResult, rules_mode: str | None = None,
+                   need_caution: bool = True) -> None:
     known = set(ctx.caveat_ids.values())
     for cid in ans['caveats_reflected']:
         if cid not in known:
             res.errors.append(f'없는 caveat 번호: {cid}')
     tools = {s.tool for s in ctx.store.items.values()}
     regions = {s.data.get('region') for s in ctx.store.items.values()}
-    for cond, phrase, desc in REQUIRED_CAVEATS.get(ctx.mode, ()):
+    for cond, phrase, desc in REQUIRED_CAVEATS.get(rules_mode or ctx.mode, ()):
         if cond == 'always' or cond in tools or cond in regions:
             for text, cid in ctx.caveat_ids.items():
                 if phrase in text and cid not in ans['caveats_reflected']:
                     res.errors.append(f'반드시 반영할 한계가 빠짐: {cid} ({desc})')
-    if not ans['caution'].strip():
+    if need_caution and not ans['caution'].strip():
         res.errors.append('확인할 점(caution)이 비어 있음')
 
 
@@ -302,6 +319,41 @@ def verify(ans: dict, ctx: Context) -> VerifyResult:
     _check_caveats(ans, ctx, res)
     _check_length(ans, res)
     _check_map(ans, ctx, res)
+    res.grade, res.grade_basis = grade(ctx.store, res.passed)
+    res.grade_note = GRADE_NOTE[res.grade]
+    return res
+
+
+def _check_document(doc: dict, res: VerifyResult) -> None:
+    spec = DOC_SPECS[doc['doc_type']]
+    headings = [s['heading'].strip() for s in doc['sections']]
+    if headings != list(spec['sections']):
+        res.errors.append(f"{spec['name']} 목차가 다름: {headings} → 정해진 목차 {list(spec['sections'])} 를 순서대로 쓴다")
+    for s in doc['sections']:
+        body = s['body'].strip()
+        if len(body) < spec['min_section']:
+            res.errors.append(f"'{s['heading']}' 본문이 너무 짧음: {len(body)}자 (최소 {spec['min_section']}자)")
+        limit = spec.get('max_chars', {}).get(s['heading'].strip())
+        if limit and len(body) > limit:
+            res.errors.append(f"'{s['heading']}'은 {limit}자 이내로 쓴다: 지금 {len(body)}자")
+        for sent in re.split(r'(?<=[.!?])\s+|\n+', body):
+            if len(sent.strip()) > MAX_SENTENCE_CHARS:
+                res.warnings.append(f"긴 문장 ({len(sent.strip())}자, {s['heading']}): \"{sent.strip()[:30]}…\" "
+                                    '→ 정보는 그대로 두고 짧은 문장 여러 개로 나눈다')
+
+
+def verify_document(doc: dict, ctx: Context) -> VerifyResult:
+    """문서 검증: 숫자 출처·금지 표현·필수 한계는 답변과 같게, 목차·분량은 문서 규격대로."""
+    spec = DOC_SPECS[doc['doc_type']]
+    texts = doc_fields(doc)
+    for p in PLACEHOLDERS:                                       # 빈칸 표시는 검사하지 않는다
+        texts = {f: t.replace(p, ' ') for f, t in texts.items()}
+    res = VerifyResult()
+    _check_numbers(doc, ctx, res, texts, spec['params_in'])
+    _check_banned(doc, ctx, res, texts, audience=spec['audience'])
+    _check_caveats(doc, ctx, res, rules_mode=spec['audience'], need_caution=False)
+    _check_document(doc, res)
+    _check_map(doc, ctx, res)
     res.grade, res.grade_basis = grade(ctx.store, res.passed)
     res.grade_note = GRADE_NOTE[res.grade]
     return res

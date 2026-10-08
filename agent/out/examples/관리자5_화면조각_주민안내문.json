@@ -1,0 +1,224 @@
+{
+ "mode": "admin",
+ "question": "춘천 외곽 이동형 건강상담을 알리는 주민 안내문 만들어 줘",
+ "region": "춘천",
+ "display": {
+  "headline": "주민 안내문 초안을 만들었습니다: 찾아가는 건강상담 안내",
+  "details": [],
+  "caution": "",
+  "document": {
+   "type": "notice",
+   "type_name": "주민 안내문",
+   "title": "찾아가는 건강상담 안내",
+   "sections": [
+    {
+     "heading": "방송 문구",
+     "body": "주민 여러분께 알려 드립니다. 춘천시에서 찾아가는 건강상담을 시작합니다. 상담 차량이 사북면, 서면, 신북읍을 찾아갑니다. 날짜는 [날짜]입니다. 시간은 [시간]입니다. 장소는 [장소]입니다. 혈압을 재고 건강 이야기를 나눌 수 있어요. 가까운 이웃과 함께 오셔도 좋습니다. 자세한 문의는 [연락처]로 해 주세요. 감사합니다."
+    },
+    {
+     "heading": "문자 문구",
+     "body": "[춘천시] 찾아가는 건강상담이 [날짜] [시간] [장소]에서 열려요. 편하게 오세요. 문의 [연락처]"
+    },
+    {
+     "heading": "게시물 문구",
+     "body": "찾아가는 건강상담이 생겨요\n\n가까운 시설이 멀어 다니기 힘드셨다면, 이제 동네 가까이에서 건강 이야기를 나눠 보세요.\n\n• 날짜: [날짜]\n• 시간: [시간]\n• 장소: [장소]\n• 문의: [연락처]\n\n이런 것을 해요\n• 건강 상담\n• 가벼운 건강 확인\n• 이웃과 함께하는 이야기 시간\n\n미리 신청하지 않아도 괜찮아요. 이웃과 함께 오셔도 좋아요. 운영 장소와 시간은 상황에 따라 바뀔 수 있으니, 자세한 내용은 위 연락처로 문의해 주세요."
+    }
+   ],
+   "markdown": "# 찾아가는 건강상담 안내\n\n*주민 안내문 초안 · 담당자 검토 후 사용*\n\n## 방송 문구\n\n주민 여러분께 알려 드립니다. 춘천시에서 찾아가는 건강상담을 시작합니다. 상담 차량이 사북면, 서면, 신북읍을 찾아갑니다. 날짜는 [날짜]입니다. 시간은 [시간]입니다. 장소는 [장소]입니다. 혈압을 재고 건강 이야기를 나눌 수 있어요. 가까운 이웃과 함께 오셔도 좋습니다. 자세한 문의는 [연락처]로 해 주세요. 감사합니다.\n\n## 문자 문구\n\n[춘천시] 찾아가는 건강상담이 [날짜] [시간] [장소]에서 열려요. 편하게 오세요. 문의 [연락처]\n\n## 게시물 문구\n\n찾아가는 건강상담이 생겨요\n\n가까운 시설이 멀어 다니기 힘드셨다면, 이제 동네 가까이에서 건강 이야기를 나눠 보세요.\n\n• 날짜: [날짜]\n• 시간: [시간]\n• 장소: [장소]\n• 문의: [연락처]\n\n이런 것을 해요\n• 건강 상담\n• 가벼운 건강 확인\n• 이웃과 함께하는 이야기 시간\n\n미리 신청하지 않아도 괜찮아요. 이웃과 함께 오셔도 좋아요. 운영 장소와 시간은 상황에 따라 바뀔 수 있으니, 자세한 내용은 위 연락처로 문의해 주세요.\n"
+  },
+  "confidence": {
+   "label": "보통",
+   "note": "방문 전에 현장 확인을 권합니다."
+  },
+  "map": {
+   "layer": "sites",
+   "ref": "r2",
+   "points": [
+    {
+     "id": "4041_8020",
+     "lat": 38.0461,
+     "lon": 127.6182,
+     "emd_name": "사북면",
+     "covers": 10,
+     "highlight": true
+    },
+    {
+     "id": "4068_7971",
+     "lat": 37.9356,
+     "lon": 127.6949,
+     "emd_name": "서면",
+     "covers": 3,
+     "highlight": true
+    },
+    {
+     "id": "4092_7980",
+     "lat": 37.9558,
+     "lon": 127.7632,
+     "emd_name": "신북읍",
+     "covers": 3,
+     "highlight": true
+    }
+   ],
+   "geojson": null
+  },
+  "chart": null
+ },
+ "internal": {
+  "verification": {
+   "passed": true,
+   "attempts": 1,
+   "errors": [],
+   "warnings": []
+  },
+  "confidence_basis": {
+   "ref": "r4",
+   "threshold": 0.7,
+   "min_jaccard": 0.0,
+   "sensitive": [
+    {
+     "param": "housing_thr",
+     "value": 200,
+     "urgent_jaccard": 0.0
+    },
+    {
+     "param": "housing_thr",
+     "value": 100,
+     "urgent_jaccard": 0.0294
+    },
+    {
+     "param": "housing_thr",
+     "value": 0,
+     "urgent_jaccard": 0.2333
+    },
+    {
+     "param": "far_social_m",
+     "value": 1000,
+     "urgent_jaccard": 0.3091
+    },
+    {
+     "param": "persist_min",
+     "value": 6,
+     "urgent_jaccard": 0.3273
+    },
+    {
+     "param": "far_social_m",
+     "value": 300,
+     "urgent_jaccard": 0.5392
+    },
+    {
+     "param": "persist_min",
+     "value": 5,
+     "urgent_jaccard": 0.6182
+    },
+    {
+     "param": "residential_filter",
+     "value": false,
+     "urgent_jaccard": 0.6875
+    }
+   ]
+  },
+  "citations": [],
+  "caveats": [
+   {
+    "id": "c1",
+    "text": "통신 유동인구는 머무는 사람 기준이며 거주자와 같지 않다. 거주 여부는 현장 확인이 필요하다.",
+    "reflected": true
+   },
+   {
+    "id": "c2",
+    "text": "개인이 아니라 250m 칸 단위 집계 결과다.",
+    "reflected": false
+   },
+   {
+    "id": "c3",
+    "text": "거리는 칸 중심에서 시설까지 직선거리다. 실제 이동 시간·경사·교통편은 반영하지 않는다.",
+    "reflected": false
+   },
+   {
+    "id": "c4",
+    "text": "거주 칸 = 팀 기준(야간 비중 + SGIS 1km 주택 수) 통과 칸 중 GIS 주거·용도미상 건물이 있는 칸.",
+    "reflected": false
+   },
+   {
+    "id": "c5",
+    "text": "SGIS 값(주택 수·고령·1인가구)은 1km 격자 단위라 같은 1km 안의 250m 칸이 같은 값을 공유한다. 춘천은 신뢰 격자가 적다.",
+    "reflected": false
+   },
+   {
+    "id": "c6",
+    "text": "수요 가중치는 60대 이상 유동인구(체류)이며 거주 고령 인구가 아니다.",
+    "reflected": false
+   },
+   {
+    "id": "c7",
+    "text": "커버는 반경 안 도달 가능성만 뜻하며 고립 감소 효과를 뜻하지 않는다.",
+    "reflected": true
+   },
+   {
+    "id": "c8",
+    "text": "카드·인구는 시군구 단위라 칸에 내리지 않고 해석 맥락으로만 쓴다.",
+    "reflected": false
+   },
+   {
+    "id": "c9",
+    "text": "긴급방문형·연계형은 활동 위축 신호가 있는 칸(정책 우선 대상)이고, 예방인프라형·관찰형은 위축 신호가 없는 일반 거주 칸의 자원 구조 지도다. 두 층을 같은 무게의 위험 숫자로 합쳐 말하지 않는다.",
+    "reflected": false
+   }
+  ],
+  "tool_trace": [
+   {
+    "ref": "r1",
+    "tool": "find_candidates",
+    "args": {
+     "region": "춘천"
+    }
+   },
+   {
+    "ref": "r2",
+    "tool": "simulate_placement",
+    "args": {
+     "region": "춘천",
+     "k": 3
+    }
+   },
+   {
+    "ref": "r3",
+    "tool": "region_context",
+    "args": {
+     "region": "춘천"
+    }
+   },
+   {
+    "ref": "r4",
+    "tool": "robustness",
+    "args": {
+     "region": "춘천",
+     "auto": "신뢰도 계산용 (코드가 호출)"
+    }
+   }
+  ],
+  "run": {
+   "model": "claude-sonnet-5-5",
+   "effort": "medium",
+   "end": "passed",
+   "passed": true,
+   "calls": [
+    {
+     "stop_reason": "tool_use",
+     "input_tokens": 4,
+     "output_tokens": 280,
+     "cache_read_input_tokens": 0,
+     "cache_creation_input_tokens": 8763
+    },
+    {
+     "stop_reason": "tool_use",
+     "input_tokens": 2,
+     "output_tokens": 1000,
+     "cache_read_input_tokens": 8763,
+     "cache_creation_input_tokens": 2093
+    }
+   ],
+   "rejected": []
+  }
+ }
+}

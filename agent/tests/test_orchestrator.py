@@ -90,7 +90,7 @@ def test_request_settings():
     assert req['model'] == 'claude-sonnet-5-5' and req['output_config'] == {'effort': 'medium'}
     assert req['cache_control'] == {'type': 'ephemeral'} and 'tool_choice' not in req
     assert req['system'] == build_system('admin')
-    assert [t['name'] for t in req['tools']][-1] == 'submit_answer'
+    assert [t['name'] for t in req['tools']][-2:] == ['submit_answer', 'submit_document']
 
 
 # ---------------------------------------------------------------- 막는 동작
@@ -158,7 +158,8 @@ def test_save_run(tmp_path, monkeypatch):
 # ---------------------------------------------------------------- 프롬프트
 def test_prompt_has_no_engine_numbers():
     """프롬프트 속 숫자는 에이전트 정책값(분량·문단 수)뿐이다."""
-    allowed = {str(TARGET_DETAILS[0]), f'{TARGET_DETAILS[1]:,}', str(MIN_PARAGRAPHS), '1', '2'}   # c1, c2 예시
+    from agent.prompts import SMS_MAX
+    allowed = {str(TARGET_DETAILS[0]), f'{TARGET_DETAILS[1]:,}', str(MIN_PARAGRAPHS), str(SMS_MAX), '1', '2'}   # c1, c2 예시
     for mode in ('admin', 'citizen'):
         nums = set(re.findall(r'\d+(?:,\d{3})*', build_system(mode)))
         assert nums <= allowed, nums - allowed

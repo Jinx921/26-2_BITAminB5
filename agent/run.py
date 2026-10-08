@@ -29,6 +29,10 @@ def _print_display(d: dict) -> None:
     c = d['confidence']
     if c:
         print(f"\n[신뢰도] {c['label']}" + (f"  {c['note']}" if c['note'] else ''))
+    doc = d.get('document')
+    if doc:
+        print('\n' + '-' * 20 + f" 문서: {doc['type_name']} " + '-' * 20)
+        print(doc['markdown'])
     ch = d.get('chart')
     if ch:
         print(f"\n[차트] {ch['title']}")
@@ -84,7 +88,8 @@ def main() -> None:
     seconds = time.time() - t0
     _print_display(screen['display'])
     _print_internal(screen['internal'], seconds)
-    print('\n저장:', save_run(screen, turn) / 'screen.json')
+    run = save_run(screen, turn)
+    print('\n저장:', run / 'screen.json', *(['/ 문서:', run / 'document.md'] if screen['display'].get('document') else []))
 
 
 if __name__ == '__main__':

@@ -132,3 +132,19 @@ def test_highlight_only_removed_facility():
     ctx = Context(st, {}, {}, '', 'admin')
     pts = _map(ctx, 'r1', f"{REMOVED['name']}이 문을 닫으면")['points']
     assert len(pts) > 1 and [p['id'] for p in pts if p['highlight']] == [REMOVED['fac_id']]
+
+
+def test_k_counts_next_to_cited_curve():
+    """거점 수별 비율을 인용했으면 '1곳·3곳' 같은 거점 수는 출처 없이 써도 된다 (인용 안 한 거점 수는 검사)."""
+    ctx, _ = _ctx(('simulate_placement', {'region': '춘천', 'k': 3, 'radius_m': 3000}))
+    ev = ctx.citable['r1']
+    p1, p3 = round(ev['covered_senior_share_k1'] * 100, 1), round(ev['covered_senior_share_k3'] * 100, 1)
+    from agent.verifier import VerifyResult, _check_numbers
+    cit = [{'text': f'{p1}%', 'op': 'percent', 'sources': [{'ref': 'r1', 'metric': 'covered_senior_share_k1'}]},
+           {'text': f'{p3}%', 'op': 'percent', 'sources': [{'ref': 'r1', 'metric': 'covered_senior_share_k3'}]}]
+    ans = {'headline': '', 'caution': '', 'citations': cit, 'details': f'1곳이면 {p1}%, 3곳이면 {p3}%입니다.'}
+    res = VerifyResult(); _check_numbers(ans, ctx, res)
+    assert res.errors == []
+    ans['details'] += ' 5곳이면 더 넓어집니다.'                                     # k5 는 인용하지 않음
+    res = VerifyResult(); _check_numbers(ans, ctx, res)
+    assert any('출처 없는 숫자: "5"' in e for e in res.errors)

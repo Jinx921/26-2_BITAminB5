@@ -208,8 +208,14 @@ def _check_numbers(ans: dict, ctx: Context, res: VerifyResult, texts: dict | Non
         text = _strip_names(raw, names)                         # 이름 속 숫자는 출처가 필요 없다
         for nu in _numbers(text):
             where.setdefault(nu, set()).add(f)
+    # 거점 수별 지표(…_k3)를 인용했다면, 그 거점 수 표기("3곳")는 지표 이름의 일부로 본다
+    k_cited = {m.group(1) for c in ans['citations'] for src in c['sources']
+               if (m := re.search(r'_k(\d+)$', src['metric']))}
+    k_label = re.compile(r'(?<!\d)(' + '|'.join(sorted(k_cited, key=len, reverse=True)) + r')\s*(?:곳|개)') if k_cited else None
     for f, raw in texts.items():
         text = _strip_names(raw, names)
+        if k_label:
+            text = k_label.sub(' ', text)
         for num, unit in _numbers(text):
             if num in allowed:
                 continue
@@ -391,7 +397,7 @@ def build_context(engine, region: str, question: str = '',
 
 
 if __name__ == '__main__':
-    # 예: python -m agent.verifier agent/out/examples/3_Sonnet답변_춘천_검증전.json --engine live
+    # 예: python -m agent.verifier agent/out/examples/4_검증_사례/실패한_답변.json --engine live
     # 답변 JSON(submit_answer 입력)을 시나리오 도구 세 개 결과에 대고 검증한다 (도구 호출 순서 r1, r2, r3 가정)
     import argparse
     import json

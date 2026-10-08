@@ -178,7 +178,7 @@ def build_screen(question: str, mode: str, answer: dict | None, check: VerifyRes
 
 
 if __name__ == '__main__':
-    # 예: python -m agent.screen agent/out/examples/3_Sonnet답변_춘천_검증전.json --engine live
+    # 예: python -m agent.screen agent/out/examples/4_검증_사례/실패한_답변.json --engine live
     import argparse
     import json
     from pathlib import Path

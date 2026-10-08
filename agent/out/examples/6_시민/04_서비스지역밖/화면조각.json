@@ -1,0 +1,34 @@
+{
+ "mode": "citizen",
+ "question": "어머니 댁 근처에 경로당 있어요?",
+ "region": null,
+ "display": {
+  "headline": "지금은 서울 강남구와 춘천시에서만 안내하고 있어요. 이 두 지역 안의 동네를 골라 다시 찾아봐 주세요.",
+  "details": [],
+  "caution": "",
+  "confidence": null,
+  "map": null,
+  "chart": null,
+  "document": null
+ },
+ "internal": {
+  "verification": {
+   "passed": false,
+   "attempts": 0,
+   "errors": [],
+   "warnings": []
+  },
+  "confidence_basis": {},
+  "citations": [],
+  "caveats": [],
+  "tool_trace": [],
+  "run": {
+   "model": "claude-sonnet-5-5",
+   "effort": "medium",
+   "end": "out_of_area",
+   "passed": false,
+   "calls": [],
+   "rejected": []
+  }
+ }
+}

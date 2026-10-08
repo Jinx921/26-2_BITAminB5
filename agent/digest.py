@@ -113,6 +113,7 @@ class Digester:
         return ['고른 거점 위치 (행정동, 덮는 칸이 많은 순): ' + ' > '.join(sites),
                 '배치 후 대상 칸의 유형: ' + ', '.join(res.get('type_after', {})),
                 '거점 수별 덮는 비율은 evidence 의 covered_senior_share_k1~k5 (60대 이상 유동 기준)',
+                '거점 수(예: "1곳에서 5곳으로")를 말할 때도 각 거점 수의 covered_senior_share_kN 을 citations 출처로 적는다',
                 '거점 위치는 행정동 이름으로 말한다']
 
     def _core_facility_change(self, res: dict) -> list[str]:

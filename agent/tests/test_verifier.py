@@ -7,7 +7,7 @@ import pytest
 from agent.agent_tools import SENIOR_HOURS_NOTE
 from agent.digest import Digester
 from agent.engine_client import FIXTURE_DIR, FixtureEngine
-from agent.store import ResultStore, StoredResult
+from agent.store import ResultStore
 from agent.verifier import (GRADE_NOTE, MIN_DETAILS_CHARS, REQUIRED_CAVEATS, Context, feedback, grade, verify)
 
 QUESTION = '춘천에서 어디부터 확인해야 해?'

@@ -1,0 +1,651 @@
+{
+ "mode": "admin",
+ "question": "춘천 결과 믿어도 돼?",
+ "region": "춘천",
+ "display": {
+  "headline": "절반 이상은 비교적 안정적이지만, 일부 동네는 판정이 흔들려서 방문 전에 현장 확인이 꼭 필요합니다.",
+  "details": [
+   "가장 먼저 방문이 필요한 동네(긴급방문형)는 기본 기준으로 55곳입니다.",
+   "이 가운데 21곳은 기준을 조금 바꿔도 결과가 유지됩니다.",
+   "나머지 34곳은 판정이 흔들립니다. 그중 14곳은 꼭 확인해야 하고, 20곳은 확인이 필요합니다.",
+   "확인할 동네가 많은 행정동은 신북읍, 사북면, 서면, 신동면, 남산면 순입니다.",
+   "이 순서대로 현장 확인 계획을 세우시면 좋습니다.",
+   "흔들리는 이유는 크게 세 가지입니다.",
+   "첫째는 낮 외출이 줄어든 기간을 어떻게 보느냐입니다. 현장에서는 낮에 어르신이 밖에 나오시는지 확인해 주세요.",
+   "둘째는 교류시설까지의 거리입니다. 시설까지 실제로 가기 어려운지 살펴봐 주세요.",
+   "셋째는 주택 수 기준입니다. 실제로 사람이 사는 집인지 확인해 주세요.",
+   "이 결과는 휴대전화로 파악한 머무는 사람 기준이라 실제로 사는 사람과 다를 수 있습니다.",
+   "주택·고령 통계는 넓은 구역 단위라 가까운 동네끼리 같은 값을 씁니다. 춘천은 이 통계를 믿고 쓸 수 있는 구역이 적습니다.",
+   "거리는 직선거리라 경사나 교통편은 반영하지 않았습니다.",
+   "그래서 이 결과는 방문 순서를 정하는 참고 자료로 쓰시고, 최종 판단은 현장 확인으로 하시기 바랍니다."
+  ],
+  "caution": "동네 단위 결과이고 개인을 가리키지 않습니다. 방문 전에 실제 거주 여부와 낮 외출 모습을 꼭 확인해 주세요. 현장 확인 결과가 최종입니다.",
+  "document": null,
+  "confidence": {
+   "label": "보통",
+   "note": "방문 전에 현장 확인을 권합니다."
+  },
+  "map": {
+   "layer": "checks",
+   "ref": "r2",
+   "points": [
+    {
+     "id": "4088_7973",
+     "lat": 37.94,
+     "lon": 127.7518,
+     "emd_name": "신북읍",
+     "level": "꼭 확인",
+     "questions": [
+      "가까운 경로당·마을회관까지 실제로 걸어가기 어려운가요?",
+      "낮에 어르신이 밖에 나오시나요?",
+      "실제로 사람이 사는 집이 있나요?"
+     ],
+     "order": 1,
+     "highlight": false
+    },
+    {
+     "id": "4089_7972",
+     "lat": 37.9378,
+     "lon": 127.7546,
+     "emd_name": "신북읍",
+     "level": "꼭 확인",
+     "questions": [
+      "가까운 경로당·마을회관까지 실제로 걸어가기 어려운가요?",
+      "낮에 어르신이 밖에 나오시나요?",
+      "실제로 사람이 사는 집이 있나요?"
+     ],
+     "order": 2,
+     "highlight": false
+    },
+    {
+     "id": "4083_7982",
+     "lat": 37.9603,
+     "lon": 127.7376,
+     "emd_name": "신북읍",
+     "level": "꼭 확인",
+     "questions": [
+      "가까운 경로당·마을회관까지 실제로 걸어가기 어려운가요?",
+      "낮에 어르신이 밖에 나오시나요?"
+     ],
+     "order": 3,
+     "highlight": false
+    },
+    {
+     "id": "4089_7970",
+     "lat": 37.9333,
+     "lon": 127.7546,
+     "emd_name": "신북읍",
+     "level": "꼭 확인",
+     "questions": [
+      "가까운 경로당·마을회관까지 실제로 걸어가기 어려운가요?",
+      "낮에 어르신이 밖에 나오시나요?"
+     ],
+     "order": 4,
+     "highlight": false
+    },
+    {
+     "id": "4089_7982",
+     "lat": 37.9603,
+     "lon": 127.7547,
+     "emd_name": "신북읍",
+     "level": "꼭 확인",
+     "questions": [
+      "가까운 경로당·마을회관까지 실제로 걸어가기 어려운가요?",
+      "낮에 어르신이 밖에 나오시나요?"
+     ],
+     "order": 5,
+     "highlight": false
+    },
+    {
+     "id": "4094_7980",
+     "lat": 37.9558,
+     "lon": 127.7689,
+     "emd_name": "신북읍",
+     "level": "꼭 확인",
+     "questions": [
+      "가까운 경로당·마을회관까지 실제로 걸어가기 어려운가요?",
+      "낮에 어르신이 밖에 나오시나요?"
+     ],
+     "order": 6,
+     "highlight": false
+    },
+    {
+     "id": "4074_7979",
+     "lat": 37.9536,
+     "lon": 127.712,
+     "emd_name": "신북읍",
+     "level": "확인 필요",
+     "questions": [
+      "낮에 어르신이 밖에 나오시나요?"
+     ],
+     "order": 7,
+     "highlight": false
+    },
+    {
+     "id": "4083_7981",
+     "lat": 37.9581,
+     "lon": 127.7376,
+     "emd_name": "신북읍",
+     "level": "확인 필요",
+     "questions": [
+      "가까운 경로당·마을회관까지 실제로 걸어가기 어려운가요?"
+     ],
+     "order": 8,
+     "highlight": false
+    },
+    {
+     "id": "4084_7983",
+     "lat": 37.9626,
+     "lon": 127.7405,
+     "emd_name": "신북읍",
+     "level": "확인 필요",
+     "questions": [
+      "가까운 경로당·마을회관까지 실제로 걸어가기 어려운가요?"
+     ],
+     "order": 9,
+     "highlight": false
+    },
+    {
+     "id": "4094_7979",
+     "lat": 37.9535,
+     "lon": 127.7689,
+     "emd_name": "신북읍",
+     "level": "확인 필요",
+     "questions": [
+      "가까운 경로당·마을회관까지 실제로 걸어가기 어려운가요?"
+     ],
+     "order": 10,
+     "highlight": false
+    },
+    {
+     "id": "4035_7990",
+     "lat": 37.9786,
+     "lon": 127.6011,
+     "emd_name": "사북면",
+     "level": "꼭 확인",
+     "questions": [
+      "낮에 어르신이 밖에 나오시나요?",
+      "실제로 사람이 사는 집이 있나요?"
+     ],
+     "order": 11,
+     "highlight": false
+    },
+    {
+     "id": "4040_8019",
+     "lat": 38.0439,
+     "lon": 127.6154,
+     "emd_name": "사북면",
+     "level": "확인 필요",
+     "questions": [
+      "낮에 어르신이 밖에 나오시나요?"
+     ],
+     "order": 12,
+     "highlight": false
+    },
+    {
+     "id": "4040_8023",
+     "lat": 38.0529,
+     "lon": 127.6154,
+     "emd_name": "사북면",
+     "level": "확인 필요",
+     "questions": [
+      "낮에 어르신이 밖에 나오시나요?"
+     ],
+     "order": 13,
+     "highlight": false
+    },
+    {
+     "id": "4051_8010",
+     "lat": 38.0236,
+     "lon": 127.6467,
+     "emd_name": "사북면",
+     "level": "확인 필요",
+     "questions": [
+      "낮에 어르신이 밖에 나오시나요?"
+     ],
+     "order": 14,
+     "highlight": false
+    },
+    {
+     "id": "4068_7995",
+     "lat": 37.9897,
+     "lon": 127.695,
+     "emd_name": "사북면",
+     "level": "확인 필요",
+     "questions": [
+      "낮에 어르신이 밖에 나오시나요?"
+     ],
+     "order": 15,
+     "highlight": false
+    },
+    {
+     "id": "4083_7999",
+     "lat": 37.9986,
+     "lon": 127.7378,
+     "emd_name": "사북면",
+     "level": "확인 필요",
+     "questions": [
+      "가까운 경로당·마을회관까지 실제로 걸어가기 어려운가요?",
+      "실제로 사람이 사는 집이 있나요?"
+     ],
+     "order": 16,
+     "highlight": false
+    },
+    {
+     "id": "4050_8018",
+     "lat": 38.0416,
+     "lon": 127.6439,
+     "emd_name": "사북면",
+     "level": "확인 필요",
+     "questions": [
+      "실제로 사람이 사는 집이 있나요?"
+     ],
+     "order": 17,
+     "highlight": false
+    },
+    {
+     "id": "4037_7926",
+     "lat": 37.8343,
+     "lon": 127.6065,
+     "emd_name": "서면",
+     "level": "꼭 확인",
+     "questions": [
+      "낮에 어르신이 밖에 나오시나요?",
+      "실제로 사람이 사는 집이 있나요?"
+     ],
+     "order": 18,
+     "highlight": false
+    },
+    {
+     "id": "4038_7927",
+     "lat": 37.8366,
+     "lon": 127.6094,
+     "emd_name": "서면",
+     "level": "꼭 확인",
+     "questions": [
+      "낮에 어르신이 밖에 나오시나요?",
+      "실제로 사람이 사는 집이 있나요?"
+     ],
+     "order": 19,
+     "highlight": false
+    },
+    {
+     "id": "4072_7960",
+     "lat": 37.9108,
+     "lon": 127.7062,
+     "emd_name": "서면",
+     "level": "꼭 확인",
+     "questions": [
+      "낮에 어르신이 밖에 나오시나요?",
+      "실제로 사람이 사는 집이 있나요?"
+     ],
+     "order": 20,
+     "highlight": false
+    },
+    {
+     "id": "4064_7964",
+     "lat": 37.9199,
+     "lon": 127.6835,
+     "emd_name": "서면",
+     "level": "꼭 확인",
+     "questions": [
+      "가까운 경로당·마을회관까지 실제로 걸어가기 어려운가요?",
+      "낮에 어르신이 밖에 나오시나요?"
+     ],
+     "order": 21,
+     "highlight": false
+    },
+    {
+     "id": "4058_7934",
+     "lat": 37.8523,
+     "lon": 127.6662,
+     "emd_name": "서면",
+     "level": "확인 필요",
+     "questions": [
+      "낮에 어르신이 밖에 나오시나요?"
+     ],
+     "order": 22,
+     "highlight": false
+    },
+    {
+     "id": "4068_7972",
+     "lat": 37.9379,
+     "lon": 127.6949,
+     "emd_name": "서면",
+     "level": "확인 필요",
+     "questions": [
+      "낮에 어르신이 밖에 나오시나요?"
+     ],
+     "order": 23,
+     "highlight": false
+    },
+    {
+     "id": "4061_7955",
+     "lat": 37.8996,
+     "lon": 127.6749,
+     "emd_name": "서면",
+     "level": "확인 필요",
+     "questions": [
+      "가까운 경로당·마을회관까지 실제로 걸어가기 어려운가요?"
+     ],
+     "order": 24,
+     "highlight": false
+    },
+    {
+     "id": "4082_7922",
+     "lat": 37.8251,
+     "lon": 127.7344,
+     "emd_name": "신동면",
+     "level": "확인 필요",
+     "questions": [
+      "낮에 어르신이 밖에 나오시나요?"
+     ],
+     "order": 25,
+     "highlight": false
+    },
+    {
+     "id": "4073_7910",
+     "lat": 37.7981,
+     "lon": 127.7087,
+     "emd_name": "신동면",
+     "level": "확인 필요",
+     "questions": [
+      "가까운 경로당·마을회관까지 실제로 걸어가기 어려운가요?"
+     ],
+     "order": 26,
+     "highlight": false
+    },
+    {
+     "id": "4073_7912",
+     "lat": 37.8027,
+     "lon": 127.7087,
+     "emd_name": "신동면",
+     "level": "확인 필요",
+     "questions": [
+      "가까운 경로당·마을회관까지 실제로 걸어가기 어려운가요?"
+     ],
+     "order": 27,
+     "highlight": false
+    },
+    {
+     "id": "4074_7912",
+     "lat": 37.8026,
+     "lon": 127.7116,
+     "emd_name": "신동면",
+     "level": "확인 필요",
+     "questions": [
+      "가까운 경로당·마을회관까지 실제로 걸어가기 어려운가요?"
+     ],
+     "order": 28,
+     "highlight": false
+    },
+    {
+     "id": "4082_7927",
+     "lat": 37.8364,
+     "lon": 127.7344,
+     "emd_name": "신동면",
+     "level": "확인 필요",
+     "questions": [
+      "가까운 경로당·마을회관까지 실제로 걸어가기 어려운가요?"
+     ],
+     "order": 29,
+     "highlight": false
+    },
+    {
+     "id": "4083_7927",
+     "lat": 37.8364,
+     "lon": 127.7372,
+     "emd_name": "신동면",
+     "level": "확인 필요",
+     "questions": [
+      "가까운 경로당·마을회관까지 실제로 걸어가기 어려운가요?"
+     ],
+     "order": 30,
+     "highlight": false
+    },
+    {
+     "id": "4046_7905",
+     "lat": 37.787,
+     "lon": 127.632,
+     "emd_name": "남산면",
+     "level": "꼭 확인",
+     "questions": [
+      "가까운 경로당·마을회관까지 실제로 걸어가기 어려운가요?",
+      "낮에 어르신이 밖에 나오시나요?",
+      "실제로 사람이 사는 집이 있나요?"
+     ],
+     "order": 31,
+     "highlight": false
+    },
+    {
+     "id": "4045_7905",
+     "lat": 37.787,
+     "lon": 127.6292,
+     "emd_name": "남산면",
+     "level": "꼭 확인",
+     "questions": [
+      "낮에 어르신이 밖에 나오시나요?",
+      "실제로 사람이 사는 집이 있나요?"
+     ],
+     "order": 32,
+     "highlight": false
+    },
+    {
+     "id": "4045_7906",
+     "lat": 37.7892,
+     "lon": 127.6292,
+     "emd_name": "남산면",
+     "level": "꼭 확인",
+     "questions": [
+      "가까운 경로당·마을회관까지 실제로 걸어가기 어려운가요?",
+      "실제로 사람이 사는 집이 있나요?"
+     ],
+     "order": 33,
+     "highlight": false
+    },
+    {
+     "id": "4045_7904",
+     "lat": 37.7847,
+     "lon": 127.6292,
+     "emd_name": "남산면",
+     "level": "확인 필요",
+     "questions": [
+      "실제로 사람이 사는 집이 있나요?"
+     ],
+     "order": 34,
+     "highlight": false
+    }
+   ],
+   "geojson": null
+  },
+  "chart": null
+ },
+ "internal": {
+  "verification": {
+   "passed": true,
+   "attempts": 1,
+   "errors": [],
+   "warnings": []
+  },
+  "confidence_basis": {
+   "ref": "r1",
+   "threshold": 0.7,
+   "min_jaccard": 0.0,
+   "sensitive": [
+    {
+     "param": "housing_thr",
+     "value": 200,
+     "urgent_jaccard": 0.0
+    },
+    {
+     "param": "housing_thr",
+     "value": 100,
+     "urgent_jaccard": 0.0294
+    },
+    {
+     "param": "housing_thr",
+     "value": 0,
+     "urgent_jaccard": 0.2333
+    },
+    {
+     "param": "far_social_m",
+     "value": 1000,
+     "urgent_jaccard": 0.3091
+    },
+    {
+     "param": "persist_min",
+     "value": 6,
+     "urgent_jaccard": 0.3273
+    },
+    {
+     "param": "far_social_m",
+     "value": 300,
+     "urgent_jaccard": 0.5392
+    },
+    {
+     "param": "persist_min",
+     "value": 5,
+     "urgent_jaccard": 0.6182
+    },
+    {
+     "param": "residential_filter",
+     "value": false,
+     "urgent_jaccard": 0.6875
+    }
+   ]
+  },
+  "citations": [
+   {
+    "text": "55",
+    "op": "value",
+    "sources": [
+     {
+      "ref": "r2",
+      "metric": "n_default_urgent"
+     }
+    ]
+   },
+   {
+    "text": "21",
+    "op": "value",
+    "sources": [
+     {
+      "ref": "r2",
+      "metric": "n_stable"
+     }
+    ]
+   },
+   {
+    "text": "34",
+    "op": "value",
+    "sources": [
+     {
+      "ref": "r2",
+      "metric": "n_check"
+     }
+    ]
+   },
+   {
+    "text": "14",
+    "op": "value",
+    "sources": [
+     {
+      "ref": "r2",
+      "metric": "n_must_check"
+     }
+    ]
+   },
+   {
+    "text": "20",
+    "op": "value",
+    "sources": [
+     {
+      "ref": "r2",
+      "metric": "n_need_check"
+     }
+    ]
+   }
+  ],
+  "caveats": [
+   {
+    "id": "c1",
+    "text": "통신 유동인구는 머무는 사람 기준이며 거주자와 같지 않다. 거주 여부는 현장 확인이 필요하다.",
+    "reflected": true
+   },
+   {
+    "id": "c2",
+    "text": "개인이 아니라 250m 칸 단위 집계 결과다.",
+    "reflected": true
+   },
+   {
+    "id": "c3",
+    "text": "거리는 칸 중심에서 시설까지 직선거리다. 실제 이동 시간·경사·교통편은 반영하지 않는다.",
+    "reflected": true
+   },
+   {
+    "id": "c4",
+    "text": "후보는 기준값마다 엔진이 다시 계산한다 (사랑 로직 이식, 군집은 고정).",
+    "reflected": false
+   },
+   {
+    "id": "c5",
+    "text": "거주 칸 = 팀 기준(야간 비중 + SGIS 1km 주택 수) 통과 칸 중 GIS 주거·용도미상 건물이 있는 칸.",
+    "reflected": false
+   },
+   {
+    "id": "c6",
+    "text": "SGIS 값(주택 수·고령·1인가구)은 1km 격자 단위라 같은 1km 안의 250m 칸이 같은 값을 공유한다. 춘천은 신뢰 격자가 적다.",
+    "reflected": true
+   },
+   {
+    "id": "c7",
+    "text": "긴급방문형·연계형은 활동 위축 신호가 있는 칸(정책 우선 대상)이고, 예방인프라형·관찰형은 위축 신호가 없는 일반 거주 칸의 자원 구조 지도다. 두 층을 같은 무게의 위험 숫자로 합쳐 말하지 않는다.",
+    "reflected": false
+   },
+   {
+    "id": "c8",
+    "text": "확인 수준은 기준을 현실적인 범위에서 바꿔 다시 계산했을 때 판정이 유지되는 정도다. 현장 확인 결과가 최종이다.",
+    "reflected": true
+   }
+  ],
+  "tool_trace": [
+   {
+    "ref": "r1",
+    "tool": "robustness",
+    "args": {
+     "region": "춘천"
+    }
+   },
+   {
+    "ref": "r2",
+    "tool": "field_check",
+    "args": {
+     "region": "춘천"
+    }
+   }
+  ],
+  "run": {
+   "model": "claude-sonnet-5-5",
+   "effort": "medium",
+   "end": "passed",
+   "passed": true,
+   "calls": [
+    {
+     "stop_reason": "tool_use",
+     "input_tokens": 4,
+     "output_tokens": 95,
+     "cache_read_input_tokens": 0,
+     "cache_creation_input_tokens": 9292
+    },
+    {
+     "stop_reason": "tool_use",
+     "input_tokens": 2,
+     "output_tokens": 1121,
+     "cache_read_input_tokens": 9292,
+     "cache_creation_input_tokens": 1916
+    }
+   ],
+   "rejected": []
+  }
+ }
+}

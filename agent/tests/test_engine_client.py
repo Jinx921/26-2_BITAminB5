@@ -81,3 +81,16 @@ def test_store_refs_and_save(fixture_engine, tmp_path):
     run = st.save(tmp_path / 'run')
     index = json.loads((run / 'index.json').read_text(encoding='utf-8'))
     assert [i['file'] for i in index] == ['r1_find_candidates.json', 'r2_classify.json', 'r3_robustness.json']
+
+
+def test_store_save_replaces_previous_run(fixture_engine, tmp_path):
+    """같은 폴더에 다시 저장하면 이전 실행 결과는 지워진다 (도구 수가 줄어도 섞이지 않음)."""
+    first = ResultStore()
+    for t in SCENARIO:
+        first.put(t, {'region': '춘천'}, fixture_engine.call(t, {'region': '춘천'}))
+    first.save(tmp_path)
+    (tmp_path / 'memo.md').write_text('다른 파일', encoding='utf-8')
+    second = ResultStore()
+    second.put('classify', {'region': '강남'}, fixture_engine.call('classify', {'region': '강남'}))
+    second.save(tmp_path)
+    assert sorted(p.name for p in tmp_path.iterdir()) == ['index.json', 'memo.md', 'r1_classify.json']

@@ -7,7 +7,6 @@ from __future__ import annotations
 
 import json
 from dataclasses import dataclass, field
-from datetime import datetime
 from pathlib import Path
 
 RUNS_DIR = Path(__file__).resolve().parent / 'out' / 'runs'
@@ -37,9 +36,13 @@ class ResultStore:
         return [s for s in self.items.values() if s.tool == tool]
 
     def save(self, run_dir: Path | None = None) -> Path:
-        """agent/out/runs/<시각>/ 에 결과별 JSON 과 목록(index.json)을 쓴다."""
-        run_dir = Path(run_dir or RUNS_DIR / datetime.now().strftime('%Y%m%d_%H%M%S'))
+        """agent/out/runs/ 에 결과별 JSON 과 목록(index.json)을 쓴다.
+        이전 실행 결과(r*_*, index.json)는 지우고 쓴다 (이번 실행 결과와 섞이지 않게)."""
+        run_dir = Path(run_dir or RUNS_DIR)
         run_dir.mkdir(parents=True, exist_ok=True)
+        for old in [*run_dir.glob('r[0-9]*_*'), run_dir / 'index.json']:
+            if old.is_file():
+                old.unlink()
         index = []
         for s in self.items.values():
             name = f'{s.ref}_{s.tool}.json'

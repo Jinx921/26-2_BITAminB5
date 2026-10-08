@@ -43,11 +43,27 @@ MAP_ROWS = {
     'lookup_resources': ('facilities', 'within_radius',
                          {'id': 'fac_id', 'lat': 'lat', 'lon': 'lon', 'name': 'name', 'kind': 'kind', 'dist_m': 'dist_m'}),
 }
+# 지도 점을 강조하는 기준: 화면 문장에 이 필드 값(시설 이름 / 행정동 이름)이 나오면 강조
+HIGHLIGHT_BY = {'facilities': 'name', 'types': 'emd_name', 'candidates': 'emd_name', 'sites': 'emd_name'}
+# 어느 문장을 볼지: 관리자는 결론에 "어디부터"가 있고 설명에는 행정동 순위 전체가 나오므로 결론만 본다.
+# 시민은 설명에서 소개한 시설까지 강조한다
+HIGHLIGHT_FROM = {'admin': ('headline',), 'citizen': ('headline', 'details', 'caution')}
 # map_ref 가 없거나 지도로 그릴 수 없을 때 고르는 순서
 MAP_FALLBACK_ORDER = ('classify', 'find_candidates', 'simulate_placement', 'lookup_resources')
 
 
-def _map(ctx: Context, map_ref: str | None) -> dict | None:
+def _mentioned(values: set[str], text: str) -> set[str]:
+    """문장에 나온 이름. 긴 이름부터 찾아 지워서, 짧은 이름이 긴 이름의 일부로 잘못 잡히지 않게 한다
+    (예: '…소양동10'이 나왔을 때 '…소양동1'은 강조하지 않음)."""
+    found = set()
+    for v in sorted(values, key=len, reverse=True):
+        if v and v in text:
+            found.add(v)
+            text = text.replace(v, ' ')
+    return found
+
+
+def _map(ctx: Context, map_ref: str | None, text: str = '') -> dict | None:
     st = ctx.store
     ref = map_ref if map_ref in st.items and st.get(map_ref).tool in MAP_ROWS else None
     if ref is None:
@@ -61,9 +77,12 @@ def _map(ctx: Context, map_ref: str | None) -> dict | None:
     s = st.get(ref)
     layer, rows_key, fields = MAP_ROWS[s.tool]
     rows = s.data['result'].get(rows_key, [])
-    return {'layer': layer, 'ref': ref,
-            'points': [{k: r.get(src) for k, src in fields.items()} for r in rows],
-            'geojson': s.data.get('geojson')}
+    points = [{k: r.get(src) for k, src in fields.items()} for r in rows]
+    key = HIGHLIGHT_BY.get(layer)
+    hit = _mentioned({p[key] for p in points if p.get(key)}, text) if key else set()
+    for p in points:
+        p['highlight'] = bool(key) and p.get(key) in hit          # 답변에서 언급한 곳 (프론트가 강조)
+    return {'layer': layer, 'ref': ref, 'points': points, 'geojson': s.data.get('geojson')}
 
 
 def _region(ctx: Context) -> str | None:
@@ -99,7 +118,9 @@ def build_screen(question: str, mode: str, answer: dict | None, check: VerifyRes
         display = {'headline': FALLBACK_TEXT[mode], 'details': [], 'caution': ''}
     # 신뢰도는 분석 결과가 기준에 따라 흔들리는 정도라 관리자 화면에만 보인다
     display['confidence'] = {'label': grade, 'note': note} if mode == 'admin' else None
-    display['map'] = _map(ctx, answer['map_ref'] if answer else None)
+    parts = {'headline': [display['headline']], 'details': display['details'], 'caution': [display['caution']]}
+    shown = ' '.join(t for f in HIGHLIGHT_FROM[mode] for t in parts[f]) if ok else ''
+    display['map'] = _map(ctx, answer['map_ref'] if answer else None, shown)
 
     reflected = set(answer['caveats_reflected']) if answer else set()
     internal = {

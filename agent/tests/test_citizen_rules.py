@@ -122,3 +122,11 @@ def test_shortened_address_and_labels():
     assert r.passed, r.errors
     a['details'] += '\n근처에 경로당이 7곳 더 있어요.'                       # 이름과 상관없는 숫자는 그대로 검사
     assert any('출처 없는 숫자: "7"' in e for e in verify(a, ctx).errors)
+
+
+def test_citizen_highlight_mentioned_facility():
+    ctx, _ = _ctx()
+    a = _good(ctx)
+    pts = build_screen(ctx.question, 'citizen', a, verify(a, ctx), ctx)['display']['map']['points']
+    hall = next(r['name'] for r in LOOKUP_EXAMPLE['result']['nearest_by_kind'] if r['kind'] == '경로당')
+    assert [p['name'] for p in pts if p['highlight']] == [hall]

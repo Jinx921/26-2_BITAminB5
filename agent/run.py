@@ -34,6 +34,9 @@ def _print_display(d: dict) -> None:
         kinds = Counter(p.get('type') for p in m['points'] if p.get('type'))
         print(f"[지도] {m['layer']} 점 {len(m['points'])}개" +
               (f" ({', '.join(f'{t} {n}' for t, n in kinds.items())})" if kinds else ''))
+        hl = [p.get('name') or p.get('emd_name') for p in m['points'] if p.get('highlight')]
+        if hl:
+            print(f"       강조 {len(hl)}개: {', '.join(dict.fromkeys(hl))}")
 
 
 def _print_internal(i: dict, seconds: float) -> None:

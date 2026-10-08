@@ -33,7 +33,7 @@ def test_map_points_from_classify():
     table = ctx.store.get('r2').data['result']['table']
     assert m['layer'] == 'types' and m['ref'] == 'r2' and len(m['points']) == len(table)
     p = m['points'][0]
-    assert set(p) == {'id', 'lat', 'lon', 'emd_name', 'type', 'gap'} and p['lat'] and p['lon']
+    assert set(p) == {'id', 'lat', 'lon', 'emd_name', 'type', 'gap', 'highlight'} and p['lat'] and p['lon']
 
 
 def test_map_ref_to_candidates():
@@ -79,3 +79,27 @@ def test_caveats_reflected_flags():
     cav = _screen(ans, ctx)['internal']['caveats']
     assert {c['id'] for c in cav if c['reflected']} == set(ans['caveats_reflected'])
     assert len(cav) == len(ctx.caveat_ids)
+
+
+def test_highlight_mentioned_emd_admin():
+    ctx = _ctx()
+    ans = _good(ctx)
+    pts = _screen(ans, ctx)['display']['map']['points']
+    named = {p['emd_name'] for p in pts if p['emd_name'] in ans['headline']}
+    assert named and all(p['highlight'] == (p['emd_name'] in named) for p in pts)
+    in_details_only = {p['emd_name'] for p in pts if p['emd_name'] in ans['details']} - named
+    assert not any(p['highlight'] for p in pts if p['emd_name'] in in_details_only)   # 설명에만 나온 행정동은 강조 안 함
+
+
+def test_highlight_off_when_failed():
+    ctx = _ctx()
+    ans = _good(ctx)
+    ans['details'] += '\n참고: 칸 기준입니다.'
+    assert not any(p['highlight'] for p in _screen(ans, ctx)['display']['map']['points'])
+
+
+def test_mentioned_prefers_longer_names():
+    from agent.screen import _mentioned
+    names = {'야외운동기구 소양동1', '야외운동기구 소양동10', '중앙 경로당'}
+    assert _mentioned(names, '야외운동기구 소양동10이 가까워요.') == {'야외운동기구 소양동10'}
+    assert _mentioned(names, '야외운동기구 소양동1, 중앙 경로당') == {'야외운동기구 소양동1', '중앙 경로당'}

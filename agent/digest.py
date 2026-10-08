@@ -89,10 +89,8 @@ class Digester:
         for t in ('긴급방문형', '연계형'):
             counts = {e: v.get(t, 0) for e, v in res['by_emd_withdrawn'].items()}
             lines.append(f'{t}이 많은 행정동 순: ' + ' > '.join(_ranked(counts)))
-        top = [r for r in res['table'] if r['type'] == '긴급방문형'][:5]
-        if top:
-            lines.append('긴급방문형 우선 확인 칸 (원본 표 순서대로 다섯 칸):')
-            lines += [f"  {r['cell_id']} {r['emd_name']} 공백={r['gap_tag']}" for r in top]
+        # 칸 단위 목록(table)은 넘기지 않는다: 행정동 순서와 다른 기준으로 정렬돼 결론이 헷갈리고,
+        # 칸 위치는 화면 지도가 원본에서 그린다
         return lines
 
     def _core_robustness(self, res: dict) -> list[str]:

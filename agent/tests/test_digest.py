@@ -67,6 +67,7 @@ def test_classify_core(engine):
     emd = res['by_emd_withdrawn']                   # 긴급방문형이 가장 많은 행정동이 맨 앞
     top = max(emd, key=lambda e: emd[e].get('긴급방문형', 0))
     assert f'긴급방문형이 많은 행정동 순: {top} >' in text
+    assert not re.search(r'\d+_\d+', text)          # 칸 ID 목록은 넘기지 않는다 (위치는 지도가 보여준다)
 
 
 def test_robustness_core_order(engine):

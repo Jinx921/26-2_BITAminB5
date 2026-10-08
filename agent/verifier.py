@@ -15,7 +15,7 @@ import re
 from dataclasses import dataclass, field
 
 from agent.store import ResultStore
-from agent.tools import MODE_TOOLS, SUBMIT
+from agent.tools import AGENT_SCHEMAS, MODE_TOOLS, SUBMIT
 
 DISPLAY_FIELDS = ('headline', 'details', 'caution')
 
@@ -77,10 +77,12 @@ class Context:
 
 # ------------------------------------------------------------------ 숫자 읽기
 def place_names(store: ResultStore) -> set[str]:
-    """엔진 결과에 나온 행정동·시설 이름 (개포2동처럼 숫자가 든 이름은 숫자 검사에서 뺀다)."""
+    """결과에 나온 이름: 행정동·시설 이름과 시간대 표기 (개포2동, 12~17시처럼 숫자가 든 이름은 숫자 검사에서 뺀다).
+    결과에 없는 시각(예: 10시)은 이름이 아니므로 그대로 검사한다."""
     names = set()
     for s in store.items.values():
         r = s.data.get('result', {})
+        names |= set((r.get('slot_labels') or {}).values())
         for k in ('by_emd', 'by_emd_withdrawn'):
             names |= set(r.get(k) or {})
         for k in ('cells', 'table', 'chosen_sites', 'changed_cells', 'within_radius', 'nearest_by_kind'):
@@ -180,7 +182,7 @@ def _check_numbers(ans: dict, ctx: Context, res: VerifyResult) -> None:
 
 
 def _check_banned(ans: dict, ctx: Context, res: VerifyResult) -> None:
-    tool_names = set(MODE_TOOLS['admin']) | {SUBMIT}
+    tool_names = set(MODE_TOOLS['admin']) | set(AGENT_SCHEMAS) | {SUBMIT}
     for f in DISPLAY_FIELDS:
         t = ans[f]
         found = [w for w in BANNED_WORDS if w in t]

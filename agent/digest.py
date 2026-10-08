@@ -93,6 +93,12 @@ class Digester:
         # 칸 위치는 화면 지도가 원본에서 그린다
         return lines
 
+    def _core_senior_hours(self, res: dict) -> list[str]:
+        labels = res['slot_labels']
+        order = sorted(res['senior60_card_time_pct'], key=res['senior60_card_time_pct'].get, reverse=True)
+        return ['60대 이상 활동이 많은 시간대 순: ' + ' > '.join(labels[k] for k in order),
+                '시간대는 이 표기 그대로 쓴다 (예: ' + labels[order[0]] + ')']
+
     def _core_robustness(self, res: dict) -> list[str]:
         # 기준값마다 긴급방문형 판정 겹침(jaccard)의 최저값 → 낮을수록 그 기준에 결과가 많이 흔들린다
         worst: dict[str, float] = {}

@@ -20,7 +20,7 @@ def test_citizen_has_no_risk_tools():
     for t in RISK_TOOLS:
         assert t not in names
         assert not is_allowed('citizen', t)          # 목록뿐 아니라 실행 단계에서도 거절
-    assert names == ['lookup_resources', SUBMIT]
+    assert names == ['lookup_resources', 'senior_hours', SUBMIT]
 
 
 def test_admin_has_all_engine_tools():

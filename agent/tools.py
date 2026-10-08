@@ -14,6 +14,8 @@ import copy
 import importlib
 import sys
 
+from agent.agent_tools import SCHEMAS as AGENT_SCHEMAS
+from agent.agent_tools import SENIOR_HOURS
 from agent.engine_client import ENGINE_DIR
 
 # Sonnet 이 바꾸지 못하게 스키마에서 빼는 기준값 인자
@@ -24,7 +26,7 @@ LOCKED_ARGS = {
 
 # 모드별로 코드가 채우는 인자: Sonnet 이 정하지 못하게 스키마에서 빼고, 실행할 때 앱이 준 위치로 채운다
 FIXED_ARGS = {
-    'citizen': {'lookup_resources': ('region', 'lat', 'lon', 'cell_id')},
+    'citizen': {'lookup_resources': ('region', 'lat', 'lon', 'cell_id'), SENIOR_HOURS: ('region',)},
 }
 
 # 모드별 엔진 도구. 엔진에 새 도구가 생기면 여기서 어느 모드에 줄지 정해야 한다 (테스트가 확인)
@@ -32,8 +34,9 @@ MODE_TOOLS = {
     'admin': ('find_candidates', 'check_residential', 'lookup_resources', 'classify',
               'simulate_placement', 'robustness', 'facility_change', 'region_context'),
     # 시민 모드: 위험 판정이 나올 수 있는 도구는 넣지 않는다.
-    # region_context 는 결과에 유형별 칸 수(type_counts)가 들어 있어 시민 모드에서 뺀다
-    'citizen': ('lookup_resources',),
+    # region_context 는 결과에 유형별 칸 수(type_counts)가 들어 있어 시민 모드에서 빼고,
+    # 시간대만 꺼내는 에이전트 도구(senior_hours)를 대신 준다
+    'citizen': ('lookup_resources', SENIOR_HOURS),
 }
 
 SUBMIT = 'submit_answer'
@@ -116,7 +119,8 @@ def tools_for(mode: str) -> list[dict]:
         raise ValueError(f'없는 모드: {mode}')
     allowed = MODE_TOOLS[mode]
     engine = [_lock(s, mode) for s in _engine_schemas() if s['name'] in allowed]
-    return engine + [copy.deepcopy(SUBMIT_SCHEMA)]
+    agent = [copy.deepcopy(s) for n, s in AGENT_SCHEMAS.items() if n in allowed]
+    return engine + agent + [copy.deepcopy(SUBMIT_SCHEMA)]
 
 
 def is_allowed(mode: str, tool: str) -> bool:

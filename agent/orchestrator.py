@@ -11,6 +11,7 @@ import json
 from dataclasses import dataclass, field
 from pathlib import Path
 
+from agent.agent_tools import call_tool
 from agent.digest import Digester
 from agent.engine_client import EngineError
 from agent.location import detect_region
@@ -72,10 +73,11 @@ class Orchestrator:
         if not is_allowed(self.mode, block.name):
             return result(f'이 모드에서 쓸 수 없는 도구: {block.name}', error=True)
         args, dropped = strip_locked(block.name, dict(block.input), self.mode)
-        if turn.location and block.name in FIXED_ARGS.get(self.mode, {}):
-            args.update(turn.location)                                    # 위치는 코드가 채운다
+        fixed = FIXED_ARGS.get(self.mode, {}).get(block.name, ())
+        if turn.location and fixed:                                       # 위치는 코드가 채운다
+            args.update({k: turn.location[k] for k in fixed if k in turn.location})
         try:
-            data = self.engine.call(block.name, args)
+            data = call_tool(self.engine, block.name, args)
         except EngineError as e:
             return result(str(e), error=True)
         ref = turn.store.put(block.name, args, data)

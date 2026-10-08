@@ -18,7 +18,8 @@ def _use(name, inp, i):
 
 def _resp(*blocks, stop='tool_use'):
     return NS(stop_reason=stop, content=list(blocks),
-              usage=NS(input_tokens=100, output_tokens=10, cache_read_input_tokens=0))
+              usage=NS(input_tokens=100, output_tokens=10, cache_read_input_tokens=0,
+                       cache_creation_input_tokens=0))
 
 
 class FakeClient:

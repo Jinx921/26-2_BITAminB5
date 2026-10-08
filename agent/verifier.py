@@ -76,6 +76,19 @@ class Context:
 
 
 # ------------------------------------------------------------------ 숫자 읽기
+def place_names(store: ResultStore) -> set[str]:
+    """엔진 결과에 나온 행정동·시설 이름 (개포2동처럼 숫자가 든 이름은 숫자 검사에서 뺀다)."""
+    names = set()
+    for s in store.items.values():
+        r = s.data.get('result', {})
+        for k in ('by_emd', 'by_emd_withdrawn'):
+            names |= set(r.get(k) or {})
+        for k in ('cells', 'table', 'chosen_sites', 'changed_cells', 'within_radius', 'nearest_by_kind'):
+            for row in r.get(k) or []:
+                names |= {row[f] for f in ('emd_name', 'name') if row.get(f)}
+    return names
+
+
 def _numbers(text: str) -> list[tuple[str, str]]:
     """문장 속 숫자 → [(정규화한 숫자, 단위)]. 칸 ID·지표 이름·목록 번호 속 숫자는 뺀다."""
     text = _IDENT.sub(' ', _CELL_ID.sub(' ', text))
@@ -128,13 +141,17 @@ def _value_ok(text: str, op: str, values: list[float]) -> bool:
 # ------------------------------------------------------------------ 검사
 def _check_numbers(ans: dict, ctx: Context, res: VerifyResult) -> None:
     allowed = {n for n, _ in _numbers(ctx.question)}            # 사용자가 질문에 쓴 숫자
+    names = sorted(place_names(ctx.store), key=len, reverse=True)
     cited = {}
     for c in ans['citations']:
         ns = _numbers(c['text'])
         if ns:
             cited.setdefault(ns[0], c)
     for f in DISPLAY_FIELDS:
-        for num, unit in _numbers(ans[f]):
+        text = ans[f]
+        for n in names:                                         # 이름 속 숫자는 출처가 필요 없다
+            text = text.replace(n, ' ')
+        for num, unit in _numbers(text):
             if num in allowed:
                 continue
             if (num, unit) not in cited:

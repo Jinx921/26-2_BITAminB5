@@ -46,6 +46,7 @@ class Turn:
     answer: dict | None = None
     check: VerifyResult | None = None
     attempts: int = 0
+    rejected: list = field(default_factory=list)   # 통과 전 실패한 제출의 오류 (디버깅용)
     calls: list = field(default_factory=list)      # Sonnet 호출 기록 (stop_reason, 토큰)
     end: str = ''                                  # 끝난 이유
 
@@ -88,6 +89,7 @@ class Orchestrator:
         if turn.check.passed:
             turn.end = 'passed'
             return None
+        turn.rejected.append({'attempt': turn.attempts, 'errors': turn.check.errors})
         if turn.attempts > MAX_REWRITES:
             turn.end = 'verify_failed'
             return None
@@ -106,7 +108,8 @@ class Orchestrator:
             u = resp.usage
             turn.calls.append({'stop_reason': resp.stop_reason, 'input_tokens': u.input_tokens,
                                'output_tokens': u.output_tokens,
-                               'cache_read_input_tokens': getattr(u, 'cache_read_input_tokens', None) or 0})
+                               'cache_read_input_tokens': getattr(u, 'cache_read_input_tokens', None) or 0,
+                               'cache_creation_input_tokens': getattr(u, 'cache_creation_input_tokens', None) or 0})
             if resp.stop_reason == 'refusal':
                 turn.end = 'refusal'
                 break
@@ -138,7 +141,7 @@ class Orchestrator:
         check = turn.check if turn.answer is not None else None
         screen = build_screen(question, self.mode, turn.answer, check, turn.context(), turn.attempts)
         screen['internal']['run'] = {'model': self.model, 'effort': self.effort, 'end': turn.end,
-                                     'passed': ok, 'calls': turn.calls}
+                                     'passed': ok, 'calls': turn.calls, 'rejected': turn.rejected}
         return screen, turn
 
 

@@ -216,3 +216,15 @@ def test_feedback_lists_errors(ctx):
     a['details'] += '\n참고: 칸 기준입니다.'
     text = feedback(verify(a, ctx))
     assert text.startswith('답변 검증에서 고칠 점') and '"칸"' in text
+
+
+def test_place_name_numbers_allowed():
+    """개포2동처럼 결과에 나온 이름 속 숫자는 출처 없이 써도 된다 (이름을 '개포이동'으로 바꾸지 않게)."""
+    c = _ctx('강남')
+    named = [e for e in c.store.get('r2').data['result']['by_emd_withdrawn'] if any(ch.isdigit() for ch in e)]
+    assert named
+    a = _good(c)
+    a['headline'] = f'{named[0]}을 먼저 확인하세요.'
+    assert verify(a, c).passed, verify(a, c).errors
+    a['headline'] = f'{named[0]} 주변 7곳을 먼저 확인하세요.'          # 이름 밖의 숫자는 그대로 검사
+    assert any('출처 없는 숫자: "7"' in e for e in verify(a, c).errors)

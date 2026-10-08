@@ -40,13 +40,17 @@ MAP_ROWS = {
                          'months': 'persistent_months'}),
     'simulate_placement': ('sites', 'chosen_sites',
                            {'id': 'cell_id', 'lat': 'lat', 'lon': 'lon', 'emd_name': 'emd_name', 'covers': 'covers'}),
+    'field_check': ('checks', 'cells',
+                    {'id': 'cell_id', 'lat': 'lat', 'lon': 'lon', 'emd_name': 'emd_name', 'level': 'level',
+                     'questions': 'questions', 'order': 'order'}),
     'find_facility': ('facilities', 'matches',
                       {'id': 'fac_id', 'lat': 'lat', 'lon': 'lon', 'name': 'name', 'kind': 'kind'}),
     'lookup_resources': ('facilities', 'within_radius',
                          {'id': 'fac_id', 'lat': 'lat', 'lon': 'lon', 'name': 'name', 'kind': 'kind', 'dist_m': 'dist_m'}),
 }
 # 지도 점을 강조하는 기준: 화면 문장에 이 필드 값(시설 이름 / 행정동 이름)이 나오면 강조
-HIGHLIGHT_BY = {'facilities': 'name', 'types': 'emd_name', 'candidates': 'emd_name', 'sites': 'emd_name'}
+HIGHLIGHT_BY = {'facilities': 'name', 'types': 'emd_name', 'candidates': 'emd_name', 'sites': 'emd_name',
+                'checks': 'emd_name'}
 # 어느 문장을 볼지: 관리자는 결론에 "어디부터"가 있고 설명에는 행정동 순위 전체가 나오므로 결론만 본다.
 # 시민은 설명에서 소개한 시설까지 강조한다
 HIGHLIGHT_FROM = {'admin': ('headline',), 'citizen': ('headline', 'details', 'caution')}

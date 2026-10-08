@@ -142,6 +142,13 @@ class Digester:
                 '60대 이상 결제가 많은 시간대 순: ' + ' > '.join(slot_label(k) for k in order),
                 '시간대는 이 표기 그대로 쓴다. 칸 단위 판단에는 쓰지 않는다']
 
+    def _core_field_check(self, res: dict) -> list[str]:
+        lines = ['확인 수준: 꼭 확인 / 확인 필요 (안정한 동네는 목록에서 뺐다)',
+                 '확인할 동네가 많은 행정동 순: ' + ' > '.join(_ranked(res.get('by_emd', {}))),
+                 '흔들리는 이유가 많은 순: ' + ' > '.join(_ranked(res.get('reason_counts', {}))),
+                 '동네별 확인 질문과 방문 순서는 화면 목록이 원본에서 보여준다']
+        return lines
+
     def _core_find_facility(self, res: dict) -> list[str]:
         rows = res.get('matches', [])
         if not rows:

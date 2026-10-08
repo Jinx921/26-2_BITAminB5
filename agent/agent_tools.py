@@ -95,7 +95,11 @@ def find_facility(engine, args: dict) -> dict:
     }
 
 
-RUNNERS = {SENIOR_HOURS: senior_hours, FIND_FACILITY: find_facility}
+from agent.field_check import FIELD_CHECK, field_check                     # noqa: E402 (현장 확인 목록, 별도 파일)
+from agent.field_check import SCHEMA as _FIELD_CHECK_SCHEMA                  # noqa: E402
+
+SCHEMAS[FIELD_CHECK] = _FIELD_CHECK_SCHEMA
+RUNNERS = {SENIOR_HOURS: senior_hours, FIND_FACILITY: find_facility, FIELD_CHECK: field_check}
 
 
 def call_tool(engine, name: str, args: dict) -> dict:

@@ -221,7 +221,7 @@ def test_feedback_lists_errors(ctx):
     a = _good(ctx)
     a['details'] += '\n참고: 칸 기준입니다.'
     text = feedback(verify(a, ctx))
-    assert text.startswith('답변 검증에서 고칠 점') and '"칸"' in text
+    assert text.startswith('검증에서 고칠 점') and 'submit_answer 로 다시 제출' in text and '"칸"' in text
 
 
 def test_place_name_numbers_allowed():
@@ -234,3 +234,15 @@ def test_place_name_numbers_allowed():
     assert verify(a, c).passed, verify(a, c).errors
     a['headline'] = f'{named[0]} 주변 7곳을 먼저 확인하세요.'          # 이름 밖의 숫자는 그대로 검사
     assert any('출처 없는 숫자: "7"' in e for e in verify(a, c).errors)
+
+
+def test_raw_ratio_and_doubled_values(ctx):
+    """'55%(0.5453)', '0.5453', '54%(53.66)' 처럼 원래 값을 쓰거나 같은 값을 두 번 쓰면 오류."""
+    for bad in ['약 55%(0.5453)를 덮습니다.', '덮는 비율은 0.5453입니다.', '12~17시가 54%(53.66)입니다.']:
+        a = _good(ctx)
+        a['details'] += '\n' + bad
+        errs = verify(a, ctx).errors
+        assert any('괄호로 두 번' in e or '원래 값' in e for e in errs), bad
+    a = _good(ctx)
+    a['details'] += '\n반경 0.5km 안에 경로당이 있습니다.'                     # 단위가 있는 소수는 괜찮다 (숫자 출처 검사는 별도)
+    assert not any('원래 값' in e for e in verify(a, ctx).errors)

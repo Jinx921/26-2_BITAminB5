@@ -4,7 +4,8 @@
 - 기준값 인자(LOCKED_ARGS)는 스키마에서 뺀다. Sonnet 이 기준을 바꿔 다시 계산하지 못하게 해서
   답변이 항상 엔진 기본값 기준이 되게 한다. 기준을 바꾼 결과는 robustness 가 보여준다
 - 모드별로 도구 목록을 나누고, 목록에 없는 도구는 실행 단계에서도 거절한다
-- submit_answer: Sonnet 이 최종 답변을 내는 도구. 엔진으로 가지 않고 검증 단계로 간다
+- 제출 도구 (엔진으로 가지 않고 검증 단계로 간다): submit_answer 분석 답변 / submit_document 문서(관리자) /
+  submit_brief 짧은 답 (인사·관계없는 질문·지역 밖·데이터 없는 질문)
   · 화면에 보이는 부분(headline, details, caution)은 결론과 설명만 쉬운 말로 쓴다
   · 내부 기록(caveats_reflected, citations, map_ref)은 검증·백엔드용이며 화면에 그리지 않는다
 """
@@ -42,7 +43,9 @@ MODE_TOOLS = {
 }
 
 SUBMIT = 'submit_answer'
-SUBMITS = {'admin': (SUBMIT, SUBMIT_DOC), 'citizen': (SUBMIT,)}    # 모드별 제출 도구 (문서는 관리자만)
+SUBMIT_BRIEF = 'submit_brief'
+BRIEF_MAX = 200
+SUBMITS = {'admin': (SUBMIT, SUBMIT_DOC, SUBMIT_BRIEF), 'citizen': (SUBMIT, SUBMIT_BRIEF)}   # 모드별 제출 도구 (문서는 관리자만)
 
 _SOURCE = {
     'type': 'object',
@@ -100,6 +103,16 @@ SUBMIT_SCHEMA = {
 }
 
 
+SUBMIT_BRIEF_SCHEMA = {
+    'name': SUBMIT_BRIEF,
+    'description': ('분석이 필요 없는 짧은 답을 제출한다: 인사·감사, 서비스와 관계없는 질문, 서비스 지역(서울 강남구·춘천시) 밖 질문, '
+                    '데이터가 없어 답할 수 없는 질문. 무엇을 도와줄 수 있는지 함께 안내한다. '
+                    f'숫자는 쓰지 않고 {BRIEF_MAX}자 이내로 쓴다. 분석 결과를 전하는 답은 submit_answer 로 낸다.'),
+    'strict': True,
+    'input_schema': {'type': 'object', 'properties': {'message': {'type': 'string', 'description': '사용자에게 보일 짧은 답'}},
+                     'required': ['message'], 'additionalProperties': False},
+}
+
 _CITATIONS = SUBMIT_SCHEMA['input_schema']['properties']['citations']
 _DOC_HEADINGS = '; '.join(f"{k}({v['name']}): {' / '.join(v['sections'])}" for k, v in DOC_SPECS.items())
 
@@ -146,7 +159,7 @@ def _lock(schema: dict, mode: str = 'admin') -> dict:
 
 
 def tools_for(mode: str) -> list[dict]:
-    """모드에 맞는 Claude tool 정의 목록 (엔진 도구 + submit_answer). 순서는 엔진 스키마 순서로 고정."""
+    """모드에 맞는 Claude tool 정의 목록 (엔진 도구 + 에이전트 도구 + 제출 도구). 순서는 고정."""
     if mode not in MODE_TOOLS:
         raise ValueError(f'없는 모드: {mode}')
     allowed = MODE_TOOLS[mode]
@@ -156,7 +169,7 @@ def tools_for(mode: str) -> list[dict]:
         region = s['input_schema']['properties'].get('region')
         if region is not None:
             region['enum'] = service_regions()
-    submits = {SUBMIT: SUBMIT_SCHEMA, SUBMIT_DOC: SUBMIT_DOC_SCHEMA}
+    submits = {SUBMIT: SUBMIT_SCHEMA, SUBMIT_DOC: SUBMIT_DOC_SCHEMA, SUBMIT_BRIEF: SUBMIT_BRIEF_SCHEMA}
     return engine + agent + [copy.deepcopy(submits[n]) for n in SUBMITS[mode]]
 
 

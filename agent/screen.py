@@ -5,6 +5,7 @@ internal 백엔드가 로그로 저장하는 부분. 화면에 그리지 않는�
          (숫자 출처, 검증 결과, 신뢰도 근거, 엔진 caveat 원문, 도구 호출 순서)
 
 검증에 끝내 실패하면 검증 안 된 문장은 보여주지 않고, 모드별 고정 안내 문구와 지도만 보여준다.
+제출 종류: 분석 답변(submit_answer) / 문서(submit_document → display.document) / 짧은 답(submit_brief → headline 만).
 """
 from __future__ import annotations
 
@@ -136,6 +137,15 @@ def build_screen(question: str, mode: str, answer: dict | None, check: VerifyRes
     grade = check.grade if check else '낮음'
     note = check.grade_note if check else ''
     is_doc = answer is not None and 'doc_type' in answer
+    is_brief = answer is not None and 'message' in answer
+    if ok and is_brief:                                           # 짧은 답: 문장만, 지도·신뢰도 없음
+        return {'mode': mode, 'question': question, 'region': _region(ctx),
+                'display': {'headline': answer['message'].strip(), 'details': [], 'caution': '', 'confidence': None,
+                            'map': None, 'chart': None, 'document': None},
+                'internal': {'verification': {'passed': True, 'attempts': attempts, 'errors': [], 'warnings': []},
+                             'confidence_basis': {}, 'citations': [], 'caveats': [],
+                             'tool_trace': [{'ref': s.ref, 'tool': s.tool, 'args': _trace_args(mode, s.args)}
+                                            for s in ctx.store.items.values()]}}
     if ok and is_doc:
         spec = DOC_SPECS[answer['doc_type']]
         display = {'headline': f"{spec['name']} 초안을 만들었습니다: {answer['title'].strip()}", 'details': [], 'caution': '',
@@ -158,10 +168,10 @@ def build_screen(question: str, mode: str, answer: dict | None, check: VerifyRes
     shown = ' '.join(t for f in HIGHLIGHT_FROM[mode] for t in parts[f]) if ok else ''
     if ok and is_doc:                                             # 문서는 본문 전체에서 언급한 곳을 강조
         shown = ' '.join(doc_fields(answer).values())
-    display['map'] = _map(ctx, answer['map_ref'] if answer else None, shown)
+    display['map'] = _map(ctx, (answer or {}).get('map_ref'), shown)       # 짧은 답에는 map_ref 가 없다
     display['chart'] = _chart(ctx) if ok and mode == 'admin' else None
 
-    reflected = set(answer['caveats_reflected']) if answer else set()
+    reflected = set((answer or {}).get('caveats_reflected', []))
     internal = {
         'verification': {'passed': ok, 'attempts': attempts,
                          'errors': check.errors if check else ['답변이 제출되지 않음'],

@@ -1,4 +1,4 @@
-"""검증 단계: Sonnet 이 낸 submit_answer 를 코드로 확인하고 신뢰도 등급을 정한다.
+"""검증 단계: Sonnet 이 낸 답(분석 답변 / 문서 / 짧은 답)을 코드로 확인하고 신뢰도 등급을 정한다.
 
 오류(errors)가 있으면 답변을 그대로 내보내지 않는다 (사유를 Sonnet 에 돌려 다시 쓰게 한다).
 경고(warnings)는 기록만 한다.
@@ -8,6 +8,8 @@
 ③ 필수 caveat 반드시 반영할 한계 문장이 caveats_reflected 에 있어야 한다
 ④ 분량·가독성 설명은 바닥선 이상, 문단 여러 개. 긴 문장은 경고 (정보는 그대로 두고 나누라는 뜻)
 ⑤ 신뢰도 등급 robustness 결과로 코드가 정한다
+그 밖에: 소수로 된 원래 비율 값·괄호 중복 표기 금지, 도구 결과 없는 분석 답변·제안서·보고 금지.
+문서(verify_document)는 목차·분량을 문서 규격대로, 짧은 답(verify_brief)은 숫자 금지·길이 제한으로 본다.
 """
 from __future__ import annotations
 
@@ -18,7 +20,7 @@ from agent.agent_tools import SENIOR_HOURS_NOTE, slot_label
 from agent.documents import DOC_SPECS, PLACEHOLDERS, SUBMIT_DOC, doc_fields
 from agent.store import ResultStore
 from agent.terms import CITIZEN_BANNED
-from agent.tools import AGENT_SCHEMAS, MODE_TOOLS, SUBMIT
+from agent.tools import AGENT_SCHEMAS, BRIEF_MAX, MODE_TOOLS, SUBMIT, SUBMIT_BRIEF
 
 DISPLAY_FIELDS = ('headline', 'details', 'caution')
 
@@ -68,6 +70,8 @@ _IDENT = re.compile(r'\b[A-Za-z]+(?:_\w+)+')                   # housing_thr, n_
 _CELL_ID = re.compile(r'\b\d+_\d+\b')
 _REF = re.compile(r'\br\d+\b')
 _LIST_MARK = re.compile(r'^\s*\d+[.)]\s', re.M)
+_RAW_RATIO = re.compile(r'(?<![\d.])0\.\d{2,}(?!\s*(?:km|㎞|m\b))')         # 0.5453 처럼 비율의 원래 값
+_DOUBLED = re.compile(r'\d[\d,.]*\s*%?\s*\(\s*\d[\d,.]*\s*%?\s*\)')       # 55%(0.5453), 54%(53.66)
 _AGE = re.compile(r'\d+\s*(?:대|세)\s*(?:이상|이하|미만|초과)')          # 연령 표기 (60대 이상, 65세 이상)
 _NUM = re.compile(r'(?<![\d.,])(\d{1,3}(?:,\d{3})+|\d+)(\.\d+)?\s*(%|퍼센트|km|㎞|m(?![a-zA-Z]))?')
 
@@ -228,7 +232,7 @@ def _check_numbers(ans: dict, ctx: Context, res: VerifyResult, texts: dict | Non
         values, bad = [], False
         for s in c['sources']:
             table = ctx.citable.get(s['ref'])
-            if table is None or s['metric'] not in table:
+            if table is None or s['metric'] not in table or s['ref'] not in ctx.store.items:
                 res.errors.append(f'없는 출처: {s["ref"]}.{s["metric"]} ("{c["text"]}")')
                 bad = True
                 continue
@@ -261,7 +265,7 @@ def _check_banned(ans: dict, ctx: Context, res: VerifyResult, texts: dict | None
                    audience: str | None = None) -> None:
     """audience: 금지어 기준 (문서는 읽는 사람 기준. 주민 안내문은 관리자 모드에서 만들어도 시민 기준)."""
     texts = texts if texts is not None else {f: ans[f] for f in DISPLAY_FIELDS}
-    tool_names = set(MODE_TOOLS['admin']) | set(AGENT_SCHEMAS) | {SUBMIT, SUBMIT_DOC}
+    tool_names = set(MODE_TOOLS['admin']) | set(AGENT_SCHEMAS) | {SUBMIT, SUBMIT_DOC, SUBMIT_BRIEF}
     for f, t in texts.items():
         found = [w for w in BANNED_WORDS + BANNED_BY_MODE.get(audience or ctx.mode, ()) if w in t]
         found += [n for n in tool_names if n in t]
@@ -269,6 +273,10 @@ def _check_banned(ans: dict, ctx: Context, res: VerifyResult, texts: dict | None
         found += [w for w in _IDENT.findall(t) if w not in tool_names]
         for w in dict.fromkeys(found):
             res.errors.append(f'화면에 쓰면 안 되는 표현: "{w}" ({f}). 내부 이름·용어 대신 쉬운 말로 쓴다')
+        for w in dict.fromkeys(_DOUBLED.findall(t)):
+            res.errors.append(f'같은 값을 괄호로 두 번 쓰지 않는다: "{w}" ({f}). 숫자는 한 번만 쓴다')
+        for w in dict.fromkeys(_RAW_RATIO.findall(_DOUBLED.sub(' ', t))):
+            res.errors.append(f'비율의 원래 값을 쓰지 않는다: "{w}" ({f}). %로만 쓴다')
 
 
 def _check_caveats(ans: dict, ctx: Context, res: VerifyResult, rules_mode: str | None = None,
@@ -332,6 +340,9 @@ def grade(store: ResultStore, passed: bool) -> tuple[str, dict]:
 
 def verify(ans: dict, ctx: Context) -> VerifyResult:
     res = VerifyResult()
+    if not ctx.store.items:                                       # 데이터 없이 일반 지식으로 분석하지 않게
+        res.errors.append('도구 결과 없이 분석 답변을 낼 수 없다. 필요한 도구를 부르거나, '
+                          '분석할 수 없는 질문(지역 밖·관계없는 질문 등)이면 submit_brief 로 짧게 답한다')
     _check_numbers(ans, ctx, res)
     _check_banned(ans, ctx, res)
     _check_caveats(ans, ctx, res)
@@ -367,6 +378,8 @@ def verify_document(doc: dict, ctx: Context) -> VerifyResult:
     for p in PLACEHOLDERS:                                       # 빈칸 표시는 검사하지 않는다
         texts = {f: t.replace(p, ' ') for f, t in texts.items()}
     res = VerifyResult()
+    if spec['needs_data'] and not ctx.store.items:              # 제안서·보고는 데이터가 있어야 한다
+        res.errors.append(f"도구 결과 없이 {spec['name']}를 쓸 수 없다. 근거가 될 도구를 먼저 부른다")
     _check_numbers(doc, ctx, res, texts, spec['params_in'])
     _check_banned(doc, ctx, res, texts, audience=spec['audience'])
     _check_caveats(doc, ctx, res, rules_mode=spec['audience'], need_caution=False)
@@ -377,9 +390,30 @@ def verify_document(doc: dict, ctx: Context) -> VerifyResult:
     return res
 
 
-def feedback(res: VerifyResult) -> str:
-    """다시 쓰게 할 때 Sonnet 에 돌려줄 문장."""
-    lines = ['답변 검증에서 고칠 점이 있다. 아래를 고쳐 submit_answer 로 다시 제출한다.']
+def verify_brief(ans: dict, ctx: Context) -> VerifyResult:
+    """짧은 답 검증: 분량·필수 한계는 보지 않는 대신 숫자를 쓰지 못하고 길이를 제한한다
+    (분석 내용을 짧은 답으로 내보내 검증을 피하지 못하게)."""
+    res = VerifyResult()
+    msg = ans['message'].strip()
+    texts = {'message': msg}
+    if not msg:
+        res.errors.append('짧은 답이 비어 있음')
+    if len(msg) > BRIEF_MAX:
+        res.errors.append(f'짧은 답은 {BRIEF_MAX}자 이내로 쓴다: 지금 {len(msg)}자. 분석 결과를 전하려면 submit_answer 로 낸다')
+    allowed = {n for n, _ in _numbers(ctx.question)}
+    names = sorted(place_names(ctx.store), key=len, reverse=True)   # 결과에 나온 이름(개포2동 등) 속 숫자는 괜찮다
+    for num, unit in _numbers(_strip_names(msg, names)):
+        if num not in allowed:
+            res.errors.append(f'짧은 답에는 숫자를 쓰지 않는다: "{num}{unit}". 숫자가 필요한 답은 submit_answer 로 낸다')
+    _check_banned(ans, ctx, res, texts)
+    res.grade, res.grade_basis = '낮음', {'reason': '짧은 답 (분석 없음)'}
+    res.grade_note = ''
+    return res
+
+
+def feedback(res: VerifyResult, tool: str = SUBMIT) -> str:
+    """다시 쓰게 할 때 Sonnet 에 돌려줄 문장. tool: 실패한 제출 도구 (같은 도구로 다시 내게 한다)."""
+    lines = [f'검증에서 고칠 점이 있다. 아래를 고쳐 {tool} 로 다시 제출한다.']
     lines += [f'- {e}' for e in res.errors]
     lines += [f'- (권장) {w}' for w in res.warnings]
     return '\n'.join(lines)

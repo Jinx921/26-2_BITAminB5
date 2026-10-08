@@ -517,5 +517,23 @@
    ],
    "additionalProperties": false
   }
+ },
+ {
+  "name": "submit_brief",
+  "description": "분석이 필요 없는 짧은 답을 제출한다: 인사·감사, 서비스와 관계없는 질문, 서비스 지역(서울 강남구·춘천시) 밖 질문, 데이터가 없어 답할 수 없는 질문. 무엇을 도와줄 수 있는지 함께 안내한다. 숫자는 쓰지 않고 200자 이내로 쓴다. 분석 결과를 전하는 답은 submit_answer 로 낸다.",
+  "strict": true,
+  "input_schema": {
+   "type": "object",
+   "properties": {
+    "message": {
+     "type": "string",
+     "description": "사용자에게 보일 짧은 답"
+    }
+   },
+   "required": [
+    "message"
+   ],
+   "additionalProperties": false
+  }
  }
 ]

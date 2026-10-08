@@ -90,7 +90,7 @@ def test_request_settings():
     assert req['model'] == 'claude-sonnet-5-5' and req['output_config'] == {'effort': 'medium'}
     assert req['cache_control'] == {'type': 'ephemeral'} and 'tool_choice' not in req
     assert req['system'] == build_system('admin')
-    assert [t['name'] for t in req['tools']][-2:] == ['submit_answer', 'submit_document']
+    assert [t['name'] for t in req['tools']][-3:] == ['submit_answer', 'submit_document', 'submit_brief']
 
 
 # ---------------------------------------------------------------- 막는 동작
@@ -126,7 +126,8 @@ def test_engine_error_returned_to_sonnet():
 def test_no_submit_nudges_once_then_fallback():
     screen, turn, client, _ = _run(SCENARIO + [_resp(NS(type='text', text='답'), stop='end_turn'),
                                                _resp(NS(type='text', text='답'), stop='end_turn')])
-    assert client.requests[-1]['messages'][-1] == {'role': 'user', 'content': NUDGE}
+    nudge = client.requests[-1]['messages'][-1]
+    assert nudge['role'] == 'user' and nudge['content'] == NUDGE.format(tools='submit_answer, submit_document, submit_brief')
     assert turn.end == 'no_submit' and screen['display']['headline'] == FALLBACK_TEXT['admin']
     assert screen['display']['map']['points']                           # 지도는 남는다
 

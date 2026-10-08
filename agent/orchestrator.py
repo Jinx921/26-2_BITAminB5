@@ -1,15 +1,23 @@
 """오케스트레이터: Sonnet 의 도구 호출을 반복해 질문 하나를 화면 조각까지 처리한다.
 
 질문 → Sonnet ─┬─ 엔진 도구 호출 → 권한 확인 → 기준값 인자 제거 → 엔진 실행 → 보관 → 요약을 돌려줌 → 다시 Sonnet
-               ├─ submit_answer → 검증 ─┬─ 통과 → 화면 조각
-               │                        └─ 실패 → 고칠 점을 돌려주고 다시 쓰게 함 (MAX_REWRITES 회)
+               ├─ 제출 (submit_answer 분석 답변 / submit_document 문서 / submit_brief 짧은 답)
+               │    → 검증 ─┬─ 통과 → 화면 조각
+               │            └─ 실패 → 고칠 점을 돌려주고 같은 도구로 다시 쓰게 함 (MAX_REWRITES 회)
                └─ 제출 없이 끝남·거절·호출 한도 초과 → 안내 문구 + 지도
+
+오류 처리 (에이전트가 뜻을 아는 오류만 잡는다. 그 밖의 예외는 백엔드가 감싼다)
+  - Sonnet API 오류(네트워크·요금 한도·키·시간 초과) → 안내 문구 화면 조각 (end='api_error')
+  - 엔진 도구 실행 중 오류 → 그 도구 결과만 오류로 Sonnet 에 돌려주고 계속 (internal.run.errors 에 기록)
+  - 시민 지역 판단 중 엔진 오류 → 안내 문구 (end='engine_error')
 """
 from __future__ import annotations
 
 import json
 from dataclasses import dataclass, field
 from pathlib import Path
+
+import anthropic
 
 from agent.agent_tools import call_tool
 from agent.digest import Digester
@@ -19,20 +27,19 @@ from agent.prompts import build_system
 from agent.screen import CITIZEN_NOTICE, LOCATION_KEYS, REGION_NAMES, build_screen
 from agent.store import ResultStore
 from agent.documents import SUBMIT_DOC
-from agent.tools import FIXED_ARGS, SUBMITS, is_allowed, service_regions, strip_locked, tools_for
-from agent.verifier import Context, VerifyResult, feedback, verify, verify_document
+from agent.tools import FIXED_ARGS, SUBMIT_BRIEF, SUBMITS, is_allowed, service_regions, strip_locked, tools_for
+from agent.verifier import Context, VerifyResult, feedback, verify, verify_brief, verify_document
 
 MODEL = 'claude-sonnet-5-5'
 EFFORT = 'medium'          # 여러 단계 도구 사용에 권장되는 시작값
 MAX_TOKENS = 16000
 MAX_CALLS = 8              # 질문 하나에 Sonnet 을 부르는 최대 횟수
 MAX_REWRITES = 1           # 검증 실패 후 다시 쓰게 하는 횟수
-NUDGE = '답을 submit_answer 도구로 제출해 주세요.'
+NUDGE = '답을 제출 도구로 제출해 주세요: {tools}'          # 모드별 제출 도구 이름이 들어간다
 ENV_FILE = Path(__file__).resolve().parent / '.env'
 
 
 def default_client():
-    import anthropic
     from dotenv import load_dotenv
     load_dotenv(ENV_FILE)
     return anthropic.Anthropic()
@@ -51,6 +58,7 @@ class Turn:
     attempts: int = 0
     rejected: list = field(default_factory=list)   # 통과 전 실패한 제출의 오류 (디버깅용)
     location: dict | None = None                   # 시민 모드: 앱이 준 위치 + 판단한 지역 (저장하지 않음)
+    errors: list = field(default_factory=list)     # 잡은 오류 (어디서, 종류, 내용)
     calls: list = field(default_factory=list)      # Sonnet 호출 기록 (stop_reason, 토큰)
     end: str = ''                                  # 끝난 이유
 
@@ -81,6 +89,9 @@ class Orchestrator:
             data = call_tool(self.engine, block.name, args)
         except EngineError as e:
             return result(str(e), error=True)
+        except Exception as e:                                            # 엔진 내부 오류 (예: 배치 최적화 실패)
+            turn.errors.append({'where': f'tool:{block.name}', 'type': type(e).__name__, 'message': str(e)})
+            return result(f'{block.name} 실행 중 오류가 나서 결과가 없다. 이 결과 없이 답하거나 다른 도구를 쓴다.', error=True)
         ref = turn.store.put(block.name, args, data)
         d = turn.digester(turn.store.get(ref))
         turn.citable[ref] = d.citable
@@ -98,7 +109,8 @@ class Orchestrator:
             return
         try:
             data = self.engine.call('robustness', {'region': regions[0]})
-        except EngineError:
+        except Exception as e:                                            # 신뢰도만 '낮음'이 되고 답은 그대로 낸다
+            turn.errors.append({'where': 'tool:robustness(auto)', 'type': type(e).__name__, 'message': str(e)})
             return
         turn.store.put('robustness', {'region': regions[0], 'auto': '신뢰도 계산용 (코드가 호출)'}, data)
 
@@ -108,7 +120,7 @@ class Orchestrator:
         self._ensure_robustness(turn)
         turn.attempts += 1
         turn.answer = dict(block.input)
-        check = verify_document if block.name == SUBMIT_DOC else verify
+        check = {SUBMIT_DOC: verify_document, SUBMIT_BRIEF: verify_brief}.get(block.name, verify)
         turn.check = check(turn.answer, turn.context())
         if turn.check.passed:
             turn.end = 'passed'
@@ -117,14 +129,23 @@ class Orchestrator:
         if turn.attempts > MAX_REWRITES:
             turn.end = 'verify_failed'
             return None
-        return {'type': 'tool_result', 'tool_use_id': block.id, 'content': feedback(turn.check), 'is_error': True}
+        return {'type': 'tool_result', 'tool_use_id': block.id, 'content': feedback(turn.check, block.name),
+                'is_error': True}
 
     # ------------------------------------------------------------ 질문 하나
+    def _finish(self, turn: Turn) -> tuple[dict, Turn]:
+        ok = turn.end == 'passed'
+        check = turn.check if turn.answer is not None else None
+        screen = build_screen(turn.question, self.mode, turn.answer, check, turn.context(), turn.attempts)
+        screen['internal']['run'] = {'model': self.model, 'effort': self.effort, 'end': turn.end, 'passed': ok,
+                                     'calls': turn.calls, 'rejected': turn.rejected, 'errors': turn.errors}
+        return screen, turn
+
     def _notice(self, turn: Turn, key: str) -> tuple[dict, Turn]:
         turn.end = key
         screen = build_screen(turn.question, self.mode, None, None, turn.context(), notice=CITIZEN_NOTICE[key])
         screen['internal']['run'] = {'model': self.model, 'effort': self.effort, 'end': key, 'passed': False,
-                                     'calls': [], 'rejected': []}
+                                     'calls': [], 'rejected': [], 'errors': []}
         return screen, turn
 
     def ask(self, question: str, location: dict | None = None) -> tuple[dict, Turn]:
@@ -138,7 +159,12 @@ class Orchestrator:
         if self.mode == 'citizen':
             if not location:
                 return self._notice(turn, 'no_location')
-            region = detect_region(self.engine, location['lat'], location['lon'], service_regions())
+            try:
+                region = detect_region(self.engine, location['lat'], location['lon'], service_regions())
+            except Exception as e:
+                turn.errors.append({'where': 'detect_region', 'type': type(e).__name__, 'message': str(e)})
+                turn.end = 'engine_error'
+                return self._finish(turn)
             if region is None:
                 return self._notice(turn, 'out_of_area')
             turn.location = {'region': region, 'lat': location['lat'], 'lon': location['lon']}
@@ -148,10 +174,15 @@ class Orchestrator:
         messages = [{'role': 'user', 'content': content}]
         nudged = False
         for _ in range(MAX_CALLS):
-            resp = self.client.messages.create(
-                model=self.model, max_tokens=MAX_TOKENS, system=self.system, tools=self.tools,
-                messages=messages, output_config={'effort': self.effort},
-                cache_control={'type': 'ephemeral'})          # 시스템 프롬프트·도구 정의 캐시
+            try:
+                resp = self.client.messages.create(
+                    model=self.model, max_tokens=MAX_TOKENS, system=self.system, tools=self.tools,
+                    messages=messages, output_config={'effort': self.effort},
+                    cache_control={'type': 'ephemeral'})      # 시스템 프롬프트·도구 정의 캐시
+            except anthropic.APIError as e:                   # 네트워크·요금 한도·키·시간 초과 (SDK 가 재시도한 뒤)
+                turn.errors.append({'where': 'sonnet', 'type': type(e).__name__, 'message': str(e)[:300]})
+                turn.end = 'api_error'
+                break
             u = resp.usage
             turn.calls.append({'stop_reason': resp.stop_reason, 'input_tokens': u.input_tokens,
                                'output_tokens': u.output_tokens,
@@ -167,7 +198,7 @@ class Orchestrator:
                     turn.end = 'no_submit'
                     break
                 nudged = True
-                messages.append({'role': 'user', 'content': NUDGE})
+                messages.append({'role': 'user', 'content': NUDGE.format(tools=', '.join(SUBMITS[self.mode]))})
                 continue
             results = []
             for b in uses:
@@ -183,13 +214,7 @@ class Orchestrator:
             messages.append({'role': 'user', 'content': results})            # 도구 결과는 한 메시지에 모아서
         else:
             turn.end = 'max_calls'
-
-        ok = turn.end == 'passed'
-        check = turn.check if turn.answer is not None else None
-        screen = build_screen(question, self.mode, turn.answer, check, turn.context(), turn.attempts)
-        screen['internal']['run'] = {'model': self.model, 'effort': self.effort, 'end': turn.end,
-                                     'passed': ok, 'calls': turn.calls, 'rejected': turn.rejected}
-        return screen, turn
+        return self._finish(turn)
 
 
 def save_run(screen: dict, turn: Turn) -> Path:

@@ -15,17 +15,17 @@ DOC_SPECS = {
     'proposal': {
         'name': '사업 제안서', 'audience': 'admin',
         'sections': ('추진 배경', '대상 지역', '근거 데이터', '운영안', '기대 효과', '한계와 확인 사항'),
-        'min_section': 100, 'params_in': ('근거 데이터',),
+        'min_section': 100, 'params_in': ('근거 데이터',), 'needs_data': True,
     },
     'report': {
         'name': '현황 보고', 'audience': 'admin',
         'sections': ('현황 요약', '우선 확인 지역', '현장 확인이 필요한 동네', '다음 조치'),
-        'min_section': 100, 'params_in': (),
+        'min_section': 100, 'params_in': (), 'needs_data': True,
     },
     'notice': {
         'name': '주민 안내문', 'audience': 'citizen',
         'sections': ('방송 문구', '문자 문구', '게시물 문구'),
-        'min_section': 0, 'max_chars': {'문자 문구': 90}, 'params_in': (),
+        'min_section': 0, 'max_chars': {'문자 문구': 90}, 'params_in': (), 'needs_data': False,
     },
 }
 PLACEHOLDERS = ('[날짜]', '[시간]', '[장소]', '[연락처]', '[담당자]')

@@ -4,7 +4,7 @@ import copy
 import pytest
 
 from agent.engine_client import LiveEngine
-from agent.tools import (AGENT_SCHEMAS, LOCKED_ARGS, SUBMITS, MODE_TOOLS, SUBMIT, SUBMIT_SCHEMA, _engine_schemas, is_allowed, strip_locked,
+from agent.tools import (AGENT_SCHEMAS, LOCKED_ARGS, SUBMITS, MODE_TOOLS, SUBMIT_SCHEMA, _engine_schemas, is_allowed, strip_locked,
                          tools_for)
 
 RISK_TOOLS = ('find_candidates', 'classify', 'check_residential', 'simulate_placement', 'robustness',
@@ -20,14 +20,15 @@ def test_citizen_has_no_risk_tools():
     for t in RISK_TOOLS:
         assert t not in names
         assert not is_allowed('citizen', t)          # 목록뿐 아니라 실행 단계에서도 거절
-    assert names == ['lookup_resources', 'senior_hours', SUBMIT]
+    assert names == ['lookup_resources', 'senior_hours', *SUBMITS['citizen']]
 
 
 def test_admin_has_all_engine_tools():
     names = _names('admin')
     engine = [s['name'] for s in _engine_schemas()]
-    assert names[:len(engine)] == engine and names[-2:] == list(SUBMITS['admin'])
-    assert set(names[len(engine):-2]) <= set(AGENT_SCHEMAS)                 # 그 사이는 에이전트 도구
+    n = len(SUBMITS['admin'])
+    assert names[:len(engine)] == engine and names[-n:] == list(SUBMITS['admin'])
+    assert set(names[len(engine):-n]) <= set(AGENT_SCHEMAS)                 # 그 사이는 에이전트 도구
 
 
 def test_every_engine_tool_has_a_mode_decision():

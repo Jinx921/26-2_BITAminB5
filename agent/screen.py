@@ -40,6 +40,9 @@ MAP_ROWS = {
                          'months': 'persistent_months'}),
     'simulate_placement': ('sites', 'chosen_sites',
                            {'id': 'cell_id', 'lat': 'lat', 'lon': 'lon', 'emd_name': 'emd_name', 'covers': 'covers'}),
+    'compare_interventions': ('interventions', 'map_points',
+                              {'id': 'id', 'lat': 'lat', 'lon': 'lon', 'emd_name': 'emd_name', 'option': 'option',
+                               'name': 'name', 'facility_name': 'facility_name'}),
     'field_check': ('checks', 'cells',
                     {'id': 'cell_id', 'lat': 'lat', 'lon': 'lon', 'emd_name': 'emd_name', 'level': 'level',
                      'questions': 'questions', 'order': 'order'}),
@@ -50,7 +53,7 @@ MAP_ROWS = {
 }
 # 지도 점을 강조하는 기준: 화면 문장에 이 필드 값(시설 이름 / 행정동 이름)이 나오면 강조
 HIGHLIGHT_BY = {'facilities': 'name', 'types': 'emd_name', 'candidates': 'emd_name', 'sites': 'emd_name',
-                'checks': 'emd_name'}
+                'checks': 'emd_name', 'interventions': 'emd_name'}
 # 어느 문장을 볼지: 관리자는 결론에 "어디부터"가 있고 설명에는 행정동 순위 전체가 나오므로 결론만 본다.
 # 시민은 설명에서 소개한 시설까지 강조한다
 HIGHLIGHT_FROM = {'admin': ('headline',), 'citizen': ('headline', 'details', 'caution')}
@@ -96,6 +99,17 @@ def _map(ctx: Context, map_ref: str | None, text: str = '') -> dict | None:
     return {'layer': layer, 'ref': ref, 'points': points, 'geojson': s.data.get('geojson')}
 
 
+def _chart(ctx: Context) -> dict | None:
+    """개입안 비교 막대그래프 (설계 차별점 ⑥ 시나리오 비교 차트). 숫자는 엔진 결과에서 코드가 직접 넣는다."""
+    hits = ctx.store.by_tool('compare_interventions')
+    if not hits or 'options' not in hits[-1].data['result']:
+        return None
+    res = hits[-1].data['result']
+    return {'type': 'bar', 'title': '개입안별 해소되는 동네 수 (가장 먼저 방문이 필요한 동네 기준)', 'unit': '곳',
+            'total': res['n_urgent'],
+            'items': [{'label': o['name'], 'value': o['resolved'], 'remaining': o['remaining']} for o in res['options']]}
+
+
 def _region(ctx: Context) -> str | None:
     regions = {s.data.get('region') for s in ctx.store.items.values()} - {None}
     return regions.pop() if len(regions) == 1 else None
@@ -113,7 +127,8 @@ def build_screen(question: str, mode: str, answer: dict | None, check: VerifyRes
     notice 가 있으면(질문 전에 끝난 경우) 그 문구만 보여주고 지도·신뢰도는 없다."""
     if notice is not None:
         return {'mode': mode, 'question': question, 'region': None,
-                'display': {'headline': notice, 'details': [], 'caution': '', 'confidence': None, 'map': None},
+                'display': {'headline': notice, 'details': [], 'caution': '', 'confidence': None, 'map': None,
+                            'chart': None},
                 'internal': {'verification': {'passed': False, 'attempts': 0, 'errors': [], 'warnings': []},
                              'confidence_basis': {}, 'citations': [], 'caveats': [], 'tool_trace': []}}
     ok = answer is not None and check is not None and check.passed
@@ -132,6 +147,7 @@ def build_screen(question: str, mode: str, answer: dict | None, check: VerifyRes
     parts = {'headline': [display['headline']], 'details': display['details'], 'caution': [display['caution']]}
     shown = ' '.join(t for f in HIGHLIGHT_FROM[mode] for t in parts[f]) if ok else ''
     display['map'] = _map(ctx, answer['map_ref'] if answer else None, shown)
+    display['chart'] = _chart(ctx) if ok and mode == 'admin' else None
 
     reflected = set(answer['caveats_reflected']) if answer else set()
     internal = {

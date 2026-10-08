@@ -263,6 +263,36 @@
   }
  },
  {
+  "name": "compare_interventions",
+  "description": "세 가지 개입안을 같은 기준(가장 먼저 방문이 필요한 동네 중 해소되는 동네 수)으로 비교한다: 기존 시설 안내 / 경로당 거점 프로그램(경로당에 보건 기능 추가) / 이동형 서비스 배치. \"어떤 방식이 좋아?\", \"이동형이랑 경로당 거점 중 뭐가 나아?\"에 쓴다. 거점 수와 반경은 질문에 있으면 넣는다.",
+  "input_schema": {
+   "type": "object",
+   "properties": {
+    "region": {
+     "type": "string",
+     "description": "분석 지역 (목록은 tools.py 가 엔진 스키마에서 채운다)",
+     "enum": [
+      "강남",
+      "춘천"
+     ]
+    },
+    "k": {
+     "type": "integer",
+     "minimum": 1,
+     "maximum": 10,
+     "description": "거점 수. 없으면 엔진 기본값"
+    },
+    "radius_m": {
+     "type": "integer",
+     "description": "이동형 서비스 반경(m). 도보 500·1000, 차량 약 3000. 없으면 엔진 기본값"
+    }
+   },
+   "required": [
+    "region"
+   ]
+  }
+ },
+ {
   "name": "submit_answer",
   "description": "최종 답변을 제출한다. 필요한 도구를 모두 부른 뒤 마지막에 한 번 부른다. headline·details·caution 은 사용자 화면에 그대로 보이므로 결론과 설명만 쉬운 말로 쓴다. 정보량은 줄이지 않되, 긴 문장은 여러 짧은 문장으로 나눠 한 문장에 한 가지 내용만 쓴다 (도구 이름, 지표 이름, 결과 번호, 분석 기준값, 계산 과정은 쓰지 않는다). 이 세 곳에 쓴 숫자는 하나도 빠짐없이 citations 에 출처를 적는다.",
   "strict": true,

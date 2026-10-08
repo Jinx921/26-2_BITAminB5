@@ -149,6 +149,18 @@ class Digester:
                  '동네별 확인 질문과 방문 순서는 화면 목록이 원본에서 보여준다']
         return lines
 
+    def _core_compare_interventions(self, res: dict) -> list[str]:
+        opts = {o['key']: o for o in res.get('options', [])}
+        order = sorted(opts.values(), key=lambda o: -o['resolved'])
+        tie = len({o['resolved'] for o in order if o['key'] != 'baseline'}) == 1
+        return ['비교한 안: ' + ' / '.join(o['name'] for o in opts.values()),
+                '해소 수는 evidence 의 resolved_baseline·resolved_hub·resolved_mobile, 남는 수는 remaining_hub·remaining_mobile',
+                ('경로당 거점과 이동형의 해소 수가 같다. 운영 방식의 차이(상설 거점 / 순회)를 쉬운 말로 설명한다'
+                 if tie else '해소가 많은 순: ' + ' > '.join(o['name'] for o in order)),
+                '이동형 거점 행정동: ' + ', '.join(opts['mobile']['where']),
+                '경로당 거점 행정동: ' + ', '.join(opts['hub']['where']),
+                '거점은 행정동 이름으로 말한다 (경로당 이름은 원천 데이터 표기라 알아보기 어려울 수 있다)']
+
     def _core_find_facility(self, res: dict) -> list[str]:
         rows = res.get('matches', [])
         if not rows:

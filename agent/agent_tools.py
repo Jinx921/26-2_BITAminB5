@@ -98,8 +98,13 @@ def find_facility(engine, args: dict) -> dict:
 from agent.field_check import FIELD_CHECK, field_check                     # noqa: E402 (현장 확인 목록, 별도 파일)
 from agent.field_check import SCHEMA as _FIELD_CHECK_SCHEMA                  # noqa: E402
 
+from agent.compare import COMPARE, compare_interventions                   # noqa: E402 (세 개입안 비교, 별도 파일)
+from agent.compare import SCHEMA as _COMPARE_SCHEMA                          # noqa: E402
+
 SCHEMAS[FIELD_CHECK] = _FIELD_CHECK_SCHEMA
-RUNNERS = {SENIOR_HOURS: senior_hours, FIND_FACILITY: find_facility, FIELD_CHECK: field_check}
+SCHEMAS[COMPARE] = _COMPARE_SCHEMA
+RUNNERS = {SENIOR_HOURS: senior_hours, FIND_FACILITY: find_facility, FIELD_CHECK: field_check,
+           COMPARE: compare_interventions}
 
 
 def call_tool(engine, name: str, args: dict) -> dict:

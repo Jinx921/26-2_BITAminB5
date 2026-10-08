@@ -29,6 +29,11 @@ def _print_display(d: dict) -> None:
     c = d['confidence']
     if c:
         print(f"\n[신뢰도] {c['label']}" + (f"  {c['note']}" if c['note'] else ''))
+    ch = d.get('chart')
+    if ch:
+        print(f"\n[차트] {ch['title']}")
+        for i in ch['items']:
+            print(f"  {i['label']:<12} {'■' * i['value'] if ch['total'] <= 60 else ''} {i['value']}{ch['unit']}")
     m = d['map']
     if m:
         kinds = Counter(p.get('type') for p in m['points'] if p.get('type'))

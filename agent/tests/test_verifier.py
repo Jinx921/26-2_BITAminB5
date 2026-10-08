@@ -138,7 +138,9 @@ def test_process_numbers(ctx, ref, metric):
 def test_required_caveats_match_engine_text():
     """필수 caveat 핵심 구절이 실제 caveat(엔진 + 에이전트 도구)에 있다 (문구가 바뀌면 여기서 실패)."""
     texts = {c for p in FIXTURE_DIR.glob('*.json') for c in json.loads(p.read_text(encoding='utf-8'))['caveats']}
-    texts.add(SENIOR_HOURS_NOTE)
+    from agent.compare import ACCESS_NOTE, HUB_NOTE
+    from agent.field_check import NOTE as FIELD_NOTE
+    texts |= {SENIOR_HOURS_NOTE, ACCESS_NOTE, HUB_NOTE, FIELD_NOTE}                 # 에이전트 도구의 한계 문장
     for mode, rules in REQUIRED_CAVEATS.items():
         for _, phrase, _ in rules:
             assert any(phrase in t for t in texts), (mode, phrase)

@@ -14,7 +14,7 @@ from __future__ import annotations
 import re
 from dataclasses import dataclass, field
 
-from agent.agent_tools import SENIOR_HOURS_NOTE
+from agent.agent_tools import SENIOR_HOURS_NOTE, slot_label
 from agent.store import ResultStore
 from agent.terms import CITIZEN_BANNED
 from agent.tools import AGENT_SCHEMAS, MODE_TOOLS, SUBMIT
@@ -40,7 +40,8 @@ BANNED_BY_MODE = {'citizen': CITIZEN_BANNED}   # 모드별로 더 막는 말
 PROCESS_TOOLS = ('robustness',)          # 이 도구에서 온 숫자는 과정 수치
 PROCESS_METRIC_PREFIX = 'params.'        # 기준값도 과정 수치
 # 모드별로 화면에 써도 되는 params (시민에게 반경은 "걸어서 갈 만한 범위"라는 결론 정보)
-ALLOWED_PARAMS = {'citizen': ('params.radius_m',)}
+# 관리자: 배치 시뮬레이션의 거점 수·반경은 분석 기준이 아니라 사업 설계 조건(결론)이다
+ALLOWED_PARAMS = {'citizen': ('params.radius_m',), 'admin': ('params.k', 'params.radius_m')}
 
 # ③ 필수 caveat: 엔진 caveat 문장에서 찾을 핵심 구절 (엔진 문구가 바뀌면 테스트가 알려준다)
 REQUIRED_CAVEATS = {
@@ -49,6 +50,7 @@ REQUIRED_CAVEATS = {
         ('always', '거주자와 같지 않다', '유동인구는 거주자와 다르다 → 현장 확인'),
         ('classify', '두 층', '위축 신호 층과 자원 구조 층을 합쳐 말하지 않는다'),
         ('강남', '공공 보건기관', '강남 보건 거리는 공공 보건기관만 반영'),
+        ('simulate_placement', '고립 감소 효과를 뜻하지 않는다', '커버는 도달 가능성일 뿐 고립 감소 효과가 아니다'),
     ),
     'citizen': (
         ('lookup_resources', '직선거리', '거리는 직선거리라 실제로 걷는 거리와 다를 수 있다'),
@@ -62,6 +64,7 @@ _IDENT = re.compile(r'\b[A-Za-z]+(?:_\w+)+')                   # housing_thr, n_
 _CELL_ID = re.compile(r'\b\d+_\d+\b')
 _REF = re.compile(r'\br\d+\b')
 _LIST_MARK = re.compile(r'^\s*\d+[.)]\s', re.M)
+_AGE = re.compile(r'\d+\s*(?:대|세)\s*(?:이상|이하|미만|초과)')          # 연령 표기 (60대 이상, 65세 이상)
 _NUM = re.compile(r'(?<![\d.,])(\d{1,3}(?:,\d{3})+|\d+)(\.\d+)?\s*(%|퍼센트|km|㎞|m(?![a-zA-Z]))?')
 
 
@@ -96,11 +99,12 @@ def place_names(store: ResultStore) -> set[str]:
     for s in store.items.values():
         r = s.data.get('result', {})
         names |= set((r.get('slot_labels') or {}).values())
+        names |= {slot_label(k) for k in (r.get('senior60_card_time_pct') or {})}     # region_context 시간대
         if r.get('age_label'):
             names.add(r['age_label'])
         for k in ('by_emd', 'by_emd_withdrawn'):
             names |= set(r.get(k) or {})
-        for k in ('cells', 'table', 'chosen_sites', 'changed_cells', 'within_radius', 'nearest_by_kind'):
+        for k in ('cells', 'table', 'chosen_sites', 'changed_cells', 'within_radius', 'nearest_by_kind', 'matches', 'removed'):
             for row in r.get(k) or []:
                 names |= {row[f] for f in ('emd_name', 'name', 'addr') if row.get(f)}
     return names
@@ -109,7 +113,7 @@ def place_names(store: ResultStore) -> set[str]:
 def _numbers(text: str) -> list[tuple[str, str]]:
     """문장 속 숫자 → [(정규화한 숫자, 단위)]. 칸 ID·지표 이름·목록 번호 속 숫자는 뺀다."""
     text = _IDENT.sub(' ', _CELL_ID.sub(' ', text))
-    text = _LIST_MARK.sub(' ', text)
+    text = _AGE.sub(' ', _LIST_MARK.sub(' ', text))
     out = []
     for m in _NUM.finditer(text):
         num = m.group(1).replace(',', '') + (m.group(2) or '')
@@ -148,6 +152,8 @@ def _value_ok(text: str, op: str, values: list[float]) -> bool:
         if len(values) != 1:
             return False
         v = values[0]
+    elif op == 'percent' and len(values) == 1:          # 비율 하나를 %로 (0.5453 → 54.5%)
+        v = values[0] * 100 if values[0] <= 1 else values[0]
     elif op in ('ratio', 'percent'):
         if len(values) != 2 or values[1] == 0:
             return False
@@ -209,6 +215,10 @@ def _check_numbers(ans: dict, ctx: Context, res: VerifyResult) -> None:
             if tool in PROCESS_TOOLS or (s['metric'].startswith(PROCESS_METRIC_PREFIX) and not allowed_param):
                 res.errors.append(f'과정 수치를 화면에 씀: "{c["text"]}" ({tool} 결과 또는 기준값). '
                                   '기준값이나 기준을 바꾼 결과는 쓰지 않고 "현장 확인이 필요하다"처럼 쉬운 말로 쓴다')
+        ks = {m.group(1) for s in c['sources'] if (m := re.search(r'_k(\d+)$', s['metric']))}
+        num = _numbers(c['text'])
+        if ks and num and num[0][0] in ks:                       # "3곳" = 지표 이름의 거점 수 (…_k3)
+            continue
         if not bad and not _value_ok(c['text'], c['op'], values):
             res.errors.append(f'값이 출처와 다름: "{c["text"]}" ({c["op"]}, 출처 값 {values})')
 

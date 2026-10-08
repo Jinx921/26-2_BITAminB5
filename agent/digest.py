@@ -108,6 +108,50 @@ class Digester:
         lines.append('시설 이름·주소는 이 표기 그대로 쓴다')
         return lines
 
+    def _core_simulate_placement(self, res: dict) -> list[str]:
+        sites = [s['emd_name'] for s in res.get('chosen_sites', [])]
+        return ['고른 거점 위치 (행정동, 덮는 칸이 많은 순): ' + ' > '.join(sites),
+                '배치 후 대상 칸의 유형: ' + ', '.join(res.get('type_after', {})),
+                '거점 수별 덮는 비율은 evidence 의 covered_senior_share_k1~k5 (60대 이상 유동 기준)',
+                '거점 위치는 행정동 이름으로 말한다']
+
+    def _core_facility_change(self, res: dict) -> list[str]:
+        removed = [f"{r['name']}({r['kind']})" for r in res.get('removed', [])]
+        added = [p.get('name', '신규 시설') for p in res.get('added', [])]
+        moves = [f'{a} → {b}' for a, t in res.get('transitions', {}).items() for b in t if a != b]
+        emd = {}
+        for c in res.get('changed_cells', []):
+            emd[c['emd_name']] = emd.get(c['emd_name'], 0) + 1
+        lines = []
+        if removed:
+            lines.append('뺀 시설: ' + ', '.join(removed))
+        if added:
+            lines.append('더한 시설: ' + ', '.join(added))
+        if res.get('not_found'):
+            lines.append('찾지 못한 시설 ID (반영 안 됨): ' + ', '.join(res['not_found']))
+        lines.append('유형이 바뀌는 방향: ' + (', '.join(moves) or '없음'))
+        if emd:
+            lines.append('유형이 바뀌는 칸이 많은 행정동 순: ' + ' > '.join(_ranked(emd)))
+        return lines
+
+    def _core_region_context(self, res: dict) -> list[str]:
+        pct = res.get('senior60_card_time_pct', {})
+        order = sorted(pct, key=pct.get, reverse=True)
+        from agent.agent_tools import slot_label
+        return [f"도시 해석 관점: {res.get('lens', '')}",
+                '60대 이상 결제가 많은 시간대 순: ' + ' > '.join(slot_label(k) for k in order),
+                '시간대는 이 표기 그대로 쓴다. 칸 단위 판단에는 쓰지 않는다']
+
+    def _core_find_facility(self, res: dict) -> list[str]:
+        rows = res.get('matches', [])
+        if not rows:
+            return ['찾은 시설 없음']
+        lines = ['찾은 시설 (시설 ID: 이름 / 종류 / 주소):']
+        lines += [f"  {r['fac_id']}: {r['name']} / {r['kind']} / {r.get('addr') or '주소 정보 없음'}" for r in rows]
+        if len(rows) > 1:
+            lines.append('같은 이름이 여러 곳이면 질문에 맞는 곳을 고르고, 애매하면 어느 곳 기준인지 답에서 밝힌다')
+        return lines
+
     def _core_senior_hours(self, res: dict) -> list[str]:
         labels = res['slot_labels']
         order = sorted(res['senior60_card_time_pct'], key=res['senior60_card_time_pct'].get, reverse=True)

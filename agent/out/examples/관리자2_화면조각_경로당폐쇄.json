@@ -1,0 +1,224 @@
+{
+ "mode": "admin",
+ "question": "춘천 신북읍 지내2리 경로당이 문을 닫으면 어떻게 돼?",
+ "region": "춘천",
+ "display": {
+  "headline": "신북읍 지내2리 경로당이 문을 닫으면, 주변 동네 가운데 낮 외출이 줄어든 곳들이 가장 먼저 방문이 필요한 동네로 바뀔 수 있습니다. 이 영향은 대부분 신북읍에 몰려 있습니다.",
+  "details": [
+   "이름이 같은 경로당이 두 곳 있습니다. 신북읍 성문길에 있는 경로당을 기준으로 살펴보았습니다. 동면 지내양지길의 같은 이름 경로당은 다른 곳이니, 그곳이 궁금하시면 다시 알려 주세요.",
+   "이 경로당이 없어지면 모두 9곳의 동네에서 상황이 달라집니다. 그중 7곳은 가까운 시설과 이어 주면 좋은 동네(연계형)에서 가장 먼저 방문이 필요한 동네(긴급방문형)로 바뀝니다. 낮 외출이 줄었지만 지금은 경로당이 가까이 있어 버티던 곳들입니다. 경로당이 사라지면 갈 곳이 멀어집니다.",
+   "나머지 2곳은 정기적으로 살펴보면 되는 동네(관찰형)에서 미리 시설을 갖춰 두면 좋은 동네(예방인프라형)로 바뀝니다. 아직 낮 외출이 줄지는 않았지만, 가까운 모임 장소가 없어지는 경우입니다. 바뀌는 동네는 신북읍에 가장 많습니다.",
+   "문을 닫을 계획이 있다면 먼저 신북읍의 낮 외출이 줄어든 동네부터 살피는 것이 좋습니다. 대체할 마을회관이나 다른 경로당으로 이어 주거나, 이동형 상담·모임을 연결하는 방법을 생각해 볼 수 있습니다. 낮 외출이 줄어든 동네와 그렇지 않은 동네는 성격이 다르므로, 두 가지를 합쳐 하나의 위험 숫자로 보지 않아야 합니다."
+  ],
+  "caution": "이 결과는 그 지역에 머무는 사람을 기준으로 해서 실제로 사는 사람과 다를 수 있습니다. 방문 전에 실제로 사람이 사는 곳인지 현장에서 확인해 주세요. 시설까지의 거리는 직선거리라서 경사나 교통편은 반영하지 못했습니다. 실제로 가기 어려운지도 함께 살펴 주세요. 춘천은 일부 주거·고령 자료의 정확도가 낮습니다. 결과는 동네 단위이고 개인을 말하는 것이 아닙니다.",
+  "confidence": {
+   "label": "보통",
+   "note": "방문 전에 현장 확인을 권합니다."
+  },
+  "map": {
+   "layer": "facilities",
+   "ref": "r1",
+   "points": [
+    {
+     "id": "CC_00225",
+     "lat": 37.9598,
+     "lon": 127.7209,
+     "name": "지내2리 경로당",
+     "kind": "경로당",
+     "highlight": true
+    },
+    {
+     "id": "CC_00239",
+     "lat": 37.9189,
+     "lon": 127.7854,
+     "name": "지내2리 경로당",
+     "kind": "경로당",
+     "highlight": false
+    }
+   ],
+   "geojson": null
+  }
+ },
+ "internal": {
+  "verification": {
+   "passed": true,
+   "attempts": 1,
+   "errors": [],
+   "warnings": []
+  },
+  "confidence_basis": {
+   "ref": "r3",
+   "threshold": 0.7,
+   "min_jaccard": 0.0,
+   "sensitive": [
+    {
+     "param": "housing_thr",
+     "value": 200,
+     "urgent_jaccard": 0.0
+    },
+    {
+     "param": "housing_thr",
+     "value": 100,
+     "urgent_jaccard": 0.0294
+    },
+    {
+     "param": "housing_thr",
+     "value": 0,
+     "urgent_jaccard": 0.2333
+    },
+    {
+     "param": "far_social_m",
+     "value": 1000,
+     "urgent_jaccard": 0.3091
+    },
+    {
+     "param": "persist_min",
+     "value": 6,
+     "urgent_jaccard": 0.3273
+    },
+    {
+     "param": "far_social_m",
+     "value": 300,
+     "urgent_jaccard": 0.5392
+    },
+    {
+     "param": "persist_min",
+     "value": 5,
+     "urgent_jaccard": 0.6182
+    },
+    {
+     "param": "residential_filter",
+     "value": false,
+     "urgent_jaccard": 0.6875
+    }
+   ]
+  },
+  "citations": [
+   {
+    "text": "9",
+    "op": "value",
+    "sources": [
+     {
+      "ref": "r2",
+      "metric": "n_changed_cells"
+     }
+    ]
+   },
+   {
+    "text": "7",
+    "op": "value",
+    "sources": [
+     {
+      "ref": "r2",
+      "metric": "연계형->긴급방문형"
+     }
+    ]
+   },
+   {
+    "text": "2",
+    "op": "value",
+    "sources": [
+     {
+      "ref": "r2",
+      "metric": "관찰형->예방인프라형"
+     }
+    ]
+   }
+  ],
+  "caveats": [
+   {
+    "id": "c1",
+    "text": "시설 이름 검색은 엔진 시설 목록(경로당·마을회관·도서관·공공체육·문화시설·보건기관)에서 찾는다.",
+    "reflected": false
+   },
+   {
+    "id": "c2",
+    "text": "통신 유동인구는 머무는 사람 기준이며 거주자와 같지 않다. 거주 여부는 현장 확인이 필요하다.",
+    "reflected": true
+   },
+   {
+    "id": "c3",
+    "text": "개인이 아니라 250m 칸 단위 집계 결과다.",
+    "reflected": true
+   },
+   {
+    "id": "c4",
+    "text": "거리는 칸 중심에서 시설까지 직선거리다. 실제 이동 시간·경사·교통편은 반영하지 않는다.",
+    "reflected": true
+   },
+   {
+    "id": "c5",
+    "text": "거주 칸 = 팀 기준(야간 비중 + SGIS 1km 주택 수) 통과 칸 중 GIS 주거·용도미상 건물이 있는 칸.",
+    "reflected": false
+   },
+   {
+    "id": "c6",
+    "text": "SGIS 값(주택 수·고령·1인가구)은 1km 격자 단위라 같은 1km 안의 250m 칸이 같은 값을 공유한다. 춘천은 신뢰 격자가 적다.",
+    "reflected": true
+   },
+   {
+    "id": "c7",
+    "text": "긴급방문형·연계형은 활동 위축 신호가 있는 칸(정책 우선 대상)이고, 예방인프라형·관찰형은 위축 신호가 없는 일반 거주 칸의 자원 구조 지도다. 두 층을 같은 무게의 위험 숫자로 합쳐 말하지 않는다.",
+    "reflected": true
+   }
+  ],
+  "tool_trace": [
+   {
+    "ref": "r1",
+    "tool": "find_facility",
+    "args": {
+     "region": "춘천",
+     "name": "지내2리"
+    }
+   },
+   {
+    "ref": "r2",
+    "tool": "facility_change",
+    "args": {
+     "region": "춘천",
+     "remove_ids": [
+      "CC_00225"
+     ]
+    }
+   },
+   {
+    "ref": "r3",
+    "tool": "robustness",
+    "args": {
+     "region": "춘천",
+     "auto": "신뢰도 계산용 (코드가 호출)"
+    }
+   }
+  ],
+  "run": {
+   "model": "claude-sonnet-5-5",
+   "effort": "medium",
+   "end": "passed",
+   "passed": true,
+   "calls": [
+    {
+     "stop_reason": "tool_use",
+     "input_tokens": 4,
+     "output_tokens": 74,
+     "cache_read_input_tokens": 6194,
+     "cache_creation_input_tokens": 0
+    },
+    {
+     "stop_reason": "tool_use",
+     "input_tokens": 2,
+     "output_tokens": 82,
+     "cache_read_input_tokens": 6634,
+     "cache_creation_input_tokens": 0
+    },
+    {
+     "stop_reason": "tool_use",
+     "input_tokens": 2,
+     "output_tokens": 1240,
+     "cache_read_input_tokens": 7398,
+     "cache_creation_input_tokens": 0
+    }
+   ],
+   "rejected": []
+  }
+ }
+}

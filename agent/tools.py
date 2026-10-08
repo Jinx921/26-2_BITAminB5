@@ -15,7 +15,7 @@ import importlib
 import sys
 
 from agent.agent_tools import SCHEMAS as AGENT_SCHEMAS
-from agent.agent_tools import SENIOR_HOURS
+from agent.agent_tools import FIND_FACILITY, SENIOR_HOURS
 from agent.engine_client import ENGINE_DIR
 
 # Sonnet 이 바꾸지 못하게 스키마에서 빼는 기준값 인자
@@ -32,7 +32,7 @@ FIXED_ARGS = {
 # 모드별 엔진 도구. 엔진에 새 도구가 생기면 여기서 어느 모드에 줄지 정해야 한다 (테스트가 확인)
 MODE_TOOLS = {
     'admin': ('find_candidates', 'check_residential', 'lookup_resources', 'classify',
-              'simulate_placement', 'robustness', 'facility_change', 'region_context'),
+              'simulate_placement', 'robustness', 'facility_change', 'region_context', FIND_FACILITY),
     # 시민 모드: 위험 판정이 나올 수 있는 도구는 넣지 않는다.
     # region_context 는 결과에 유형별 칸 수(type_counts)가 들어 있어 시민 모드에서 빼고,
     # 시간대만 꺼내는 에이전트 도구(senior_hours)를 대신 준다
@@ -120,6 +120,10 @@ def tools_for(mode: str) -> list[dict]:
     allowed = MODE_TOOLS[mode]
     engine = [_lock(s, mode) for s in _engine_schemas() if s['name'] in allowed]
     agent = [copy.deepcopy(s) for n, s in AGENT_SCHEMAS.items() if n in allowed]
+    for s in agent:                                   # 지역 목록은 엔진 스키마와 같게
+        region = s['input_schema']['properties'].get('region')
+        if region is not None:
+            region['enum'] = service_regions()
     return engine + agent + [copy.deepcopy(SUBMIT_SCHEMA)]
 
 

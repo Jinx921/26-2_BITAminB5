@@ -40,6 +40,8 @@ MAP_ROWS = {
                          'months': 'persistent_months'}),
     'simulate_placement': ('sites', 'chosen_sites',
                            {'id': 'cell_id', 'lat': 'lat', 'lon': 'lon', 'emd_name': 'emd_name', 'covers': 'covers'}),
+    'find_facility': ('facilities', 'matches',
+                      {'id': 'fac_id', 'lat': 'lat', 'lon': 'lon', 'name': 'name', 'kind': 'kind'}),
     'lookup_resources': ('facilities', 'within_radius',
                          {'id': 'fac_id', 'lat': 'lat', 'lon': 'lon', 'name': 'name', 'kind': 'kind', 'dist_m': 'dist_m'}),
 }
@@ -49,7 +51,7 @@ HIGHLIGHT_BY = {'facilities': 'name', 'types': 'emd_name', 'candidates': 'emd_na
 # 시민은 설명에서 소개한 시설까지 강조한다
 HIGHLIGHT_FROM = {'admin': ('headline',), 'citizen': ('headline', 'details', 'caution')}
 # map_ref 가 없거나 지도로 그릴 수 없을 때 고르는 순서
-MAP_FALLBACK_ORDER = ('classify', 'find_candidates', 'simulate_placement', 'lookup_resources')
+MAP_FALLBACK_ORDER = ('classify', 'find_candidates', 'simulate_placement', 'lookup_resources', 'find_facility')
 
 
 def _mentioned(values: set[str], text: str) -> set[str]:
@@ -80,8 +82,13 @@ def _map(ctx: Context, map_ref: str | None, text: str = '') -> dict | None:
     points = [{k: r.get(src) for k, src in fields.items()} for r in rows]
     key = HIGHLIGHT_BY.get(layer)
     hit = _mentioned({p[key] for p in points if p.get(key)}, text) if key else set()
+    # 시설 변화 가정을 했다면 실제로 뺀 시설만 강조한다 (같은 이름의 다른 시설이 함께 강조되지 않게)
+    removed = {r['fac_id'] for c in st.by_tool('facility_change') for r in c.data['result'].get('removed', [])}
     for p in points:
-        p['highlight'] = bool(key) and p.get(key) in hit          # 답변에서 언급한 곳 (프론트가 강조)
+        if layer == 'facilities' and removed and text:
+            p['highlight'] = p.get('id') in removed
+        else:
+            p['highlight'] = bool(key) and p.get(key) in hit      # 답변에서 언급한 곳 (프론트가 강조)
     return {'layer': layer, 'ref': ref, 'points': points, 'geojson': s.data.get('geojson')}
 
 

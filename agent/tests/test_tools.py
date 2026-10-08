@@ -4,7 +4,7 @@ import copy
 import pytest
 
 from agent.engine_client import LiveEngine
-from agent.tools import (LOCKED_ARGS, MODE_TOOLS, SUBMIT, SUBMIT_SCHEMA, _engine_schemas, is_allowed, strip_locked,
+from agent.tools import (AGENT_SCHEMAS, LOCKED_ARGS, MODE_TOOLS, SUBMIT, SUBMIT_SCHEMA, _engine_schemas, is_allowed, strip_locked,
                          tools_for)
 
 RISK_TOOLS = ('find_candidates', 'classify', 'check_residential', 'simulate_placement', 'robustness',
@@ -24,13 +24,16 @@ def test_citizen_has_no_risk_tools():
 
 
 def test_admin_has_all_engine_tools():
-    assert _names('admin') == [s['name'] for s in _engine_schemas()] + [SUBMIT]
+    names = _names('admin')
+    engine = [s['name'] for s in _engine_schemas()]
+    assert names[:len(engine)] == engine and names[-1] == SUBMIT
+    assert set(names[len(engine):-1]) <= set(AGENT_SCHEMAS)                 # 그 사이는 에이전트 도구
 
 
 def test_every_engine_tool_has_a_mode_decision():
     """엔진에 새 도구가 생기면 MODE_TOOLS 에서 어느 모드에 줄지 정해야 한다."""
     engine_tools = set(LiveEngine().tool_names) if _engine_data() else {s['name'] for s in _engine_schemas()}
-    assert engine_tools == set(MODE_TOOLS['admin'])
+    assert engine_tools == set(MODE_TOOLS['admin']) - set(AGENT_SCHEMAS)
 
 
 def _engine_data():

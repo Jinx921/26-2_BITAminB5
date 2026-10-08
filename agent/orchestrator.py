@@ -86,9 +86,25 @@ class Orchestrator:
         note = f'\n(기준값 인자 {", ".join(dropped)} 는 바꿀 수 없어 기본값으로 계산했다)' if dropped else ''
         return result(d.text + note)
 
+    # ------------------------------------------------------------ 신뢰도용 강건성 점검
+    def _ensure_robustness(self, turn: Turn) -> None:
+        """관리자 모드에서 Sonnet 이 강건성 점검을 부르지 않았으면 코드가 부른다 (신뢰도는 코드가 정하는 값).
+        Sonnet 에는 넘기지 않고 보관소에만 둔다."""
+        if self.mode != 'admin' or turn.store.by_tool('robustness'):
+            return
+        regions = [s.data.get('region') for s in turn.store.items.values() if s.data.get('region')]
+        if not regions:
+            return
+        try:
+            data = self.engine.call('robustness', {'region': regions[0]})
+        except EngineError:
+            return
+        turn.store.put('robustness', {'region': regions[0], 'auto': '신뢰도 계산용 (코드가 호출)'}, data)
+
     # ------------------------------------------------------------ 답변 제출
     def _submit(self, turn: Turn, block) -> dict | None:
         """검증 통과면 None (끝), 다시 쓰게 할 때는 돌려줄 tool_result."""
+        self._ensure_robustness(turn)
         turn.attempts += 1
         turn.answer = dict(block.input)
         turn.check = verify(turn.answer, turn.context())

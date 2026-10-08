@@ -97,7 +97,8 @@ def build_screen(question: str, mode: str, answer: dict | None, check: VerifyRes
         }
     else:
         display = {'headline': FALLBACK_TEXT[mode], 'details': [], 'caution': ''}
-    display['confidence'] = {'label': grade, 'note': note}
+    # 신뢰도는 분석 결과가 기준에 따라 흔들리는 정도라 관리자 화면에만 보인다
+    display['confidence'] = {'label': grade, 'note': note} if mode == 'admin' else None
     display['map'] = _map(ctx, answer['map_ref'] if answer else None)
 
     reflected = set(answer['caveats_reflected']) if answer else set()

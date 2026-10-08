@@ -16,7 +16,7 @@ from agent.digest import Digester
 from agent.engine_client import EngineError
 from agent.location import detect_region
 from agent.prompts import build_system
-from agent.screen import CITIZEN_NOTICE, REGION_NAMES, build_screen
+from agent.screen import CITIZEN_NOTICE, LOCATION_KEYS, REGION_NAMES, build_screen
 from agent.store import ResultStore
 from agent.tools import FIXED_ARGS, SUBMIT, is_allowed, service_regions, strip_locked, tools_for
 from agent.verifier import Context, VerifyResult, feedback, verify
@@ -114,6 +114,8 @@ class Orchestrator:
         사용자가 지금 있는 곳(위치 허용)일 수도, 지도에서 고르거나 주소로 입력한 곳일 수도 있다
         (예: 부산에 사는 자녀가 춘천에 계신 어머니 동네를 대신 찾는 경우)."""
         turn = Turn(question, self.mode)
+        if self.mode == 'citizen':
+            turn.digester = Digester(hidden_params=LOCATION_KEYS)        # 찾을 위치 좌표는 Sonnet 에 넘기지 않는다
         content = [{'type': 'text', 'text': question}]
         if self.mode == 'citizen':
             if not location:

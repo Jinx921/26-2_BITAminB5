@@ -4,6 +4,7 @@ import json
 
 import pytest
 
+from agent.agent_tools import SENIOR_HOURS_NOTE
 from agent.digest import Digester
 from agent.engine_client import FIXTURE_DIR, FixtureEngine
 from agent.store import ResultStore, StoredResult
@@ -26,7 +27,7 @@ def _cid(ctx, phrase):
 
 
 def _required(ctx):
-    return [c for t, c in ctx.caveat_ids.items() if any(p in t for _, p, _ in REQUIRED_CAVEATS)]
+    return [c for t, c in ctx.caveat_ids.items() if any(p in t for _, p, _ in REQUIRED_CAVEATS[ctx.mode])]
 
 
 def _good(ctx):
@@ -135,10 +136,12 @@ def test_process_numbers(ctx, ref, metric):
 
 # ---------------------------------------------------------------- ③ 필수 caveat
 def test_required_caveats_match_engine_text():
-    """필수 caveat 핵심 구절이 실제 엔진 caveat 에 있다 (엔진 문구가 바뀌면 여기서 실패)."""
+    """필수 caveat 핵심 구절이 실제 caveat(엔진 + 에이전트 도구)에 있다 (문구가 바뀌면 여기서 실패)."""
     texts = {c for p in FIXTURE_DIR.glob('*.json') for c in json.loads(p.read_text(encoding='utf-8'))['caveats']}
-    for _, phrase, _ in REQUIRED_CAVEATS:
-        assert any(phrase in t for t in texts), phrase
+    texts.add(SENIOR_HOURS_NOTE)
+    for mode, rules in REQUIRED_CAVEATS.items():
+        for _, phrase, _ in rules:
+            assert any(phrase in t for t in texts), (mode, phrase)
 
 
 def test_missing_required_caveat(ctx):

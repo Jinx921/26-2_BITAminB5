@@ -33,6 +33,7 @@ class Digest:
 class Digester:
     """한 질문 안에서 여러 도구 결과를 차례로 요약한다 (caveat 번호를 질문 단위로 공유)."""
     caveat_ids: dict[str, str] = field(default_factory=dict)   # 문장 → c 번호
+    hidden_params: tuple = ()                                   # Sonnet 에 넘기지 않을 params (시민 모드: 찾을 위치 좌표)
 
     def __call__(self, s: StoredResult) -> Digest:
         d = s.data
@@ -47,9 +48,10 @@ class Digester:
         for e in d['evidence']:
             lines.append(f"  {e['metric']} = {_fmt(e['value'])}")
             citable[e['metric']] = e['value']
-        if d['params']:
-            lines.append('params (인용 가능): ' + ', '.join(f'{k}={_fmt(v)}' for k, v in d['params'].items()))
-            citable.update({f'params.{k}': v for k, v in d['params'].items()})
+        params = {k: v for k, v in d['params'].items() if k not in self.hidden_params and v is not None}
+        if params:
+            lines.append('params (인용 가능): ' + ', '.join(f'{k}={_fmt(v)}' for k, v in params.items()))
+            citable.update({f'params.{k}': v for k, v in params.items()})
 
         core = getattr(self, f"_core_{d['tool']}", self._core_default)(res)
         if core:
@@ -91,6 +93,19 @@ class Digester:
             lines.append(f'{t}이 많은 행정동 순: ' + ' > '.join(_ranked(counts)))
         # 칸 단위 목록(table)은 넘기지 않는다: 행정동 순서와 다른 기준으로 정렬돼 결론이 헷갈리고,
         # 칸 위치는 화면 지도가 원본에서 그린다
+        return lines
+
+    def _core_lookup_resources(self, res: dict) -> list[str]:
+        # 시설 이름·주소는 결과에 나온 그대로 넘긴다 (거리는 evidence 에 있다)
+        def row(r):
+            return f"  {r['kind']}: {r['name']} / {r.get('addr') or '주소 정보 없음'}"
+        lines = ['종류별 가장 가까운 시설 (거리는 evidence 의 nearest_종류_m):']
+        lines += [row(r) for r in res.get('nearest_by_kind', [])]
+        near = res.get('within_radius', [])
+        if near:
+            lines.append('반경 안 시설 (가까운 순, 거리는 가장 가까운 시설만 evidence 에 있다):')
+            lines += [row(r) for r in near]
+        lines.append('시설 이름·주소는 이 표기 그대로 쓴다')
         return lines
 
     def _core_senior_hours(self, res: dict) -> list[str]:

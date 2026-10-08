@@ -14,7 +14,9 @@ from __future__ import annotations
 import re
 from dataclasses import dataclass, field
 
+from agent.agent_tools import SENIOR_HOURS_NOTE
 from agent.store import ResultStore
+from agent.terms import CITIZEN_BANNED
 from agent.tools import AGENT_SCHEMAS, MODE_TOOLS, SUBMIT
 
 DISPLAY_FIELDS = ('headline', 'details', 'caution')
@@ -34,16 +36,27 @@ GRADE_NOTE = {
 
 # ② 금지 표현
 BANNED_WORDS = ('evidence', 'params', 'metric', 'jaccard', 'SGIS', 'robust', '칸', '위축 신호', '위축신호')
+BANNED_BY_MODE = {'citizen': CITIZEN_BANNED}   # 모드별로 더 막는 말
 PROCESS_TOOLS = ('robustness',)          # 이 도구에서 온 숫자는 과정 수치
 PROCESS_METRIC_PREFIX = 'params.'        # 기준값도 과정 수치
+# 모드별로 화면에 써도 되는 params (시민에게 반경은 "걸어서 갈 만한 범위"라는 결론 정보)
+ALLOWED_PARAMS = {'citizen': ('params.radius_m',)}
 
 # ③ 필수 caveat: 엔진 caveat 문장에서 찾을 핵심 구절 (엔진 문구가 바뀌면 테스트가 알려준다)
-REQUIRED_CAVEATS = (
-    # (조건, 핵심 구절, 설명)
-    ('always', '거주자와 같지 않다', '유동인구는 거주자와 다르다 → 현장 확인'),
-    ('classify', '두 층', '위축 신호 층과 자원 구조 층을 합쳐 말하지 않는다'),
-    ('강남', '공공 보건기관', '강남 보건 거리는 공공 보건기관만 반영'),
-)
+REQUIRED_CAVEATS = {
+    # 모드: ((조건, 핵심 구절, 설명), ...). 조건 = always / 도구 이름 / 지역 이름
+    'admin': (
+        ('always', '거주자와 같지 않다', '유동인구는 거주자와 다르다 → 현장 확인'),
+        ('classify', '두 층', '위축 신호 층과 자원 구조 층을 합쳐 말하지 않는다'),
+        ('강남', '공공 보건기관', '강남 보건 거리는 공공 보건기관만 반영'),
+    ),
+    'citizen': (
+        ('lookup_resources', '직선거리', '거리는 직선거리라 실제로 걷는 거리와 다를 수 있다'),
+        ('lookup_resources', '세부 프로그램은 기관 확인', '세부 프로그램·운영 시간은 시설에 직접 확인'),
+        ('senior_hours', SENIOR_HOURS_NOTE[-14:], '시·구 전체 기준이며 시설 운영 시간이 아니다'),
+        ('강남', '공공 보건기관', '보건기관은 공공 보건기관만 안내'),
+    ),
+}
 
 _IDENT = re.compile(r'\b[A-Za-z]+(?:_\w+)+')                   # housing_thr, n_긴급방문형 같은 지표 이름
 _CELL_ID = re.compile(r'\b\d+_\d+\b')
@@ -83,11 +96,13 @@ def place_names(store: ResultStore) -> set[str]:
     for s in store.items.values():
         r = s.data.get('result', {})
         names |= set((r.get('slot_labels') or {}).values())
+        if r.get('age_label'):
+            names.add(r['age_label'])
         for k in ('by_emd', 'by_emd_withdrawn'):
             names |= set(r.get(k) or {})
         for k in ('cells', 'table', 'chosen_sites', 'changed_cells', 'within_radius', 'nearest_by_kind'):
             for row in r.get(k) or []:
-                names |= {row[f] for f in ('emd_name', 'name') if row.get(f)}
+                names |= {row[f] for f in ('emd_name', 'name', 'addr') if row.get(f)}
     return names
 
 
@@ -101,6 +116,22 @@ def _numbers(text: str) -> list[tuple[str, str]]:
         unit = {'퍼센트': '%', '㎞': 'km'}.get(m.group(3), m.group(3) or '')
         out.append((num, unit))
     return out
+
+
+def _strip_names(text: str, names: list[str]) -> str:
+    """이름 속 숫자를 지운다. 이름 전체가 그대로 있거나(개포2동), 숫자와 그 앞 글자가 이름의 일부이면
+    (줄여 쓴 주소 "서부대성로 71", "107번길 14") 이름으로 본다."""
+    for n in names:                                             # 긴 이름부터
+        text = text.replace(n, ' ')
+    out, last = [], 0
+    for m in re.finditer(r'\d+', text):
+        s, e = m.span()
+        is_name = any(len(text[s - k:s].strip()) >= 2 and text[s - k:e] in n
+                      for k in range(2, 12) if s - k >= 0 for n in names)
+        if is_name:
+            out.append(text[last:s] + ' ')
+            last = e
+    return ''.join(out) + text[last:]
 
 
 def _close(shown: float, expected: float, decimals: int) -> bool:
@@ -150,9 +181,7 @@ def _check_numbers(ans: dict, ctx: Context, res: VerifyResult) -> None:
         if ns:
             cited.setdefault(ns[0], c)
     for f in DISPLAY_FIELDS:
-        text = ans[f]
-        for n in names:                                         # 이름 속 숫자는 출처가 필요 없다
-            text = text.replace(n, ' ')
+        text = _strip_names(ans[f], names)                      # 이름 속 숫자는 출처가 필요 없다
         for num, unit in _numbers(text):
             if num in allowed:
                 continue
@@ -160,6 +189,8 @@ def _check_numbers(ans: dict, ctx: Context, res: VerifyResult) -> None:
                 res.errors.append(f'출처 없는 숫자: "{num}{unit}" ({f}). 결과에 있는 값만 쓰고 citations 에 출처를 적는다')
 
     for c in ans['citations']:
+        if not _numbers(_strip_names(c['text'], names)):          # 이름(시간대 등)을 출처로 적은 경우는 검사하지 않는다
+            continue
         values, bad = [], False
         for s in c['sources']:
             table = ctx.citable.get(s['ref'])
@@ -174,7 +205,8 @@ def _check_numbers(ans: dict, ctx: Context, res: VerifyResult) -> None:
                 continue
             values.append(float(v))
             tool = ctx.store.get(s['ref']).tool
-            if tool in PROCESS_TOOLS or s['metric'].startswith(PROCESS_METRIC_PREFIX):
+            allowed_param = s['metric'] in ALLOWED_PARAMS.get(ctx.mode, ())
+            if tool in PROCESS_TOOLS or (s['metric'].startswith(PROCESS_METRIC_PREFIX) and not allowed_param):
                 res.errors.append(f'과정 수치를 화면에 씀: "{c["text"]}" ({tool} 결과 또는 기준값). '
                                   '기준값이나 기준을 바꾼 결과는 쓰지 않고 "현장 확인이 필요하다"처럼 쉬운 말로 쓴다')
         if not bad and not _value_ok(c['text'], c['op'], values):
@@ -185,7 +217,7 @@ def _check_banned(ans: dict, ctx: Context, res: VerifyResult) -> None:
     tool_names = set(MODE_TOOLS['admin']) | set(AGENT_SCHEMAS) | {SUBMIT}
     for f in DISPLAY_FIELDS:
         t = ans[f]
-        found = [w for w in BANNED_WORDS if w in t]
+        found = [w for w in BANNED_WORDS + BANNED_BY_MODE.get(ctx.mode, ()) if w in t]
         found += [n for n in tool_names if n in t]
         found += _CELL_ID.findall(t) + _REF.findall(t)
         found += [w for w in _IDENT.findall(t) if w not in tool_names]
@@ -200,7 +232,7 @@ def _check_caveats(ans: dict, ctx: Context, res: VerifyResult) -> None:
             res.errors.append(f'없는 caveat 번호: {cid}')
     tools = {s.tool for s in ctx.store.items.values()}
     regions = {s.data.get('region') for s in ctx.store.items.values()}
-    for cond, phrase, desc in REQUIRED_CAVEATS:
+    for cond, phrase, desc in REQUIRED_CAVEATS.get(ctx.mode, ()):
         if cond == 'always' or cond in tools or cond in regions:
             for text, cid in ctx.caveat_ids.items():
                 if phrase in text and cid not in ans['caveats_reflected']:

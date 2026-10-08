@@ -12,7 +12,8 @@ from __future__ import annotations
 SENIOR_HOURS = 'senior_hours'
 _TIME_METRIC = 'senior60_card_time_'           # 엔진 region_context 의 시간대 evidence 이름
 
-SENIOR_HOURS_NOTE = '시·구 전체의 60대 이상 카드 결제 시간대 비중이다. 동네별 값이나 시설 운영 시간이 아니다.'
+AGE_LABEL = '60대 이상'                          # 연령 표기 (화면에 써도 되는 이름)
+SENIOR_HOURS_NOTE = f'시·구 전체의 {AGE_LABEL} 카드 결제 시간대 비중이다. 동네별 값이나 시설 운영 시간이 아니다.'
 
 SCHEMAS = {
     SENIOR_HOURS: {
@@ -36,7 +37,8 @@ def senior_hours(engine, args: dict) -> dict:
     times = src['result'].get('senior60_card_time_pct', {})
     return {
         'tool': SENIOR_HOURS, 'region': src['region'],
-        'result': {'senior60_card_time_pct': times, 'slot_labels': {k: slot_label(k) for k in times}},
+        'result': {'senior60_card_time_pct': times, 'slot_labels': {k: slot_label(k) for k in times},
+                   'age_label': AGE_LABEL},
         'evidence': [e for e in src['evidence'] if e['metric'].startswith(_TIME_METRIC)],
         'caveats': [SENIOR_HOURS_NOTE],
         'figures': [], 'geojson': None, 'params': {},

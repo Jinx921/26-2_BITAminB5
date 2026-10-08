@@ -103,5 +103,7 @@ def test_location_filled_by_code_and_hidden_in_trace():
     assert called == [{'radius_m': 500, 'region': '춘천', 'lat': loc['lat'], 'lon': loc['lon']}]
     first = client.requests[0]['messages'][0]['content']
     assert '찾는 위치는 춘천시 안' in first[1]['text'] and str(loc['lat']) not in json.dumps(first)   # 좌표는 Sonnet 에 안 감
+    sent = json.dumps(client.requests, ensure_ascii=False)                # Sonnet 에 보낸 모든 요청 (도구 결과 포함)
+    assert str(loc['lat']) not in sent and str(loc['lon']) not in sent
     trace = screen['internal']['tool_trace'][0]['args']
     assert trace['lat'] == trace['lon'] == '(사용자 위치)' and trace['region'] == '춘천'

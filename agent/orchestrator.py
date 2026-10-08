@@ -13,10 +13,11 @@ from pathlib import Path
 
 from agent.digest import Digester
 from agent.engine_client import EngineError
+from agent.location import detect_region
 from agent.prompts import build_system
-from agent.screen import build_screen
+from agent.screen import CITIZEN_NOTICE, REGION_NAMES, build_screen
 from agent.store import ResultStore
-from agent.tools import SUBMIT, is_allowed, strip_locked, tools_for
+from agent.tools import FIXED_ARGS, SUBMIT, is_allowed, service_regions, strip_locked, tools_for
 from agent.verifier import Context, VerifyResult, feedback, verify
 
 MODEL = 'claude-sonnet-5-5'
@@ -47,6 +48,7 @@ class Turn:
     check: VerifyResult | None = None
     attempts: int = 0
     rejected: list = field(default_factory=list)   # 통과 전 실패한 제출의 오류 (디버깅용)
+    location: dict | None = None                   # 시민 모드: 앱이 준 위치 + 판단한 지역 (저장하지 않음)
     calls: list = field(default_factory=list)      # Sonnet 호출 기록 (stop_reason, 토큰)
     end: str = ''                                  # 끝난 이유
 
@@ -69,7 +71,9 @@ class Orchestrator:
 
         if not is_allowed(self.mode, block.name):
             return result(f'이 모드에서 쓸 수 없는 도구: {block.name}', error=True)
-        args, dropped = strip_locked(block.name, dict(block.input))
+        args, dropped = strip_locked(block.name, dict(block.input), self.mode)
+        if turn.location and block.name in FIXED_ARGS.get(self.mode, {}):
+            args.update(turn.location)                                    # 위치는 코드가 채운다
         try:
             data = self.engine.call(block.name, args)
         except EngineError as e:
@@ -96,9 +100,30 @@ class Orchestrator:
         return {'type': 'tool_result', 'tool_use_id': block.id, 'content': feedback(turn.check), 'is_error': True}
 
     # ------------------------------------------------------------ 질문 하나
-    def ask(self, question: str) -> tuple[dict, Turn]:
+    def _notice(self, turn: Turn, key: str) -> tuple[dict, Turn]:
+        turn.end = key
+        screen = build_screen(turn.question, self.mode, None, None, turn.context(), notice=CITIZEN_NOTICE[key])
+        screen['internal']['run'] = {'model': self.model, 'effort': self.effort, 'end': key, 'passed': False,
+                                     'calls': [], 'rejected': []}
+        return screen, turn
+
+    def ask(self, question: str, location: dict | None = None) -> tuple[dict, Turn]:
+        """location: 시민 모드에서 앱이 넘겨주는 찾을 위치 {'lat': 위도, 'lon': 경도}.
+        사용자가 지금 있는 곳(위치 허용)일 수도, 지도에서 고르거나 주소로 입력한 곳일 수도 있다
+        (예: 부산에 사는 자녀가 춘천에 계신 어머니 동네를 대신 찾는 경우)."""
         turn = Turn(question, self.mode)
-        messages = [{'role': 'user', 'content': question}]
+        content = [{'type': 'text', 'text': question}]
+        if self.mode == 'citizen':
+            if not location:
+                return self._notice(turn, 'no_location')
+            region = detect_region(self.engine, location['lat'], location['lon'], service_regions())
+            if region is None:
+                return self._notice(turn, 'out_of_area')
+            turn.location = {'region': region, 'lat': location['lat'], 'lon': location['lon']}
+            content.append({'type': 'text', 'text': f'[앱 정보] 찾는 위치는 {REGION_NAMES[region]} 안이다. '
+                                                    '사용자가 지금 있는 곳이 아닐 수 있다 (가족이 대신 찾는 경우 등). '
+                                                    '주변 시설은 lookup_resources 로 찾는다. 위치는 자동으로 들어간다.'})
+        messages = [{'role': 'user', 'content': content}]
         nudged = False
         for _ in range(MAX_CALLS):
             resp = self.client.messages.create(

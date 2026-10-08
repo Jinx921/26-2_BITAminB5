@@ -22,6 +22,11 @@ LOCKED_ARGS = {
     'classify': ('far_social_m', 'far_health_m'),
 }
 
+# 모드별로 코드가 채우는 인자: Sonnet 이 정하지 못하게 스키마에서 빼고, 실행할 때 앱이 준 위치로 채운다
+FIXED_ARGS = {
+    'citizen': {'lookup_resources': ('region', 'lat', 'lon', 'cell_id')},
+}
+
 # 모드별 엔진 도구. 엔진에 새 도구가 생기면 여기서 어느 모드에 줄지 정해야 한다 (테스트가 확인)
 MODE_TOOLS = {
     'admin': ('find_candidates', 'check_residential', 'lookup_resources', 'classify',
@@ -95,8 +100,8 @@ def _engine_schemas() -> list[dict]:
     return copy.deepcopy(importlib.import_module('tool_schemas').SCHEMAS)   # 엔진 쪽 원본은 건드리지 않는다
 
 
-def _lock(schema: dict) -> dict:
-    locked = LOCKED_ARGS.get(schema['name'], ())
+def _lock(schema: dict, mode: str = 'admin') -> dict:
+    locked = LOCKED_ARGS.get(schema['name'], ()) + FIXED_ARGS.get(mode, {}).get(schema['name'], ())
     props = schema['input_schema']['properties']
     for arg in locked:
         props.pop(arg, None)
@@ -110,7 +115,7 @@ def tools_for(mode: str) -> list[dict]:
     if mode not in MODE_TOOLS:
         raise ValueError(f'없는 모드: {mode}')
     allowed = MODE_TOOLS[mode]
-    engine = [_lock(s) for s in _engine_schemas() if s['name'] in allowed]
+    engine = [_lock(s, mode) for s in _engine_schemas() if s['name'] in allowed]
     return engine + [copy.deepcopy(SUBMIT_SCHEMA)]
 
 
@@ -119,11 +124,19 @@ def is_allowed(mode: str, tool: str) -> bool:
     return tool == SUBMIT or tool in MODE_TOOLS.get(mode, ())
 
 
-def strip_locked(tool: str, args: dict) -> tuple[dict, list[str]]:
-    """스키마에서 뺀 기준값 인자가 그래도 들어오면 버린다. (정리된 인자, 버린 인자 이름)"""
+def strip_locked(tool: str, args: dict, mode: str = 'admin') -> tuple[dict, list[str]]:
+    """스키마에서 뺀 인자가 그래도 들어오면 버린다. (정리된 인자, 버린 기준값 인자 이름)
+    모드별로 코드가 채우는 인자(FIXED_ARGS)도 버리지만, 기준값이 아니므로 버린 목록에는 넣지 않는다."""
     locked = LOCKED_ARGS.get(tool, ())
+    fixed = FIXED_ARGS.get(mode, {}).get(tool, ())
     dropped = [a for a in args if a in locked]
-    return {k: v for k, v in args.items() if k not in locked}, dropped
+    return {k: v for k, v in args.items() if k not in locked and k not in fixed}, dropped
+
+
+def service_regions() -> list[str]:
+    """엔진이 다루는 지역 (엔진 스키마의 region 목록)."""
+    s = next(s for s in _engine_schemas() if s['name'] == 'lookup_resources')
+    return list(s['input_schema']['properties']['region']['enum'])
 
 
 if __name__ == '__main__':

@@ -20,6 +20,17 @@ FALLBACK_TEXT = {
                 '잠시 후 다시 물어봐 주시면 자세히 알려 드릴게요.'),
 }
 
+# 시민 모드에서 Sonnet 을 부르기 전에 끝나는 경우의 안내
+REGION_NAMES = {'강남': '서울 강남구', '춘천': '춘천시'}
+CITIZEN_NOTICE = {
+    'no_location': ('어느 동네 주변을 찾아볼까요? 지도에서 동네를 고르거나 주소를 입력해 주세요. '
+                    '지금 계신 곳 주변을 찾으려면 위치 사용을 허용해 주세요.'),
+    'out_of_area': ('지금은 ' + '와 '.join(REGION_NAMES.values()) + '에서만 안내하고 있어요. '
+                    '이 두 지역 안의 동네를 골라 다시 찾아봐 주세요.'),
+}
+# 내부 기록에서 가리는 인자 (사용자 위치)
+LOCATION_KEYS = ('lat', 'lon')
+
 # 지도로 그릴 수 있는 결과: 도구 → (layer, 결과 안의 행 목록, {지도 점 필드: 결과 필드})
 MAP_ROWS = {
     'classify': ('types', 'table',
@@ -60,9 +71,21 @@ def _region(ctx: Context) -> str | None:
     return regions.pop() if len(regions) == 1 else None
 
 
+def _trace_args(mode: str, args: dict) -> dict:
+    if mode != 'citizen':
+        return args
+    return {k: ('(사용자 위치)' if k in LOCATION_KEYS else v) for k, v in args.items()}
+
+
 def build_screen(question: str, mode: str, answer: dict | None, check: VerifyResult | None,
-                 ctx: Context, attempts: int = 1) -> dict:
-    """답변·검증 결과로 화면 조각을 만든다. answer 가 없거나 검증 실패면 안내 문구 + 지도."""
+                 ctx: Context, attempts: int = 1, notice: str | None = None) -> dict:
+    """답변·검증 결과로 화면 조각을 만든다. answer 가 없거나 검증 실패면 안내 문구 + 지도.
+    notice 가 있으면(질문 전에 끝난 경우) 그 문구만 보여주고 지도·신뢰도는 없다."""
+    if notice is not None:
+        return {'mode': mode, 'question': question, 'region': None,
+                'display': {'headline': notice, 'details': [], 'caution': '', 'confidence': None, 'map': None},
+                'internal': {'verification': {'passed': False, 'attempts': 0, 'errors': [], 'warnings': []},
+                             'confidence_basis': {}, 'citations': [], 'caveats': [], 'tool_trace': []}}
     ok = answer is not None and check is not None and check.passed
     grade = check.grade if check else '낮음'
     note = check.grade_note if check else ''
@@ -85,7 +108,8 @@ def build_screen(question: str, mode: str, answer: dict | None, check: VerifyRes
         'confidence_basis': check.grade_basis if check else {},
         'citations': answer['citations'] if ok else [],
         'caveats': [{'id': cid, 'text': text, 'reflected': cid in reflected} for text, cid in ctx.caveat_ids.items()],
-        'tool_trace': [{'ref': s.ref, 'tool': s.tool, 'args': s.args} for s in ctx.store.items.values()],
+        'tool_trace': [{'ref': s.ref, 'tool': s.tool, 'args': _trace_args(mode, s.args)}
+                       for s in ctx.store.items.values()],
     }
     if answer is not None and not ok:
         internal['rejected_answer'] = answer          # 검증에 실패한 원래 답변 (디버깅용)

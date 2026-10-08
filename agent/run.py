@@ -27,7 +27,8 @@ def _print_display(d: dict) -> None:
         print('[확인할 점]')
         print(textwrap.fill(d['caution'], 70))
     c = d['confidence']
-    print(f"\n[신뢰도] {c['label']}" + (f"  {c['note']}" if c['note'] else ''))
+    if c:
+        print(f"\n[신뢰도] {c['label']}" + (f"  {c['note']}" if c['note'] else ''))
     m = d['map']
     if m:
         kinds = Counter(p.get('type') for p in m['points'] if p.get('type'))
@@ -65,10 +66,13 @@ def main() -> None:
     ap.add_argument('question')
     ap.add_argument('--mode', choices=['admin', 'citizen'], default='admin')
     ap.add_argument('--engine', choices=['live', 'fixture'], default='live')
+    ap.add_argument('--lat', type=float, help='시민 모드: 찾을 위치의 위도 (앱이 넘겨주는 값)')
+    ap.add_argument('--lon', type=float, help='시민 모드: 찾을 위치의 경도')
     a = ap.parse_args()
+    location = {'lat': a.lat, 'lon': a.lon} if a.lat is not None and a.lon is not None else None
 
     t0 = time.time()
-    screen, turn = Orchestrator(make_engine(a.engine), mode=a.mode).ask(a.question)
+    screen, turn = Orchestrator(make_engine(a.engine), mode=a.mode).ask(a.question, location)
     seconds = time.time() - t0
     _print_display(screen['display'])
     _print_internal(screen['internal'], seconds)

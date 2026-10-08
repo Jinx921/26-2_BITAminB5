@@ -5,31 +5,12 @@
   "input_schema": {
    "type": "object",
    "properties": {
-    "region": {
-     "type": "string",
-     "enum": [
-      "강남",
-      "춘천"
-     ],
-     "description": "분석 지역"
-    },
-    "cell_id": {
-     "type": "string"
-    },
-    "lat": {
-     "type": "number"
-    },
-    "lon": {
-     "type": "number"
-    },
     "radius_m": {
      "type": "integer",
      "description": "반경(m). 기본 1000"
     }
    },
-   "required": [
-    "region"
-   ]
+   "required": []
   }
  },
  {

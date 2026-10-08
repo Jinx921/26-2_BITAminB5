@@ -77,7 +77,7 @@ def test_full_scenario_with_one_rewrite():
 def test_sonnet_gets_digest_not_raw_result():
     _, _, client, _ = _run(SCENARIO + [_resp(_use('submit_answer', _good_answer(), 4))])
     results = [m['content'][0] for m in client.requests[-1]['messages']
-               if m['role'] == 'user' and isinstance(m['content'], list)]
+               if m['role'] == 'user' and isinstance(m['content'], list) and m['content'][0].get('type') == 'tool_result']
     assert len(results) == 3
     for r in results:
         assert r['content'].startswith('[r') and 'evidence (인용 가능)' in r['content']
@@ -95,10 +95,15 @@ def test_request_settings():
 
 # ---------------------------------------------------------------- 막는 동작
 def test_citizen_cannot_run_admin_tool():
-    screen, turn, client, engine = _run([_resp(_use('classify', {'region': '춘천'}, 1)),
-                                         _resp(NS(type='text', text='...'), stop='end_turn'),
-                                         _resp(NS(type='text', text='...'), stop='end_turn')], mode='citizen')
-    assert engine.called == []                                          # 엔진까지 가지 않는다
+    from agent.location import cell_of
+    from agent.tests.test_location import StubEngine
+    loc = {'lat': 37.8813, 'lon': 127.7298}
+    engine = StubEngine({'춘천': {'{}_{}'.format(*cell_of(**loc))}})
+    client = FakeClient([_resp(_use('classify', {'region': '춘천'}, 1)),
+                         _resp(NS(type='text', text='...'), stop='end_turn'),
+                         _resp(NS(type='text', text='...'), stop='end_turn')])
+    screen, _ = Orchestrator(engine, mode='citizen', client=client).ask(QUESTION, loc)
+    assert [t for t, a in engine.called if 'cell_id' not in a] == []    # 엔진까지 가지 않는다 (지역 판단 호출만)
     r = client.requests[1]['messages'][-1]['content'][0]
     assert r['is_error'] and '쓸 수 없는 도구' in r['content']
     assert screen['display']['headline'] == FALLBACK_TEXT['citizen']

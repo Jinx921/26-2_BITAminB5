@@ -252,14 +252,24 @@ def feedback(res: VerifyResult) -> str:
     return '\n'.join(lines)
 
 
+def build_context(engine, region: str, question: str = '',
+                  tools=('find_candidates', 'classify', 'robustness'), mode: str = 'admin') -> Context:
+    """도구들을 차례로 불러 검증 문맥을 만든다 (터미널 확인·예시 생성용. 실제 흐름은 오케스트레이터가 채운다)."""
+    from agent.digest import Digester
+    st, dg, citable = ResultStore(), Digester(), {}
+    for t in tools:
+        ref = st.put(t, {'region': region}, engine.call(t, {'region': region}))
+        citable[ref] = dg(st.get(ref)).citable
+    return Context(st, citable, dict(dg.caveat_ids), question, mode)
+
+
 if __name__ == '__main__':
-    # 예: python -m agent.verifier agent/out/try_submit.json --region 춘천 --engine live
+    # 예: python -m agent.verifier agent/out/examples/3_Sonnet답변_춘천_검증전.json --engine live
     # 답변 JSON(submit_answer 입력)을 시나리오 도구 세 개 결과에 대고 검증한다 (도구 호출 순서 r1, r2, r3 가정)
     import argparse
     import json
     from pathlib import Path
 
-    from agent.digest import Digester
     from agent.engine_client import make_engine
 
     ap = argparse.ArgumentParser(description='저장된 submit_answer 답변을 검증한다')
@@ -269,13 +279,9 @@ if __name__ == '__main__':
     ap.add_argument('--question', default='')
     a = ap.parse_args()
 
-    eng, st, dg = make_engine(a.engine), ResultStore(), Digester()
-    citable = {}
-    for t in ('find_candidates', 'classify', 'robustness'):
-        ref = st.put(t, {'region': a.region}, eng.call(t, {'region': a.region}))
-        citable[ref] = dg(st.get(ref)).citable
+    ctx = build_context(make_engine(a.engine), a.region, a.question)
     ans = json.loads(Path(a.answer).read_text(encoding='utf-8'))
-    r = verify(ans, Context(st, citable, dict(dg.caveat_ids), a.question))
+    r = verify(ans, ctx)
     print('통과' if r.passed else f'오류 {len(r.errors)}개')
     for e in r.errors:
         print('  [오류]', e)

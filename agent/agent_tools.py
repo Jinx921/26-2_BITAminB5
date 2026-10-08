@@ -10,6 +10,10 @@ find_facility (관리자 모드)
   엔진 데이터 파일(preprocessed/facility.parquet)을 읽기만 한다. 엔진에 공개 도구가 생기면 바꾼다.
   같은 이름이 여러 곳에 있을 수 있어(예: 지내2리 경로당이 신북읍·동면에 하나씩) 주소와 함께 모두 돌려준다.
 
+senior_industries (관리자 모드)
+  어르신이 자주 쓰는 생활 업종 (설계 6절: 카드 근거를 운영안에 반영). 엔진에 업종 정보가 없어
+  팀 EDA 결과표(outputs/tables, 신한카드 데이터1·2)를 읽기만 한다. 시군구 단위라 가게 위치는 알 수 없다.
+
 반환 형식은 엔진 도구와 같다 (tool, region, result, evidence, caveats, figures, geojson, params).
 """
 from __future__ import annotations
@@ -95,6 +99,52 @@ def find_facility(engine, args: dict) -> dict:
     }
 
 
+SENIOR_INDUSTRIES = 'senior_industries'
+TABLE_DIR = ENGINE_DIR.parent / 'outputs' / 'tables'
+INDUSTRY_TABLES = {   # 지역: (60대 이상 비중 상위 업종 표, 업종별 로컬 결제 비율 상·하위 표)
+    '춘천': ('19_춘천__60대__비중_상위_10_업종.csv', '23_춘천__업종별_로컬_결제_비율_____상_하위_8.csv'),
+    '강남': ('18_강남__60대__비중_상위_10_업종.csv', '24_강남__업종별_로컬_결제_비율_____상_하위_8.csv'),
+}
+LOCAL_TOP = 8                                  # 로컬 비율 표는 앞 8줄이 상위, 뒤 8줄이 하위
+INDUSTRY_NOTE = '카드 업종 값은 시·구 전체 결제 기준이다. 업종 가게의 위치는 알 수 없다.'
+INDUSTRY_NOTE_SHARE = '60대 이상 비중은 그 업종 결제 중 60대 이상 카드 결제의 비율이다.'
+
+SCHEMAS[SENIOR_INDUSTRIES] = {
+    'name': SENIOR_INDUSTRIES,
+    'description': ('어르신(60대 이상)이 자주 쓰는 생활 업종과 지역 주민 이용 비율이 높은 업종을 알려준다 (카드 결제, 시·구 단위). '
+                    '운영안에서 안내문을 둘 곳이나 함께 알릴 곳(예: 약국·의원·시장)을 제안할 때 쓴다. 가게 위치는 알 수 없다.'),
+    'input_schema': {'type': 'object', 'properties': {
+        'region': {'type': 'string', 'description': '분석 지역 (목록은 tools.py 가 엔진 스키마에서 채운다)'}},
+        'required': ['region']},
+}
+
+
+def senior_industries(engine, args: dict) -> dict:
+    import pandas as pd
+    region = args['region']
+    if region not in INDUSTRY_TABLES:
+        return {'tool': SENIOR_INDUSTRIES, 'region': region, 'result': {'error': f'업종 표가 없는 지역: {region}'},
+                'evidence': [], 'caveats': [], 'figures': [], 'geojson': None, 'params': {}}
+    senior_f, local_f = INDUSTRY_TABLES[region]
+    sen = pd.read_csv(TABLE_DIR / senior_f, encoding='utf-8-sig')
+    loc = pd.read_csv(TABLE_DIR / local_f, encoding='utf-8-sig').head(LOCAL_TOP)
+    sen = sen[~sen.MCT_RY_CD.str.startswith('ZZ_')]           # '나머지' 묶음은 업종이 아니다
+    loc = loc[~loc.MCT_RY_CD.str.startswith('ZZ_')]
+    senior_top = [{'industry': r.MCT_RY_CD, 'senior_pct': float(r[1])} for r in sen.itertuples(index=False)]
+    local_top = [{'industry': r.MCT_RY_CD, 'local_pct': float(r[1])} for r in loc.itertuples(index=False)]
+    both = [x['industry'] for x in senior_top if x['industry'] in {y['industry'] for y in local_top}]
+    return {
+        'tool': SENIOR_INDUSTRIES, 'region': region,
+        'result': {'senior_top': senior_top, 'local_top': local_top, 'everyday_senior': both,
+                   'industries': list(dict.fromkeys([x['industry'] for x in senior_top + local_top]))},
+        'evidence': [{'metric': f"senior_pct_{x['industry']}", 'value': x['senior_pct']} for x in senior_top] +
+                    [{'metric': f"local_pct_{x['industry']}", 'value': x['local_pct']} for x in local_top],
+        'caveats': [INDUSTRY_NOTE, INDUSTRY_NOTE_SHARE],
+        'figures': [], 'geojson': None,
+        'params': {'source': f'팀 EDA 결과표 {senior_f}, {local_f}'},
+    }
+
+
 from agent.field_check import FIELD_CHECK, field_check                     # noqa: E402 (현장 확인 목록, 별도 파일)
 from agent.field_check import SCHEMA as _FIELD_CHECK_SCHEMA                  # noqa: E402
 
@@ -104,7 +154,7 @@ from agent.compare import SCHEMA as _COMPARE_SCHEMA                          # n
 SCHEMAS[FIELD_CHECK] = _FIELD_CHECK_SCHEMA
 SCHEMAS[COMPARE] = _COMPARE_SCHEMA
 RUNNERS = {SENIOR_HOURS: senior_hours, FIND_FACILITY: find_facility, FIELD_CHECK: field_check,
-           COMPARE: compare_interventions}
+           COMPARE: compare_interventions, SENIOR_INDUSTRIES: senior_industries}
 
 
 def call_tool(engine, name: str, args: dict) -> dict:

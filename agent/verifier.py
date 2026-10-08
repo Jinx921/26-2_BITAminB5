@@ -54,6 +54,7 @@ REQUIRED_CAVEATS = {
         ('simulate_placement', '고립 감소 효과를 뜻하지 않는다', '커버는 도달 가능성일 뿐 고립 감소 효과가 아니다'),
         ('compare_interventions', '접근성(닿을 수 있는지)만 비교', '접근성만 비교, 이용량·비용·고립 감소 효과는 계산하지 않음'),
         ('compare_interventions', '보건 기능을 더한다고 가정', '경로당 거점은 보건 기능을 더한다는 가정'),
+        ('senior_industries', '가게의 위치는 알 수 없다', '카드 업종은 시·구 전체 기준, 가게 위치는 모름'),
     ),
     'citizen': (
         ('lookup_resources', '직선거리', '거리는 직선거리라 실제로 걷는 거리와 다를 수 있다'),
@@ -103,6 +104,8 @@ def place_names(store: ResultStore) -> set[str]:
         r = s.data.get('result', {})
         names |= set((r.get('slot_labels') or {}).values())
         names |= {slot_label(k) for k in (r.get('senior60_card_time_pct') or {})}     # region_context 시간대
+        names |= {re.sub(r'(?<!\d)0(\d)', r'\1', n) for n in list(names) if re.fullmatch(r'\d+~\d+시', n)}  # 06~11시 = 6~11시
+        names |= set(r.get('industries') or [])                 # 업종 이름 (예: 통신요금(이동,시내전화))
         if r.get('age_label'):
             names.add(r['age_label'])
         for k in ('by_emd', 'by_emd_withdrawn'):
@@ -192,6 +195,14 @@ def _check_numbers(ans: dict, ctx: Context, res: VerifyResult, texts: dict | Non
         ns = _numbers(c['text'])
         if ns:
             cited.setdefault(ns[0], c)
+    # 같은 숫자를 허용된 출처(evidence·허용 params)로도 인용했으면, 기준값 위치 제한은 그 숫자에 걸지 않는다
+    # (예: 보건 기준 3km 와 이동형 반경 3km 가 함께 나온 경우)
+    free = set()
+    for c in ans['citations']:
+        ns = _numbers(c['text'])
+        if ns and any(not src['metric'].startswith(PROCESS_METRIC_PREFIX)
+                      or src['metric'] in ALLOWED_PARAMS.get(ctx.mode, ()) for src in c['sources']):
+            free.add(ns[0])
     where = {}                                                  # 숫자 → 나온 필드들
     for f, raw in texts.items():
         text = _strip_names(raw, names)                         # 이름 속 숫자는 출처가 필요 없다
@@ -224,8 +235,9 @@ def _check_numbers(ans: dict, ctx: Context, res: VerifyResult, texts: dict | Non
             tool = ctx.store.get(s['ref']).tool
             allowed_param = s['metric'] in ALLOWED_PARAMS.get(ctx.mode, ())
             if s['metric'].startswith(PROCESS_METRIC_PREFIX) and params_in and not allowed_param:
-                shown_in = where.get(_numbers(c['text'])[0], set()) if _numbers(c['text']) else set()
-                if shown_in - set(params_in):
+                nu = _numbers(c['text'])[0] if _numbers(c['text']) else None
+                shown_in = where.get(nu, set()) if nu else set()
+                if shown_in - set(params_in) and nu not in free:
                     res.errors.append(f'기준값은 {"·".join(params_in)} 목차에만 쓴다: "{c["text"]}" ({", ".join(sorted(shown_in))})')
                 continue
             if tool in PROCESS_TOOLS or (s['metric'].startswith(PROCESS_METRIC_PREFIX) and not allowed_param):

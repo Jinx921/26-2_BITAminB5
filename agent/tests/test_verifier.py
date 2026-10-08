@@ -140,7 +140,8 @@ def test_required_caveats_match_engine_text():
     texts = {c for p in FIXTURE_DIR.glob('*.json') for c in json.loads(p.read_text(encoding='utf-8'))['caveats']}
     from agent.compare import ACCESS_NOTE, HUB_NOTE
     from agent.field_check import NOTE as FIELD_NOTE
-    texts |= {SENIOR_HOURS_NOTE, ACCESS_NOTE, HUB_NOTE, FIELD_NOTE}                 # 에이전트 도구의 한계 문장
+    from agent.agent_tools import INDUSTRY_NOTE
+    texts |= {SENIOR_HOURS_NOTE, ACCESS_NOTE, HUB_NOTE, FIELD_NOTE, INDUSTRY_NOTE}  # 에이전트 도구의 한계 문장
     for mode, rules in REQUIRED_CAVEATS.items():
         for _, phrase, _ in rules:
             assert any(phrase in t for t in texts), (mode, phrase)

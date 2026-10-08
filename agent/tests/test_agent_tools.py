@@ -65,3 +65,10 @@ def test_orchestrator_injects_region():
     r = client.requests[1]['messages'][-1]['content'][0]
     assert not r.get('is_error') and '12~17시' in r['content']
     assert screen['internal']['tool_trace'][0]['args'] == {'region': '춘천'}
+
+
+def test_slot_label_without_leading_zero():
+    st = ResultStore()
+    st.put(SENIOR_HOURS, {'region': '춘천'}, _hours())
+    names = place_names(st)
+    assert {'06~11시', '6~11시', '00~05시', '0~5시'} <= names

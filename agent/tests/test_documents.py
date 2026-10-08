@@ -112,3 +112,25 @@ def test_document_tool_admin_only_and_orchestrator(tmp_path, monkeypatch):
     assert turn.end == 'passed' and screen['display']['document']['type'] == 'proposal'
     run = save_run(screen, turn)
     assert (run / 'document.md').read_text(encoding='utf-8') == to_markdown(doc)
+
+
+def test_same_number_two_sources():
+    """보건 기준 3km(근거 데이터)와 이동형 반경 3km(운영안)처럼 같은 숫자가 다른 출처로 쓰이면 막지 않는다."""
+    from agent.store import ResultStore
+    from agent.digest import Digester
+    from agent.engine_client import FixtureEngine
+    from agent.verifier import Context
+    eng, st, dg, cit = FixtureEngine(), ResultStore(), Digester(), {}
+    for tool, args in [('find_candidates', {'region': '춘천'}), ('classify', {'region': '춘천'}),
+                       ('simulate_placement', {'region': '춘천', 'k': 3, 'radius_m': 3000})]:
+        ref = st.put(tool, args, eng.call(tool, args))
+        cit[ref] = dg(st.get(ref)).citable
+    ctx = Context(st, cit, dict(dg.caveat_ids), '제안서 써줘', 'admin')
+    doc = _proposal(ctx)
+    doc['sections'][2]['body'] += ' 보건기관이 3km보다 멀면 공백으로 보았다.'
+    doc['sections'][3]['body'] += ' 차량으로 반경 3km 안을 순회한다.'
+    doc['citations'] += [{'text': '3km', 'op': 'value', 'sources': [{'ref': 'r2', 'metric': 'params.far_health_m'}]},
+                         {'text': '3km', 'op': 'value', 'sources': [{'ref': 'r3', 'metric': 'params.radius_m'}]}]
+    assert not any('근거 데이터 목차에만' in e for e in verify_document(doc, ctx).errors)
+    doc['citations'] = doc['citations'][:-1]                                      # 반경 출처가 없으면 막는다
+    assert any('근거 데이터 목차에만' in e for e in verify_document(doc, ctx).errors)

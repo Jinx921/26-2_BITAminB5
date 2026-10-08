@@ -161,6 +161,15 @@ class Digester:
                 '경로당 거점 행정동: ' + ', '.join(opts['hub']['where']),
                 '거점은 행정동 이름으로 말한다 (경로당 이름은 원천 데이터 표기라 알아보기 어려울 수 있다)']
 
+    def _core_senior_industries(self, res: dict) -> list[str]:
+        if 'senior_top' not in res:
+            return [f"result 항목: {', '.join(res)}"]
+        return ['60대 이상 비중이 높은 업종 순: ' + ' > '.join(x['industry'] for x in res['senior_top']),
+                '지역 주민 이용 비율이 높은 업종 순: ' + ' > '.join(x['industry'] for x in res['local_top']),
+                '둘 다 높은 생활 업종: ' + (', '.join(res['everyday_senior']) or '없음'),
+                '쓰는 곳: 안내문을 둘 곳·함께 알릴 곳 제안 (가게 위치는 알 수 없으니 "이런 업종 근처"로만 말한다)',
+                '업종 이름은 이 표기 그대로 쓴다']
+
     def _core_find_facility(self, res: dict) -> list[str]:
         rows = res.get('matches', [])
         if not rows:

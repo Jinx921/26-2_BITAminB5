@@ -15,7 +15,7 @@ import importlib
 import sys
 
 from agent.agent_tools import SCHEMAS as AGENT_SCHEMAS
-from agent.agent_tools import COMPARE, FIELD_CHECK, FIND_FACILITY, SENIOR_HOURS
+from agent.agent_tools import COMPARE, FIELD_CHECK, FIND_FACILITY, SENIOR_HOURS, SENIOR_INDUSTRIES
 from agent.documents import DOC_SPECS, SUBMIT_DOC
 from agent.engine_client import ENGINE_DIR
 
@@ -34,7 +34,7 @@ FIXED_ARGS = {
 MODE_TOOLS = {
     'admin': ('find_candidates', 'check_residential', 'lookup_resources', 'classify',
               'simulate_placement', 'robustness', 'facility_change', 'region_context', FIND_FACILITY, FIELD_CHECK,
-              COMPARE),
+              COMPARE, SENIOR_INDUSTRIES),
     # 시민 모드: 위험 판정이 나올 수 있는 도구는 넣지 않는다.
     # region_context 는 결과에 유형별 칸 수(type_counts)가 들어 있어 시민 모드에서 빼고,
     # 시간대만 꺼내는 에이전트 도구(senior_hours)를 대신 준다

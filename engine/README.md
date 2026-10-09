@@ -29,7 +29,7 @@ r['geojson']                       # 'out/types_춘천.geojson'    → 프론트
 | 자원 조회 | `lookup_resources(region, cell_id 또는 lat/lon)` | 자원 조회 | 주변 교류·보건 시설과 거리 (시민 모드) |
 | 유형 분류 | `classify(region)` | 유형 분류 | 2×2 고립 유형 + 공백 태그 + 원인·추천 표 |
 | 배치 시뮬레이션 | `simulate_placement(region, k, radius_m)` | 배치 시뮬레이션 | 이동형 거점 최적 위치(MCLP 정확해) + k 곡선 |
-| 강건성 점검 | `robustness(region)` | 강건성 점검 | 기준값별 유형 수·유지율 (검증 에이전트 "재계산") |
+| 강건성 점검 | `robustness(region)` | 강건성 점검 | 기준값별 유형 수·유지율 (검증 단계의 신뢰도 근거) |
 | 시설 변화 가정 | `facility_change(region, remove_ids, add_points)` | 시설 변화 가정 | 시설 제거·추가 시 유형 변화 |
 | 지역 맥락 | `region_context(region)` | 지역 맥락 | 로컬결제율·60대+ 결제 시간대·인구·독거 |
 

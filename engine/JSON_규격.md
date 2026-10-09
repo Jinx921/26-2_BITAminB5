@@ -110,7 +110,7 @@
 | 필드 | 형식 | 내용 |
 |---|---|---|
 | `local_payment_pct` | float | 지역 가맹점 결제 중 같은 시도 거주자 비중(%). 주민이 다른 지역에서 쓴 결제는 포함되지 않음 |
-| `local_payment_by_age_pct` | {연령대: float} | |
+| `local_payment_by_age_pct` | {연령대: float} | 같은 정의의 연령대별 값. 생활 반경으로 해석하지 않는다 |
 | `senior60_card_time_pct` | {시간대: float} | 60대+ 결제 시간대 비중 |
 | `population` | dict | `pop, p65, p85, solo65, solo_mid_male, solo_top_age` |
 | `lens` | str | 지역 해석 관점 한 줄 |

@@ -11,7 +11,9 @@ from pyproj import Transformer
 
 import config as C
 
-plt.rcParams['font.family'] = 'Malgun Gothic'
+# 한글 폰트: Windows / Mac / Linux 순서로 설치된 것 하나만 사용
+_fonts = {f.name for f in matplotlib.font_manager.fontManager.ttflist}
+plt.rcParams['font.family'] = next((f for f in ['Malgun Gothic', 'AppleGothic', 'NanumGothic'] if f in _fonts), 'sans-serif')
 plt.rcParams['axes.unicode_minus'] = False
 TO_WGS = Transformer.from_crs('EPSG:5179', 'EPSG:4326', always_xy=True)
 HALF = 125

@@ -117,7 +117,8 @@ class Orchestrator:
     # ------------------------------------------------------------ 답변 제출
     def _submit(self, turn: Turn, block) -> dict | None:
         """검증 통과면 None (끝), 다시 쓰게 할 때는 돌려줄 tool_result."""
-        self._ensure_robustness(turn)
+        if block.name != SUBMIT_BRIEF:                     # 짧은 답은 신뢰도를 보여주지 않아 강건성이 필요 없다
+            self._ensure_robustness(turn)
         turn.attempts += 1
         turn.answer = dict(block.input)
         check = {SUBMIT_DOC: verify_document, SUBMIT_BRIEF: verify_brief}.get(block.name, verify)
@@ -157,7 +158,7 @@ class Orchestrator:
             turn.digester = Digester(hidden_params=LOCATION_KEYS)        # 찾을 위치 좌표는 Sonnet 에 넘기지 않는다
         content = [{'type': 'text', 'text': question}]
         if self.mode == 'citizen':
-            if not location:
+            if not location or location.get('lat') is None or location.get('lon') is None:
                 return self._notice(turn, 'no_location')
             try:
                 region = detect_region(self.engine, location['lat'], location['lon'], service_regions())

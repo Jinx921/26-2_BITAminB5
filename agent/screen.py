@@ -21,6 +21,11 @@ FALLBACK_TEXT = {
     'citizen': ('지금은 자세한 안내를 준비하지 못했어요. 지도에서 가까운 시설을 먼저 확인해 보세요. '
                 '잠시 후 다시 물어봐 주시면 자세히 알려 드릴게요.'),
 }
+# 보여줄 지도가 없을 때 (지도를 가리키는 문장을 뺀다)
+FALLBACK_TEXT_NO_MAP = {
+    'admin': '이 질문에 대한 설명을 아직 정리하지 못했습니다. 잠시 후 다시 요청해 주시면 설명을 새로 정리해 드리겠습니다.',
+    'citizen': '지금은 자세한 안내를 준비하지 못했어요. 잠시 후 다시 물어봐 주시면 자세히 알려 드릴게요.',
+}
 
 # 시민 모드에서 Sonnet 을 부르기 전에 끝나는 경우의 안내
 REGION_NAMES = {'강남': '서울 강남구', '춘천': '춘천시'}
@@ -60,7 +65,8 @@ HIGHLIGHT_BY = {'facilities': 'name', 'types': 'emd_name', 'candidates': 'emd_na
 # 시민은 설명에서 소개한 시설까지 강조한다
 HIGHLIGHT_FROM = {'admin': ('headline',), 'citizen': ('headline', 'details', 'caution')}
 # map_ref 가 없거나 지도로 그릴 수 없을 때 고르는 순서
-MAP_FALLBACK_ORDER = ('classify', 'find_candidates', 'simulate_placement', 'lookup_resources', 'find_facility')
+MAP_FALLBACK_ORDER = ('classify', 'find_candidates', 'simulate_placement', 'compare_interventions', 'field_check',
+                      'lookup_resources', 'find_facility')
 
 
 def _mentioned(values: set[str], text: str) -> set[str]:
@@ -88,6 +94,8 @@ def _map(ctx: Context, map_ref: str | None, text: str = '') -> dict | None:
     s = st.get(ref)
     layer, rows_key, fields = MAP_ROWS[s.tool]
     rows = s.data['result'].get(rows_key, [])
+    if not rows:                                                  # 오류 결과 등 그릴 점이 없으면 지도 없음
+        return None
     points = [{k: r.get(src) for k, src in fields.items()} for r in rows]
     key = HIGHLIGHT_BY.get(layer)
     hit = _mentioned({p[key] for p in points if p.get(key)}, text) if key else set()
@@ -170,6 +178,8 @@ def build_screen(question: str, mode: str, answer: dict | None, check: VerifyRes
         shown = ' '.join(doc_fields(answer).values())
     display['map'] = _map(ctx, (answer or {}).get('map_ref'), shown)       # 짧은 답에는 map_ref 가 없다
     display['chart'] = _chart(ctx) if ok and mode == 'admin' else None
+    if not ok and display['map'] is None:                         # 지도가 없으면 지도를 가리키는 문장을 뺀다
+        display['headline'] = FALLBACK_TEXT_NO_MAP[mode]
 
     reflected = set((answer or {}).get('caveats_reflected', []))
     internal = {

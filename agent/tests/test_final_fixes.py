@@ -1,7 +1,7 @@
 """최종 점검에서 찾은 문제: 짧은 답 실패 시 멈춤, 다시 쓰기 안내의 제출 도구, 도구 없는 문서, 모드별 재요청 문구, 짧은 답 이름 속 숫자."""
 from agent.documents import SUBMIT_DOC
 from agent.orchestrator import NUDGE, Orchestrator
-from agent.screen import FALLBACK_TEXT
+from agent.screen import FALLBACK_TEXT_NO_MAP
 from agent.store import ResultStore
 from agent.tests.test_documents import _proposal
 from agent.tests.test_orchestrator import SCENARIO, FakeClient, SpyEngine, _resp, _use
@@ -15,7 +15,7 @@ BAD_BRIEF = {'message': '먼저 볼 동네는 55곳이에요.'}                 
 def test_failed_brief_twice_returns_fallback_not_crash():
     client = FakeClient([_resp(_use(SUBMIT_BRIEF, BAD_BRIEF, 1)), _resp(_use(SUBMIT_BRIEF, BAD_BRIEF, 2))])
     screen, turn = Orchestrator(SpyEngine(), client=client).ask('안녕')
-    assert turn.end == 'verify_failed' and screen['display']['headline'] == FALLBACK_TEXT['admin']
+    assert turn.end == 'verify_failed' and screen['display']['headline'] == FALLBACK_TEXT_NO_MAP['admin']
     assert screen['internal']['rejected_answer'] == BAD_BRIEF
 
 

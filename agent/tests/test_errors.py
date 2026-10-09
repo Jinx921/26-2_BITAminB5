@@ -3,7 +3,7 @@ import anthropic
 import httpx2
 
 from agent.orchestrator import Orchestrator
-from agent.screen import FALLBACK_TEXT
+from agent.screen import FALLBACK_TEXT, FALLBACK_TEXT_NO_MAP
 from agent.tests.test_orchestrator import FakeClient, SCENARIO, SpyEngine, _good_answer, _resp, _use
 
 
@@ -55,4 +55,5 @@ def test_citizen_region_error():
         def call(self, tool, args):
             raise RuntimeError('데이터 파일을 읽지 못함')
     screen, turn = Orchestrator(NoLookup(), mode='citizen', client=FakeClient([])).ask('근처에 갈 곳?', {'lat': 37.88, 'lon': 127.73})
-    assert turn.end == 'engine_error' and screen['display']['headline'] == FALLBACK_TEXT['citizen']
+    assert turn.end == 'engine_error' and screen['display']['headline'] == FALLBACK_TEXT_NO_MAP['citizen']
+    assert screen['display']['map'] is None

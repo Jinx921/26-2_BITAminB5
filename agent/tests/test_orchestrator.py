@@ -6,7 +6,7 @@ from types import SimpleNamespace as NS
 from agent.engine_client import FixtureEngine
 from agent.orchestrator import MAX_CALLS, NUDGE, Orchestrator, save_run
 from agent.prompts import COMMON, TARGET_DETAILS, TYPE_NAMES, build_system
-from agent.screen import FALLBACK_TEXT
+from agent.screen import FALLBACK_TEXT, FALLBACK_TEXT_NO_MAP
 from agent.tests.test_verifier import QUESTION, _good
 from agent.verifier import MIN_PARAGRAPHS, build_context
 
@@ -106,7 +106,7 @@ def test_citizen_cannot_run_admin_tool():
     assert [t for t, a in engine.called if 'cell_id' not in a] == []    # 엔진까지 가지 않는다 (지역 판단 호출만)
     r = client.requests[1]['messages'][-1]['content'][0]
     assert r['is_error'] and '쓸 수 없는 도구' in r['content']
-    assert screen['display']['headline'] == FALLBACK_TEXT['citizen']
+    assert screen['display']['headline'] == FALLBACK_TEXT_NO_MAP['citizen']      # 도구 결과가 없어 지도도 없다
 
 
 def test_locked_args_dropped():
@@ -142,7 +142,7 @@ def test_two_failed_submits_fallback():
 
 def test_refusal_and_max_calls():
     screen, turn, _, _ = _run([_resp(stop='refusal')])
-    assert turn.end == 'refusal' and screen['display']['headline'] == FALLBACK_TEXT['admin']
+    assert turn.end == 'refusal' and screen['display']['headline'] == FALLBACK_TEXT_NO_MAP['admin']
     loop = [_resp(_use('region_context', {'region': '춘천'}, i)) for i in range(MAX_CALLS)]
     _, turn, client, _ = _run(loop)
     assert turn.end == 'max_calls' and len(client.requests) == MAX_CALLS

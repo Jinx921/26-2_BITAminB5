@@ -14,6 +14,10 @@ from dataclasses import dataclass, field
 from agent.store import StoredResult
 
 
+# 도시 성격 (엔진 지역 맥락 caveat: 로컬 결제 비율은 "강남 방문 도시 / 춘천 주민 생활권" 구분에만 쓴다)
+CITY_CHARACTER = {'강남': '방문 도시', '춘천': '주민 생활권'}
+
+
 def _fmt(v) -> str:
     return 'true' if v is True else 'false' if v is False else str(v)
 
@@ -34,6 +38,7 @@ class Digester:
     """한 질문 안에서 여러 도구 결과를 차례로 요약한다 (caveat 번호를 질문 단위로 공유)."""
     caveat_ids: dict[str, str] = field(default_factory=dict)   # 문장 → c 번호
     hidden_params: tuple = ()                                   # Sonnet 에 넘기지 않을 params (시민 모드: 찾을 위치 좌표)
+    region: str | None = None                                   # 지금 요약 중인 결과의 지역
 
     def __call__(self, s: StoredResult) -> Digest:
         d = s.data
@@ -53,6 +58,7 @@ class Digester:
             lines.append('params (인용 가능): ' + ', '.join(f'{k}={_fmt(v)}' for k, v in params.items()))
             citable.update({f'params.{k}': v for k, v in params.items()})
 
+        self.region = d.get('region')
         core = getattr(self, f"_core_{d['tool']}", self._core_default)(res)
         if core:
             lines.append('핵심 값 (숫자 없음, 설명용):')
@@ -139,9 +145,12 @@ class Digester:
         pct = res.get('senior60_card_time_pct', {})
         order = sorted(pct, key=pct.get, reverse=True)
         from agent.agent_tools import slot_label
-        return [f"도시 해석 관점: {res.get('lens', '')}",
-                '60대 이상 결제가 많은 시간대 순: ' + ' > '.join(slot_label(k) for k in order),
-                '시간대는 이 표기 그대로 쓴다. 칸 단위 판단에는 쓰지 않는다']
+        lines = [f"도시 해석 관점: {res.get('lens', '')}"]
+        if self.region in CITY_CHARACTER:
+            lines.append(f'도시 성격: {CITY_CHARACTER[self.region]} (근거: evidence 의 local_payment_pct = 지역 가게 결제 중 '
+                         '같은 시·도 주민 결제 비중. 도시 성격 구분에만 쓴다)')
+        return lines + ['60대 이상 결제가 많은 시간대 순: ' + ' > '.join(slot_label(k) for k in order),
+                        '시간대는 이 표기 그대로 쓴다. 칸 단위 판단에는 쓰지 않는다']
 
     def _core_field_check(self, res: dict) -> list[str]:
         lines = ['확인 수준: 꼭 확인 / 확인 필요 (안정한 동네는 목록에서 뺐다)',

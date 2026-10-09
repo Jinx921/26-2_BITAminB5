@@ -48,7 +48,7 @@ ALLOWED_PARAMS = {'citizen': ('params.radius_m',), 'admin': ('params.k', 'params
 
 # ③ 필수 caveat: 엔진 caveat 문장에서 찾을 핵심 구절 (엔진 문구가 바뀌면 테스트가 알려준다)
 REQUIRED_CAVEATS = {
-    # 모드: ((조건, 핵심 구절, 설명), ...). 조건 = always / 도구 이름 / 지역 이름
+    # 모드: ((조건, 핵심 구절, 설명), ...). 조건 = always / 도구 이름 / 지역 이름 / cite:metric (그 지표를 인용했을 때)
     'admin': (
         ('always', '거주자와 같지 않다', '유동인구는 거주자와 다르다 → 현장 확인'),
         ('classify', '두 층', '위축 신호 층과 자원 구조 층을 합쳐 말하지 않는다'),
@@ -57,6 +57,8 @@ REQUIRED_CAVEATS = {
         ('compare_interventions', '접근성(닿을 수 있는지)만 비교', '접근성만 비교, 이용량·비용·고립 감소 효과는 계산하지 않음'),
         ('compare_interventions', '보건 기능을 더한다고 가정', '경로당 거점은 보건 기능을 더한다는 가정'),
         ('senior_industries', '가게의 위치는 알 수 없다', '카드 업종은 시·구 전체 기준, 가게 위치는 모름'),
+        ('cite:local_payment_pct', '생활 반경·고립 신호로 해석하지 않고',
+         '지역 가게 결제 중 주민 비중은 도시 성격 구분에만, 생활 반경·고립 신호가 아님'),
     ),
     'citizen': (
         ('lookup_resources', '직선거리', '거리는 직선거리라 실제로 걷는 거리와 다를 수 있다'),
@@ -287,8 +289,9 @@ def _check_caveats(ans: dict, ctx: Context, res: VerifyResult, rules_mode: str |
             res.errors.append(f'없는 caveat 번호: {cid}')
     tools = {s.tool for s in ctx.store.items.values()}
     regions = {s.data.get('region') for s in ctx.store.items.values()}
+    cited = {f'cite:{src["metric"]}' for c in ans['citations'] for src in c['sources']}
     for cond, phrase, desc in REQUIRED_CAVEATS.get(rules_mode or ctx.mode, ()):
-        if cond == 'always' or cond in tools or cond in regions:
+        if cond == 'always' or cond in tools or cond in regions or cond in cited:
             for text, cid in ctx.caveat_ids.items():
                 if phrase in text and cid not in ans['caveats_reflected']:
                     res.errors.append(f'반드시 반영할 한계가 빠짐: {cid} ({desc})')

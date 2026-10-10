@@ -66,7 +66,7 @@ pip install -r requirements.txt
 
 ## 백엔드 서버
 
-FastAPI 서버는 루트 `.venv`를 사용하며 의존성은 별도 파일로 관리한다.
+FastAPI 서버는 루트 `.venv`를 사용하며 의존성은 별도 파일로 관리한다. 저장소 루트에서 실행한다.
 
 ```bash
 source .venv/bin/activate
@@ -74,12 +74,12 @@ python -m pip install -r backend/requirements.txt
 uvicorn backend.app.main:app --reload
 ```
 
-서버 실행 후 `http://127.0.0.1:8000/health` 에서 상태를 확인할 수 있다.
-개발용 API 문서는 `http://127.0.0.1:8000/docs` 에서 제공한다. 테스트는 저장소 루트에서 실행한다.
-질문 API를 실제로 사용하려면 `agent/.env`에 `ANTHROPIC_API_KEY`를 설정한다.
+서버 실행 후 `http://127.0.0.1:8000/docs`에서 Swagger 문서를 확인할 수 있다.
+질문 API를 실제 Anthropic과 함께 사용하려면 `agent/.env`에 API 키를 설정한다.
 
 ```bash
 python -m pytest backend/tests -q
+python -m pytest agent/tests -q
 ```
 
 설정은 `BACKEND_APP_NAME`과 `BACKEND_LOG_LEVEL` 환경 변수로 지정할 수 있다.
@@ -87,20 +87,19 @@ python -m pytest backend/tests -q
 SQLite 파일은 기본 `backend/data/app.db`에 생성되며 `BACKEND_DB_PATH`로 경로를 바꿀 수 있다.
 DB와 `backend/data/`는 Git에서 제외된다.
 
-### 질문 API
+### 제공 API
 
-`POST /api/v1/questions`는 `admin` 또는 `citizen` 모드로 질문을 처리한다.
-시민 위치는 선택 사항이며, 생략하면 위치 선택 안내를 반환한다. 성공 응답은 화면 표시용 내용만 포함한다.
+| Method | Endpoint | 설명 |
+| --- | --- | --- |
+| GET | `/health` | API 상태 확인 |
+| POST | `/api/v1/questions` | 관리자·시민 질문 처리. 시민 위치는 선택 사항이며 응답은 화면 표시 내용만 반환 |
+| POST | `/api/v1/support-requests` | 함께 가기·이동 도움 요청 생성. `pending`으로 저장 |
+| GET | `/api/v1/support-requests` | 지원 요청 목록 조회. 선택적 `status` 필터 지원 |
+| GET | `/api/v1/support-requests/{request_id}` | 지원 요청 상세 조회 |
+| POST | `/api/v1/field-checks` | 현장 확인 기록 생성 |
+| GET | `/api/v1/field-checks?cell_id=...` | 격자 ID 기준 현장 확인 기록 조회 |
 
-관리자 요청:
-
-```bash
-curl -X POST http://127.0.0.1:8000/api/v1/questions \
-  -H 'Content-Type: application/json' \
-  -d '{"mode":"admin","question":"춘천에서 어디부터 확인해야 해?"}'
-```
-
-시민 요청:
+질문 API 요청 예시:
 
 ```bash
 curl -X POST http://127.0.0.1:8000/api/v1/questions \
@@ -134,6 +133,14 @@ curl -X POST http://127.0.0.1:8000/api/v1/field-checks \
 
 curl 'http://127.0.0.1:8000/api/v1/field-checks?cell_id=4026_7935'
 ```
+
+### 현재 범위와 유의사항
+
+- 로그인·권한 관리는 아직 없다. 지원 요청 목록·상세 조회는 현재 임시 관리자용 API다.
+- 지원 요청은 `pending`으로 저장되며 자동 매칭·승인과 알림 기능은 구현하지 않았다.
+- 프론트엔드 연결과 배포는 아직 구현하지 않았다.
+- 현장 확인 기록은 저장·조회 전용이며 에이전트 답변이나 엔진 분석 결과에 자동 반영되지 않는다.
+- 실제 사용자 데이터와 API 키 등 비밀값은 Git에 추가하거나 커밋하지 않는다. DB 파일과 `backend/data/`도 추적하지 않는다.
 
 ## 데이터 읽기
 

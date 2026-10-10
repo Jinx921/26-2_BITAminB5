@@ -1,3 +1,4 @@
+import time
 from typing import Literal
 
 from fastapi import APIRouter, Depends, Request
@@ -51,9 +52,39 @@ async def ask_question(
                 }
             ],
         )
-    orchestrator = request.app.state.question_orchestrators[user["role"]]
-    location = payload.location.model_dump() if payload.location is not None else None
-    screen, _turn = await run_in_threadpool(
-        orchestrator.ask, payload.question, location
-    )
-    return screen["display"]
+    execution_gate = request.app.state.question_execution_gate
+    if not execution_gate.try_enter():
+        raise ApiError(
+            503,
+            "question_capacity_exceeded",
+            "Question service is temporarily busy",
+            headers={"Retry-After": "1"},
+        )
+
+    try:
+        user_id = int(user["id"])
+        retry_after = await run_in_threadpool(
+            request.app.state.database.record_question_request,
+            user_id,
+            time.time(),
+            request.app.state.question_rate_window_seconds,
+            request.app.state.question_rate_limits[user["role"]],
+        )
+        if retry_after is not None:
+            raise ApiError(
+                429,
+                "rate_limit_exceeded",
+                "Question request limit exceeded",
+                headers={"Retry-After": str(retry_after)},
+            )
+
+        orchestrator = request.app.state.question_orchestrators[user["role"]]
+        location = (
+            payload.location.model_dump() if payload.location is not None else None
+        )
+        screen, _turn = await run_in_threadpool(
+            orchestrator.ask, payload.question, location
+        )
+        return screen["display"]
+    finally:
+        execution_gate.leave()

@@ -1,0 +1,359 @@
+{
+ "mode": "admin",
+ "question": "춘천 외곽에 거점 3곳을 둔다면 이동형이랑 경로당 거점 중 뭐가 나아?",
+ "region": "춘천",
+ "display": {
+  "headline": "거점 3곳이면 이동형 서비스가 더 낫습니다. 가장 먼저 방문이 필요한 동네(긴급방문형) 55곳 중 16곳에 닿고, 경로당 거점은 9곳에 닿습니다.",
+  "details": [
+   "거점 3곳을 사북면, 서면, 신북읍에 두는 경우를 비교했습니다. 두 방식 모두 거점 행정동은 같습니다.",
+   "가장 먼저 방문이 필요한 동네는 모두 55곳입니다. 지금 있는 시설을 안내만 하면 새로 닿는 동네는 없습니다. 경로당 거점은 경로당에 방문 간호나 건강상담 같은 보건 기능을 더하는 안입니다. 이 안은 9곳에 닿고 46곳이 남습니다. 이동형 서비스는 반경 1km 안에서 16곳에 닿고 39곳이 남습니다.",
+   "이동형이 더 많이 닿는 이유는 정해진 경로당에 오시길 기다리지 않고 어르신이 계신 동네 가까이로 가기 때문입니다. 경로당 거점은 한 곳에 머무는 상설 방식입니다. 꾸준히 이용할 수 있다는 장점이 있습니다. 하지만 경로당에서 먼 동네에는 닿기 어렵습니다.",
+   "춘천은 지역 가게 결제 중 지역 주민 결제 비중이 82.2%인 주민 생활권 도시입니다. 그래서 주민이 사는 동네로 찾아가는 방식이 잘 맞습니다. 60대 이상 결제는 12~17시에 가장 많습니다. 이동형 운영도 낮 시간대에 맞추면 좋습니다.",
+   "두 방식을 함께 쓸 수도 있습니다. 이동형으로 먼저 닿고, 자주 오시는 곳은 경로당 거점으로 이어 가는 방법입니다."
+  ],
+  "caution": "이 비교는 닿을 수 있는지만 본 것입니다. 이용량, 운영 비용, 고립이 줄어드는 효과는 계산하지 않았습니다. 결과는 머무는 사람 기준이라 실제 거주자와 다를 수 있어 방문 전 현장 확인이 필요합니다. 거리는 직선거리라 실제 이동 시간이나 경사는 반영하지 않았습니다. 낮 외출이 줄어든 동네와 그렇지 않은 동네는 성격이 다르니 합쳐서 보지 마세요. 지역 가게 결제 비중은 도시 성격을 나누는 데만 썼습니다.",
+  "document": null,
+  "confidence": {
+   "label": "보통",
+   "note": "방문 전에 현장 확인을 권합니다."
+  },
+  "map": {
+   "layer": "interventions",
+   "ref": "r1",
+   "points": [
+    {
+     "id": "4041_8020",
+     "lat": 38.0461,
+     "lon": 127.6182,
+     "emd_name": "사북면",
+     "option": "이동형 서비스 배치",
+     "name": "이동형 거점 (사북면)",
+     "facility_name": null,
+     "highlight": false
+    },
+    {
+     "id": "4068_7971",
+     "lat": 37.9356,
+     "lon": 127.6949,
+     "emd_name": "서면",
+     "option": "이동형 서비스 배치",
+     "name": "이동형 거점 (서면)",
+     "facility_name": null,
+     "highlight": false
+    },
+    {
+     "id": "4092_7980",
+     "lat": 37.9558,
+     "lon": 127.7632,
+     "emd_name": "신북읍",
+     "option": "이동형 서비스 배치",
+     "name": "이동형 거점 (신북읍)",
+     "facility_name": null,
+     "highlight": false
+    },
+    {
+     "id": "CC_00362",
+     "lat": 38.042,
+     "lon": 127.6219,
+     "emd_name": "사북면",
+     "option": "경로당 거점 프로그램",
+     "name": "경로당 거점 (사북면)",
+     "facility_name": "오탄1리 경로당",
+     "highlight": false
+    },
+    {
+     "id": "CC_00338",
+     "lat": 37.9325,
+     "lon": 127.7031,
+     "emd_name": "서면",
+     "option": "경로당 거점 프로그램",
+     "name": "경로당 거점 (서면)",
+     "facility_name": "신매1리 경로당",
+     "highlight": false
+    },
+    {
+     "id": "CC_00222",
+     "lat": 37.9597,
+     "lon": 127.7651,
+     "emd_name": "신북읍",
+     "option": "경로당 거점 프로그램",
+     "name": "경로당 거점 (신북읍)",
+     "facility_name": "발산2리 경로당",
+     "highlight": false
+    }
+   ],
+   "geojson": null
+  },
+  "chart": {
+   "type": "bar",
+   "title": "개입안별 해소되는 동네 수 (가장 먼저 방문이 필요한 동네 기준)",
+   "unit": "곳",
+   "total": 55,
+   "items": [
+    {
+     "label": "기존 시설 안내",
+     "value": 0,
+     "remaining": 55
+    },
+    {
+     "label": "경로당 거점 프로그램",
+     "value": 9,
+     "remaining": 46
+    },
+    {
+     "label": "이동형 서비스 배치",
+     "value": 16,
+     "remaining": 39
+    }
+   ]
+  }
+ },
+ "internal": {
+  "verification": {
+   "passed": true,
+   "attempts": 1,
+   "errors": [],
+   "warnings": []
+  },
+  "confidence_basis": {
+   "ref": "r3",
+   "threshold": 0.7,
+   "min_jaccard": 0.0,
+   "sensitive": [
+    {
+     "param": "housing_thr",
+     "value": 200,
+     "urgent_jaccard": 0.0
+    },
+    {
+     "param": "housing_thr",
+     "value": 100,
+     "urgent_jaccard": 0.0294
+    },
+    {
+     "param": "housing_thr",
+     "value": 0,
+     "urgent_jaccard": 0.2333
+    },
+    {
+     "param": "far_social_m",
+     "value": 1000,
+     "urgent_jaccard": 0.3091
+    },
+    {
+     "param": "persist_min",
+     "value": 6,
+     "urgent_jaccard": 0.3273
+    },
+    {
+     "param": "far_social_m",
+     "value": 300,
+     "urgent_jaccard": 0.5392
+    },
+    {
+     "param": "persist_min",
+     "value": 5,
+     "urgent_jaccard": 0.6182
+    },
+    {
+     "param": "residential_filter",
+     "value": false,
+     "urgent_jaccard": 0.6875
+    }
+   ]
+  },
+  "citations": [
+   {
+    "text": "55",
+    "op": "value",
+    "sources": [
+     {
+      "ref": "r1",
+      "metric": "n_urgent"
+     }
+    ]
+   },
+   {
+    "text": "16",
+    "op": "value",
+    "sources": [
+     {
+      "ref": "r1",
+      "metric": "resolved_mobile"
+     }
+    ]
+   },
+   {
+    "text": "9",
+    "op": "value",
+    "sources": [
+     {
+      "ref": "r1",
+      "metric": "resolved_hub"
+     }
+    ]
+   },
+   {
+    "text": "46",
+    "op": "value",
+    "sources": [
+     {
+      "ref": "r1",
+      "metric": "remaining_hub"
+     }
+    ]
+   },
+   {
+    "text": "39",
+    "op": "value",
+    "sources": [
+     {
+      "ref": "r1",
+      "metric": "remaining_mobile"
+     }
+    ]
+   },
+   {
+    "text": "3",
+    "op": "value",
+    "sources": [
+     {
+      "ref": "r1",
+      "metric": "params.k"
+     }
+    ]
+   },
+   {
+    "text": "1km",
+    "op": "value",
+    "sources": [
+     {
+      "ref": "r1",
+      "metric": "params.radius_m"
+     }
+    ]
+   },
+   {
+    "text": "82.2%",
+    "op": "value",
+    "sources": [
+     {
+      "ref": "r2",
+      "metric": "local_payment_pct"
+     }
+    ]
+   }
+  ],
+  "caveats": [
+   {
+    "id": "c1",
+    "text": "세 안은 접근성(닿을 수 있는지)만 비교했다. 이용량·운영 비용·고립 감소 효과는 계산하지 않았다.",
+    "reflected": true
+   },
+   {
+    "id": "c2",
+    "text": "경로당 거점 프로그램은 거점 경로당에 방문 간호·건강상담 같은 보건 기능을 더한다고 가정했다.",
+    "reflected": true
+   },
+   {
+    "id": "c3",
+    "text": "통신 유동인구는 머무는 사람 기준이며 거주자와 같지 않다. 거주 여부는 현장 확인이 필요하다.",
+    "reflected": true
+   },
+   {
+    "id": "c4",
+    "text": "개인이 아니라 250m 칸 단위 집계 결과다.",
+    "reflected": false
+   },
+   {
+    "id": "c5",
+    "text": "거리는 칸 중심에서 시설까지 직선거리다. 실제 이동 시간·경사·교통편은 반영하지 않는다.",
+    "reflected": true
+   },
+   {
+    "id": "c6",
+    "text": "수요 가중치는 60대 이상 유동인구(체류)이며 거주 고령 인구가 아니다.",
+    "reflected": false
+   },
+   {
+    "id": "c7",
+    "text": "커버는 반경 안 도달 가능성만 뜻하며 고립 감소 효과를 뜻하지 않는다.",
+    "reflected": true
+   },
+   {
+    "id": "c8",
+    "text": "거주 칸 = 팀 기준(야간 비중 + SGIS 1km 주택 수) 통과 칸 중 GIS 주거·용도미상 건물이 있는 칸.",
+    "reflected": false
+   },
+   {
+    "id": "c9",
+    "text": "SGIS 값(주택 수·고령·1인가구)은 1km 격자 단위라 같은 1km 안의 250m 칸이 같은 값을 공유한다. 춘천은 신뢰 격자가 적다.",
+    "reflected": false
+   },
+   {
+    "id": "c10",
+    "text": "긴급방문형·연계형은 활동 위축 신호가 있는 칸(정책 우선 대상)이고, 예방인프라형·관찰형은 위축 신호가 없는 일반 거주 칸의 자원 구조 지도다. 두 층을 같은 무게의 위험 숫자로 합쳐 말하지 않는다.",
+    "reflected": true
+   },
+   {
+    "id": "c11",
+    "text": "카드·인구는 시군구 단위라 칸에 내리지 않고 해석 맥락으로만 쓴다.",
+    "reflected": false
+   },
+   {
+    "id": "c12",
+    "text": "로컬 결제 비율은 이 지역 가맹점 결제 중 같은 시도 거주자 비중이다. 주민이 다른 지역에서 쓴 결제는 보이지 않으므로 생활 반경·고립 신호로 해석하지 않고 도시 성격(강남 방문 도시 / 춘천 주민 생활권) 구분에만 쓴다.",
+    "reflected": true
+   }
+  ],
+  "tool_trace": [
+   {
+    "ref": "r1",
+    "tool": "compare_interventions",
+    "args": {
+     "region": "춘천",
+     "k": 3
+    }
+   },
+   {
+    "ref": "r2",
+    "tool": "region_context",
+    "args": {
+     "region": "춘천"
+    }
+   },
+   {
+    "ref": "r3",
+    "tool": "robustness",
+    "args": {
+     "region": "춘천",
+     "auto": "신뢰도 계산용 (코드가 호출)"
+    }
+   }
+  ],
+  "run": {
+   "model": "claude-sonnet-5-5",
+   "effort": "medium",
+   "end": "passed",
+   "passed": true,
+   "calls": [
+    {
+     "stop_reason": "tool_use",
+     "input_tokens": 4,
+     "output_tokens": 119,
+     "cache_read_input_tokens": 0,
+     "cache_creation_input_tokens": 10496
+    },
+    {
+     "stop_reason": "tool_use",
+     "input_tokens": 2,
+     "output_tokens": 1412,
+     "cache_read_input_tokens": 10496,
+     "cache_creation_input_tokens": 1888
+    }
+   ],
+   "rejected": [],
+   "errors": []
+  }
+ }
+}

@@ -1,0 +1,298 @@
+{
+ "mode": "admin",
+ "question": "춘천 외곽에 이동형 상담 2곳을 두려면 어디가 좋아?",
+ "region": "춘천",
+ "display": {
+  "headline": "이동형 상담 2곳은 사북면과 신북읍에 두는 것이 좋습니다. 두 곳 모두 춘천 외곽에 있고, 가장 먼저 방문이 필요한 동네(긴급방문형)를 가장 많이 덮습니다.",
+  "details": [
+   "사북면을 첫 번째, 신북읍을 두 번째 거점으로 권합니다. 이 두 곳은 낮 외출이 줄어든 고령 거주 동네가 많은 지역입니다. 신북읍은 후보 동네가 가장 많은 행정동이기도 합니다.",
+   "가장 먼저 방문이 필요한 동네 55곳을 기준으로 계산했습니다. 거점 반경 1km에서 2곳을 두면 그중 13곳이 닿습니다. 60대 이상 유동 기준으로는 38%를 덮습니다. 1곳만 두면 19%이고, 3곳이면 48%입니다. 2곳이 되면 덮는 범위가 두 배 가까이 늘어납니다.",
+   "다만 이 비율은 상담에 닿을 수 있는 가능성일 뿐입니다. 고립이 줄어드는 효과를 뜻하지 않습니다. 또 이 수치는 실제 사는 어르신이 아니라 그 시간에 머무는 사람 기준입니다.",
+   "춘천은 지역 가게 결제 중 지역 주민 결제 비중이 82.2%입니다. 주민 생활권 도시라서 주민이 사는 동네로 찾아가는 방식이 잘 맞습니다.",
+   "60대 이상 카드 결제는 12~17시가 가장 많고, 그다음이 06~11시입니다. 오전 늦게부터 오후까지 운영하면 어르신을 만나기 좋습니다.",
+   "안내문은 어르신이 자주 가는 약국, 종합병원, 농수산물 가게, LPG가스 업종 근처에 두면 좋습니다. 이 업종들은 어르신 이용과 지역 주민 이용이 모두 높습니다. 한의원도 어르신 이용이 많습니다. 가게의 정확한 위치는 알 수 없으니 현장에서 정해야 합니다."
+  ],
+  "caution": "방문 전에 실제로 사람이 사는 동네인지 현장에서 확인해 주세요. 거리는 직선 기준이라 실제 이동 시간이나 경사는 반영하지 않았습니다. 주택·고령 통계는 넓은 구역 단위라 가까운 동네끼리 같은 값을 쓰고, 춘천은 이 통계를 믿고 쓸 수 있는 구역이 적습니다. 낮 외출이 줄어든 동네와 그렇지 않은 동네는 성격이 다르므로 합쳐서 보지 마세요. 지역 주민 결제 비중은 도시 성격을 구분하는 데만 썼습니다.",
+  "document": null,
+  "confidence": {
+   "label": "보통",
+   "note": "방문 전에 현장 확인을 권합니다."
+  },
+  "map": {
+   "layer": "sites",
+   "ref": "r2",
+   "points": [
+    {
+     "id": "4041_8020",
+     "lat": 38.0461,
+     "lon": 127.6182,
+     "emd_name": "사북면",
+     "covers": 10,
+     "highlight": true
+    },
+    {
+     "id": "4092_7980",
+     "lat": 37.9558,
+     "lon": 127.7632,
+     "emd_name": "신북읍",
+     "covers": 3,
+     "highlight": true
+    }
+   ],
+   "geojson": null
+  },
+  "chart": null
+ },
+ "internal": {
+  "verification": {
+   "passed": true,
+   "attempts": 1,
+   "errors": [],
+   "warnings": []
+  },
+  "confidence_basis": {
+   "ref": "r5",
+   "threshold": 0.7,
+   "min_jaccard": 0.0,
+   "sensitive": [
+    {
+     "param": "housing_thr",
+     "value": 200,
+     "urgent_jaccard": 0.0
+    },
+    {
+     "param": "housing_thr",
+     "value": 100,
+     "urgent_jaccard": 0.0294
+    },
+    {
+     "param": "housing_thr",
+     "value": 0,
+     "urgent_jaccard": 0.2333
+    },
+    {
+     "param": "far_social_m",
+     "value": 1000,
+     "urgent_jaccard": 0.3091
+    },
+    {
+     "param": "persist_min",
+     "value": 6,
+     "urgent_jaccard": 0.3273
+    },
+    {
+     "param": "far_social_m",
+     "value": 300,
+     "urgent_jaccard": 0.5392
+    },
+    {
+     "param": "persist_min",
+     "value": 5,
+     "urgent_jaccard": 0.6182
+    },
+    {
+     "param": "residential_filter",
+     "value": false,
+     "urgent_jaccard": 0.6875
+    }
+   ]
+  },
+  "citations": [
+   {
+    "text": "55",
+    "op": "value",
+    "sources": [
+     {
+      "ref": "r2",
+      "metric": "n_target_cells"
+     }
+    ]
+   },
+   {
+    "text": "13",
+    "op": "value",
+    "sources": [
+     {
+      "ref": "r2",
+      "metric": "covered_cells_k2"
+     }
+    ]
+   },
+   {
+    "text": "38%",
+    "op": "percent",
+    "sources": [
+     {
+      "ref": "r2",
+      "metric": "covered_senior_share_k2"
+     }
+    ]
+   },
+   {
+    "text": "19%",
+    "op": "percent",
+    "sources": [
+     {
+      "ref": "r2",
+      "metric": "covered_senior_share_k1"
+     }
+    ]
+   },
+   {
+    "text": "48%",
+    "op": "percent",
+    "sources": [
+     {
+      "ref": "r2",
+      "metric": "covered_senior_share_k3"
+     }
+    ]
+   },
+   {
+    "text": "82.2%",
+    "op": "value",
+    "sources": [
+     {
+      "ref": "r3",
+      "metric": "local_payment_pct"
+     }
+    ]
+   },
+   {
+    "text": "1km",
+    "op": "value",
+    "sources": [
+     {
+      "ref": "r2",
+      "metric": "params.radius_m"
+     }
+    ]
+   }
+  ],
+  "caveats": [
+   {
+    "id": "c1",
+    "text": "통신 유동인구는 머무는 사람 기준이며 거주자와 같지 않다. 거주 여부는 현장 확인이 필요하다.",
+    "reflected": true
+   },
+   {
+    "id": "c2",
+    "text": "개인이 아니라 250m 칸 단위 집계 결과다.",
+    "reflected": false
+   },
+   {
+    "id": "c3",
+    "text": "거리는 칸 중심에서 시설까지 직선거리다. 실제 이동 시간·경사·교통편은 반영하지 않는다.",
+    "reflected": true
+   },
+   {
+    "id": "c4",
+    "text": "거주 칸 = 팀 기준(야간 비중 + SGIS 1km 주택 수) 통과 칸 중 GIS 주거·용도미상 건물이 있는 칸.",
+    "reflected": false
+   },
+   {
+    "id": "c5",
+    "text": "SGIS 값(주택 수·고령·1인가구)은 1km 격자 단위라 같은 1km 안의 250m 칸이 같은 값을 공유한다. 춘천은 신뢰 격자가 적다.",
+    "reflected": true
+   },
+   {
+    "id": "c6",
+    "text": "수요 가중치는 60대 이상 유동인구(체류)이며 거주 고령 인구가 아니다.",
+    "reflected": true
+   },
+   {
+    "id": "c7",
+    "text": "커버는 반경 안 도달 가능성만 뜻하며 고립 감소 효과를 뜻하지 않는다.",
+    "reflected": true
+   },
+   {
+    "id": "c8",
+    "text": "카드·인구는 시군구 단위라 칸에 내리지 않고 해석 맥락으로만 쓴다.",
+    "reflected": false
+   },
+   {
+    "id": "c9",
+    "text": "로컬 결제 비율은 이 지역 가맹점 결제 중 같은 시도 거주자 비중이다. 주민이 다른 지역에서 쓴 결제는 보이지 않으므로 생활 반경·고립 신호로 해석하지 않고 도시 성격(강남 방문 도시 / 춘천 주민 생활권) 구분에만 쓴다.",
+    "reflected": true
+   },
+   {
+    "id": "c10",
+    "text": "긴급방문형·연계형은 활동 위축 신호가 있는 칸(정책 우선 대상)이고, 예방인프라형·관찰형은 위축 신호가 없는 일반 거주 칸의 자원 구조 지도다. 두 층을 같은 무게의 위험 숫자로 합쳐 말하지 않는다.",
+    "reflected": true
+   },
+   {
+    "id": "c11",
+    "text": "카드 업종 값은 시·구 전체 결제 기준이다. 업종 가게의 위치는 알 수 없다.",
+    "reflected": true
+   },
+   {
+    "id": "c12",
+    "text": "60대 이상 비중은 그 업종 결제 중 60대 이상 카드 결제의 비율이다.",
+    "reflected": false
+   }
+  ],
+  "tool_trace": [
+   {
+    "ref": "r1",
+    "tool": "find_candidates",
+    "args": {
+     "region": "춘천"
+    }
+   },
+   {
+    "ref": "r2",
+    "tool": "simulate_placement",
+    "args": {
+     "region": "춘천",
+     "k": 2
+    }
+   },
+   {
+    "ref": "r3",
+    "tool": "region_context",
+    "args": {
+     "region": "춘천"
+    }
+   },
+   {
+    "ref": "r4",
+    "tool": "senior_industries",
+    "args": {
+     "region": "춘천"
+    }
+   },
+   {
+    "ref": "r5",
+    "tool": "robustness",
+    "args": {
+     "region": "춘천",
+     "auto": "신뢰도 계산용 (코드가 호출)"
+    }
+   }
+  ],
+  "run": {
+   "model": "claude-sonnet-5-5",
+   "effort": "medium",
+   "end": "passed",
+   "passed": true,
+   "calls": [
+    {
+     "stop_reason": "tool_use",
+     "input_tokens": 4,
+     "output_tokens": 215,
+     "cache_read_input_tokens": 0,
+     "cache_creation_input_tokens": 10483
+    },
+    {
+     "stop_reason": "tool_use",
+     "input_tokens": 2,
+     "output_tokens": 1484,
+     "cache_read_input_tokens": 10483,
+     "cache_creation_input_tokens": 3217
+    }
+   ],
+   "rejected": [],
+   "errors": []
+  }
+ }
+}

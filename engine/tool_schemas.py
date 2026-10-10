@@ -1,0 +1,69 @@
+"""Claude tool use 정의 (혜진: 에이전트에 그대로 넘기면 됨). python tool_schemas.py → out/tool_schemas.json"""
+import json
+
+import config as C
+
+REGION = {'type': 'string', 'enum': list(C.REGIONS), 'description': '분석 지역'}
+
+SCHEMAS = [
+    {'name': 'find_candidates',
+     'description': '낮 시간 활동이 몇 달째 계속 낮은 고령 거주 250m 칸(활동 위축 후보)을 찾는다. 도로·산처럼 건물이 없는 칸은 뺀다. '
+                    '관리자가 "먼저 볼 곳", "위험 동네"를 물을 때 가장 먼저 쓴다.',
+     'input_schema': {'type': 'object', 'properties': {
+         'region': REGION,
+         'persist_min': {'type': 'integer', 'enum': [4, 5, 6], 'description': '6개월 중 낮 활동 저하 개월 수 하한. 기본 4'},
+         'residential_filter': {'type': 'boolean', 'description': '주거건물 없는 칸 제외. 기본 true'}},
+         'required': ['region']}},
+    {'name': 'check_residential',
+     'description': '칸 목록이 실제 주거지인지 확인한다(주거/용도미상/비주거/건물없음, 주거건물 수, 노후 비율).',
+     'input_schema': {'type': 'object', 'properties': {
+         'cell_ids': {'type': 'array', 'items': {'type': 'string'}, 'description': '250m 칸 ID (예: 4032_8078)'}},
+         'required': ['cell_ids']}},
+    {'name': 'lookup_resources',
+     'description': '칸 또는 위치(위도·경도) 주변의 경로당·마을회관·도서관·공공체육·문화시설·보건기관과 거리를 찾는다. '
+                    '시민 모드 "내 주변 갈 곳"과 관리자 칸 상세에 쓴다.',
+     'input_schema': {'type': 'object', 'properties': {
+         'region': REGION, 'cell_id': {'type': 'string'},
+         'lat': {'type': 'number'}, 'lon': {'type': 'number'},
+         'radius_m': {'type': 'integer', 'description': '반경(m). 기본 1000'}},
+         'required': ['region']}},
+    {'name': 'classify',
+     'description': '거주 칸을 고립 유형 4가지로 나눈다: 긴급방문형(위축+자원 멂, 우선1), 연계형(위축+자원 가까움, 우선2), '
+                    '예방인프라형(위축 없음+자원 멂, 우선3), 관찰형(우선4). 공백 태그(교류/보건/둘다)와 칸별 원인·추천 표를 준다. '
+                    '관리자 전용. 시민에게 유형을 알려주지 말 것.',
+     'input_schema': {'type': 'object', 'properties': {
+         'region': REGION,
+         'far_social_m': {'type': 'integer', 'description': '교류시설이 이 거리보다 멀면 공백. 기본 500'},
+         'far_health_m': {'type': 'integer', 'description': '보건기관이 이 거리보다 멀면 공백. 기본 3000'}},
+         'required': ['region']}},
+    {'name': 'simulate_placement',
+     'description': '이동형 상담·모임 거점 k곳을 어디에 두면 긴급방문형 칸(60대 이상 유동 기준)을 가장 많이 덮는지 계산하고, '
+                    'k=1~5 커버 곡선을 준다. "이동형 몇 곳 어디에?" 질문에 쓴다.',
+     'input_schema': {'type': 'object', 'properties': {
+         'region': REGION, 'k': {'type': 'integer', 'minimum': 1, 'maximum': 10},
+         'radius_m': {'type': 'integer', 'description': '거점 서비스 반경(m). 도보 500·1000, 차량 약 3000'}},
+         'required': ['region']}},
+    {'name': 'robustness',
+     'description': '기준값(위축 개월 수, 교류·보건 거리, 주거 필터)을 바꿔 다시 계산해 유형 수가 얼마나 흔들리는지 보여준다. '
+                    '검증 단계나 "이 결과 믿어도 돼?" 질문에 쓴다.',
+     'input_schema': {'type': 'object', 'properties': {'region': REGION}, 'required': ['region']}},
+    {'name': 'facility_change',
+     'description': '시설을 빼거나(fac_id) 새로 더했을 때(lat, lon, kind) 유형이 바뀌는 칸을 계산한다. '
+                    '"이 경로당이 없어지면?", "여기 새로 지으면?"에 쓴다.',
+     'input_schema': {'type': 'object', 'properties': {
+         'region': REGION,
+         'remove_ids': {'type': 'array', 'items': {'type': 'string'}},
+         'add_points': {'type': 'array', 'items': {'type': 'object', 'properties': {
+             'lat': {'type': 'number'}, 'lon': {'type': 'number'},
+             'kind': {'type': 'string', 'enum': ['경로당', '도서관', '체육시설(공공)', '문화시설', '보건']},
+             'name': {'type': 'string'}}, 'required': ['lat', 'lon']}}},
+         'required': ['region']}},
+    {'name': 'region_context',
+     'description': '도시 전체 맥락: 지역민 결제 비율, 60대 이상 결제 시간대, 고령·독거 규모. 도시 성격을 설명할 때 쓴다. 칸 단위 판단에는 쓰지 않는다.',
+     'input_schema': {'type': 'object', 'properties': {'region': REGION}, 'required': ['region']}},
+]
+
+if __name__ == '__main__':
+    C.OUT.mkdir(parents=True, exist_ok=True)
+    (C.OUT / 'tool_schemas.json').write_text(json.dumps(SCHEMAS, ensure_ascii=False, indent=1), encoding='utf-8')
+    print('저장 -> out/tool_schemas.json', len(SCHEMAS), '개')

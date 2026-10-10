@@ -1,0 +1,86 @@
+[r1] find_candidates · 춘천
+evidence (인용 가능):
+  n_candidates = 153
+  team_candidates_before_filter = 192
+  n_dropped_nonresidential = 39
+  rule = 거주(야간·SGIS 주택) & 고령 상위 25% & 낮활동 z<0 >= 4개월 & 주거건물 필터=True
+params (인용 가능): persist_min=4, residential_filter=true, night_thr=0.03, housing_thr=30
+핵심 값 (숫자 없음, 설명용):
+  후보가 많은 행정동 순: 신북읍 > 서면 > 사북면 > 신동면 > 남면 > 남산면 > 동면 > 동내면 > 동산면
+  주거건물 없어 뺀 이유: 건물없음, 비주거
+caveats:
+  c1: 통신 유동인구는 머무는 사람 기준이며 거주자와 같지 않다. 거주 여부는 현장 확인이 필요하다.
+  c2: 개인이 아니라 250m 칸 단위 집계 결과다.
+  c3: 거리는 칸 중심에서 시설까지 직선거리다. 실제 이동 시간·경사·교통편은 반영하지 않는다.
+  c4: 거주 칸 = 팀 기준(야간 비중 + SGIS 1km 주택 수) 통과 칸 중 GIS 주거·용도미상 건물이 있는 칸.
+  c5: SGIS 값(주택 수·고령·1인가구)은 1km 격자 단위라 같은 1km 안의 250m 칸이 같은 값을 공유한다. 춘천은 신뢰 격자가 적다.
+원본: r1 (칸 목록·표·지도 데이터는 화면이 원본에서 그린다)
+  → 원본 33,893자 → 요약 746자, 인용 가능 숫자 8개
+
+[r2] classify · 춘천
+evidence (인용 가능):
+  n_연계형 = 98
+  n_긴급방문형 = 55
+  n_예방인프라형 = 101
+  n_관찰형 = 1361
+  관찰형_gap_교류 = 176
+  관찰형_gap_둘다 = 20
+  관찰형_gap_보건 = 81
+  긴급방문형_gap_교류 = 38
+  긴급방문형_gap_둘다 = 5
+  긴급방문형_gap_보건 = 12
+  예방인프라형_gap_교류 = 55
+  예방인프라형_gap_둘다 = 14
+  예방인프라형_gap_보건 = 32
+  n_universe_cells = 1615
+params (인용 가능): far_social_m=500, far_health_m=3000, persist_min=4, residential_filter=true
+핵심 값 (숫자 없음, 설명용):
+  층: 위축 신호 층 (정책 우선 대상): 긴급방문형·연계형 / 자원 구조 층 (위축 신호 없음): 예방인프라형·관찰형
+  유형별 조치 (우선순위 순): 긴급방문형(방문 안부·이동형 상담) > 연계형(동행·프로그램 연결) > 예방인프라형(이동형 서비스·공공시설 개방 검토) > 관찰형(정기 모니터링)
+  긴급방문형이 많은 행정동 순: 사북면 > 서면 > 신북읍 > 신동면 > 남산면 > 남면
+  연계형이 많은 행정동 순: 신북읍 > 서면 > 신동면 > 남면 > 동면 > 동내면 > 동산면 > 사북면 > 남산면
+caveats:
+  c6: 긴급방문형·연계형은 활동 위축 신호가 있는 칸(정책 우선 대상)이고, 예방인프라형·관찰형은 위축 신호가 없는 일반 거주 칸의 자원 구조 지도다. 두 층을 같은 무게의 위험 숫자로 합쳐 말하지 않는다.
+  (앞 결과와 같은 caveat: c1, c2, c3, c4, c5)
+원본: r2 (칸 목록·표·지도 데이터는 화면이 원본에서 그린다)
+  → 원본 20,635자 → 요약 900자, 인용 가능 숫자 18개
+
+[r3] robustness · 춘천
+evidence (인용 가능):
+  연계형_min = 11
+  긴급방문형_min = 0
+  예방인프라형_min = 0
+  관찰형_min = 394
+  연계형_max = 270
+  긴급방문형_max = 433
+  예방인프라형_max = 1211
+  관찰형_max = 4931
+  urgent_jaccard_median_all_combos = 0.1455
+  oat_persist_min_4_긴급방문형 = 55
+  oat_persist_min_5_긴급방문형 = 34
+  oat_persist_min_6_긴급방문형 = 18
+  oat_far_social_m_300_긴급방문형 = 102
+  oat_far_social_m_500_긴급방문형 = 55
+  oat_far_social_m_1000_긴급방문형 = 17
+  oat_far_health_m_2000_긴급방문형 = 72
+  oat_far_health_m_3000_긴급방문형 = 55
+  oat_far_health_m_5000_긴급방문형 = 55
+  oat_residential_filter_False_긴급방문형 = 80
+  oat_residential_filter_True_긴급방문형 = 55
+  oat_night_scale_0.7_긴급방문형 = 55
+  oat_night_scale_1.0_긴급방문형 = 55
+  oat_night_scale_1.3_긴급방문형 = 52
+  oat_housing_thr_0_긴급방문형 = 167
+  oat_housing_thr_30_긴급방문형 = 55
+  oat_housing_thr_100_긴급방문형 = 15
+  oat_housing_thr_200_긴급방문형 = 2
+params (인용 가능): persist_list=[4, 5, 6], social_list=[300, 500, 1000], health_list=[2000, 3000, 5000], residential_list=[False, True], night_scale=[0.7, 1.0, 1.3], housing_list=[0, 30, 100, 200]
+핵심 값 (숫자 없음, 설명용):
+  결과가 많이 흔들리는 기준 순 (긴급방문형 판정 겹침이 낮은 순): housing_thr > far_social_m > persist_min > residential_filter > far_health_m > night_scale
+caveats:
+  c7: 후보는 기준값마다 엔진이 다시 계산한다 (사랑 로직 이식, 군집은 고정).
+  (앞 결과와 같은 caveat: c1, c2, c3, c4, c5, c6)
+원본: r3 (칸 목록·표·지도 데이터는 화면이 원본에서 그린다)
+  → 원본 99,738자 → 요약 1,312자, 인용 가능 숫자 33개
+
+합계: 원본 154,266자 → 요약 2,958자 (1.9%)

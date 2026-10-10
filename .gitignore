@@ -17,6 +17,7 @@ data/
 # 문서용 텍스트는 예외
 !README.md
 !requirements.txt
+!backend/requirements.txt
 !outputs/tables/*.csv
 
 # ---- 산출물 ----

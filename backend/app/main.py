@@ -10,10 +10,13 @@ from starlette.exceptions import HTTPException as StarletteHTTPException
 
 from agent.engine_client import LiveEngine
 from agent.orchestrator import Orchestrator
+from backend.app.database import Database
 from backend.app.errors import ApiError, error_response
+from backend.app.field_checks import router as field_checks_router
 from backend.app.logging_setup import configure_logging
 from backend.app.questions import router as questions_router
 from backend.app.settings import Settings
+from backend.app.support_requests import router as support_requests_router
 
 settings = Settings.from_environment()
 configure_logging(settings.log_level)
@@ -22,18 +25,25 @@ logger = logging.getLogger("backend.api")
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
-    engine = LiveEngine()
-    app.state.question_orchestrators = {
-        mode: Orchestrator(engine, mode=mode) for mode in ("admin", "citizen")
-    }
+    database = Database(settings.database_path)
+    database.initialize()
+    app.state.database = database
     try:
+        engine = LiveEngine()
+        app.state.question_orchestrators = {
+            mode: Orchestrator(engine, mode=mode) for mode in ("admin", "citizen")
+        }
         yield
     finally:
-        del app.state.question_orchestrators
+        del app.state.database
+        if hasattr(app.state, "question_orchestrators"):
+            del app.state.question_orchestrators
 
 
 app = FastAPI(title=settings.app_name, lifespan=lifespan)
 app.include_router(questions_router)
+app.include_router(support_requests_router)
+app.include_router(field_checks_router)
 
 
 @app.middleware("http")

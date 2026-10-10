@@ -7,6 +7,7 @@ from uuid import uuid4
 from fastapi import FastAPI, Request
 from fastapi.exceptions import RequestValidationError
 from fastapi.responses import JSONResponse
+from fastapi.middleware.cors import CORSMiddleware
 from starlette.exceptions import HTTPException as StarletteHTTPException
 
 from agent.engine_client import LiveEngine
@@ -28,6 +29,7 @@ logger = logging.getLogger("backend.api")
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
+    settings.validate_allowed_origins()
     if settings.environment in {"production", "prod"}:
         if not settings.jwt_secret or len(settings.jwt_secret) < 32:
             raise RuntimeError(
@@ -51,6 +53,14 @@ async def lifespan(app: FastAPI):
 
 
 app = FastAPI(title=settings.app_name, lifespan=lifespan)
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=list(settings.allowed_origins),
+    allow_credentials=False,
+    allow_methods=["GET", "POST", "PATCH", "OPTIONS"],
+    allow_headers=["Authorization", "Content-Type"],
+    expose_headers=["X-Request-ID"],
+)
 app.include_router(auth_router)
 app.include_router(admin_signals_router)
 app.include_router(questions_router)

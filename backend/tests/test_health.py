@@ -22,3 +22,20 @@ def test_http_errors_use_common_response_format() -> None:
         "message": "Not Found",
     }
     assert response.json()["request_id"] == response.headers["x-request-id"]
+
+
+def test_question_validation_uses_common_error_format() -> None:
+    with TestClient(app) as live_client:
+        for payload in (
+            {"mode": "unknown", "question": "질문"},
+            {"mode": "admin", "question": "   "},
+            {"mode": "admin"},
+            {"mode": "citizen", "question": "질문", "location": {"lat": 91, "lon": 0}},
+            {"mode": "citizen", "question": "질문", "location": {"lat": 37}},
+            {"mode": "admin", "question": "질문", "location": {"lat": 37, "lon": 127}},
+        ):
+            response = live_client.post("/api/v1/questions", json=payload)
+
+            assert response.status_code == 422
+            assert response.json()["error"]["code"] == "validation_error"
+            assert response.json()["request_id"] == response.headers["x-request-id"]

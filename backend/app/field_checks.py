@@ -1,9 +1,11 @@
 from datetime import datetime
 from typing import Any
 
-from fastapi import APIRouter, Query, Request, status
+from fastapi import APIRouter, Depends, Query, Request, status
 from pydantic import BaseModel, ConfigDict, Field, field_validator
 from starlette.concurrency import run_in_threadpool
+
+from backend.app.auth import require_roles
 
 router = APIRouter(prefix="/api/v1/field-checks", tags=["field checks"])
 
@@ -26,7 +28,11 @@ class FieldCheckCreate(BaseModel):
 
 
 @router.post("", status_code=status.HTTP_201_CREATED)
-async def create_field_check(payload: FieldCheckCreate, request: Request) -> dict:
+async def create_field_check(
+    payload: FieldCheckCreate,
+    request: Request,
+    _user: dict = Depends(require_roles("field_worker", "admin")),
+) -> dict:
     values = payload.model_dump(mode="json")
     return await run_in_threadpool(
         request.app.state.database.create_field_check, values
@@ -35,7 +41,9 @@ async def create_field_check(payload: FieldCheckCreate, request: Request) -> dic
 
 @router.get("")
 async def list_field_checks(
-    request: Request, cell_id: str = Query(min_length=1)
+    request: Request,
+    cell_id: str = Query(min_length=1),
+    _user: dict = Depends(require_roles("field_worker", "admin")),
 ) -> list[dict]:
     return await run_in_threadpool(
         request.app.state.database.list_field_checks, cell_id

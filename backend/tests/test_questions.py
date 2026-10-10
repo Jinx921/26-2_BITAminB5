@@ -7,6 +7,7 @@ from fastapi.testclient import TestClient
 from agent.orchestrator import Orchestrator as AgentOrchestrator
 from agent.screen import CITIZEN_NOTICE
 from backend.app import main
+from backend.tests.auth_helpers import authorization_headers
 
 
 class StubEngine:
@@ -56,14 +57,23 @@ def test_mode_orchestrators_share_one_engine_and_are_reused(monkeypatch) -> None
 
     with TestClient(main.app) as client:
         admin_payload = {"mode": "admin", "question": "관리자 질문"}
-        assert client.post("/api/v1/questions", json=admin_payload).status_code == 200
-        assert client.post("/api/v1/questions", json=admin_payload).status_code == 200
+        admin_headers = authorization_headers(client, "admin")
+        assert client.post(
+            "/api/v1/questions", json=admin_payload, headers=admin_headers
+        ).status_code == 200
+        assert client.post(
+            "/api/v1/questions", json=admin_payload, headers=admin_headers
+        ).status_code == 200
         citizen_payload = {
             "mode": "citizen",
             "question": "주변 시설을 알려줘",
             "location": {"lat": 37.88, "lon": 127.73},
         }
-        response = client.post("/api/v1/questions", json=citizen_payload)
+        response = client.post(
+            "/api/v1/questions",
+            json=citizen_payload,
+            headers=authorization_headers(client, "citizen"),
+        )
 
     assert len(engines) == 1
     assert len(StubOrchestrator.instances) == 2
@@ -93,6 +103,7 @@ def test_response_and_logs_do_not_expose_internal_or_location(
                     "question": question,
                     "location": {"lat": latitude, "lon": longitude},
                 },
+                headers=authorization_headers(client, "citizen"),
             )
 
     assert response.json() == {"headline": "citizen response", "map": None}
@@ -135,6 +146,7 @@ def test_citizen_without_location_returns_guidance_without_anthropic(
         response = client.post(
             "/api/v1/questions",
             json={"mode": "citizen", "question": "주변 시설을 알려줘"},
+            headers=authorization_headers(client, "citizen"),
         )
 
     assert response.status_code == 200
@@ -165,6 +177,7 @@ def test_slow_orchestrator_does_not_block_event_loop(monkeypatch) -> None:
             client.post,
             "/api/v1/questions",
             json={"mode": "admin", "question": "오래 걸리는 질문"},
+            headers=authorization_headers(client, "admin"),
         )
         assert started.wait(timeout=2)
         health_future = pool.submit(client.get, "/health")

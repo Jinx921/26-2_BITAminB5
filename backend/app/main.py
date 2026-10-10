@@ -1,4 +1,5 @@
 import logging
+import secrets
 import time
 from contextlib import asynccontextmanager
 from uuid import uuid4
@@ -10,8 +11,9 @@ from starlette.exceptions import HTTPException as StarletteHTTPException
 
 from agent.engine_client import LiveEngine
 from agent.orchestrator import Orchestrator
+from backend.app.auth import router as auth_router
 from backend.app.database import Database
-from backend.app.errors import ApiError, error_response
+from backend.app.errors import ApiError, AuthenticationError, error_response
 from backend.app.field_checks import router as field_checks_router
 from backend.app.logging_setup import configure_logging
 from backend.app.questions import router as questions_router
@@ -25,9 +27,15 @@ logger = logging.getLogger("backend.api")
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
+    if settings.environment in {"production", "prod"}:
+        if not settings.jwt_secret or len(settings.jwt_secret) < 32:
+            raise RuntimeError(
+                "BACKEND_JWT_SECRET must contain at least 32 characters in production"
+            )
     database = Database(settings.database_path)
     database.initialize()
     app.state.database = database
+    app.state.jwt_secret = settings.jwt_secret or secrets.token_urlsafe(32)
     try:
         engine = LiveEngine()
         app.state.question_orchestrators = {
@@ -36,11 +44,13 @@ async def lifespan(app: FastAPI):
         yield
     finally:
         del app.state.database
+        del app.state.jwt_secret
         if hasattr(app.state, "question_orchestrators"):
             del app.state.question_orchestrators
 
 
 app = FastAPI(title=settings.app_name, lifespan=lifespan)
+app.include_router(auth_router)
 app.include_router(questions_router)
 app.include_router(support_requests_router)
 app.include_router(field_checks_router)
@@ -75,6 +85,16 @@ async def handle_api_error(request: Request, exc: ApiError) -> JSONResponse:
     return error_response(
         request, exc.status_code, exc.code, exc.message, exc.details
     )
+
+
+@app.exception_handler(AuthenticationError)
+async def handle_authentication_error(
+    request: Request, exc: AuthenticationError
+) -> JSONResponse:
+    response = error_response(request, exc.status_code, exc.code, exc.message)
+    if exc.status_code == 401:
+        response.headers["WWW-Authenticate"] = "Bearer"
+    return response
 
 
 @app.exception_handler(StarletteHTTPException)

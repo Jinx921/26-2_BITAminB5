@@ -84,6 +84,8 @@ python -m pytest backend/tests -q
 
 설정은 `BACKEND_APP_NAME`과 `BACKEND_LOG_LEVEL` 환경 변수로 지정할 수 있다.
 기본 로그 레벨은 `INFO`이며 요청 로그는 JSON 형식으로 출력된다.
+SQLite 파일은 기본 `backend/data/app.db`에 생성되며 `BACKEND_DB_PATH`로 경로를 바꿀 수 있다.
+DB와 `backend/data/`는 Git에서 제외된다.
 
 ### 질문 API
 
@@ -104,6 +106,33 @@ curl -X POST http://127.0.0.1:8000/api/v1/questions \
 curl -X POST http://127.0.0.1:8000/api/v1/questions \
   -H 'Content-Type: application/json' \
   -d '{"mode":"citizen","question":"주변 교류 시설을 알려줘","location":{"lat":37.88,"lon":127.73}}'
+```
+
+### 지원 요청 및 현장 확인 기록
+
+함께 가기·이동 도움 요청은 `POST /api/v1/support-requests`로 등록한다.
+새 요청은 항상 `pending` 상태이며 자동 매칭·승인하지 않는다. 관리자가 별도로 검토하고 승인해야 한다.
+지원 요청 목록·상세 조회 API는 **현재 임시 관리자용**으로, 아직 인증·권한 검사가 없다.
+연락처 등 개인정보가 포함될 수 있으므로 신뢰된 로컬 환경에서만 사용한다.
+
+```bash
+curl -X POST http://127.0.0.1:8000/api/v1/support-requests \
+  -H 'Content-Type: application/json' \
+  -d '{"facility_id":"facility-123","requester_name":"홍길동","contact":"010-1234-5678","requested_at":"2026-10-10T10:00:00+09:00","request_type":"companion","note":"도착 전에 연락 바랍니다"}'
+
+curl 'http://127.0.0.1:8000/api/v1/support-requests?status=pending'
+curl http://127.0.0.1:8000/api/v1/support-requests/1
+```
+
+현장 확인은 `POST /api/v1/field-checks`로 저장하고, 격자 ID로 조회한다.
+이 기록은 저장·조회 전용이며 현재 에이전트 답변이나 엔진 분석 결과에 반영되지 않는다.
+
+```bash
+curl -X POST http://127.0.0.1:8000/api/v1/field-checks \
+  -H 'Content-Type: application/json' \
+  -d '{"cell_id":"4026_7935","checklist":{"accessible":true,"bench":false},"checked_at":"2026-10-10T11:30:00+09:00","note":"입구에 계단이 있음"}'
+
+curl 'http://127.0.0.1:8000/api/v1/field-checks?cell_id=4026_7935'
 ```
 
 ## 데이터 읽기

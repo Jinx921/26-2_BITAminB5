@@ -1,5 +1,6 @@
 from fastapi.testclient import TestClient
 
+from backend.app import main
 from backend.app.main import app
 
 client = TestClient(app)
@@ -24,7 +25,9 @@ def test_http_errors_use_common_response_format() -> None:
     assert response.json()["request_id"] == response.headers["x-request-id"]
 
 
-def test_question_validation_uses_common_error_format() -> None:
+def test_question_validation_uses_common_error_format(monkeypatch) -> None:
+    monkeypatch.setattr(main, "LiveEngine", lambda: object())
+    monkeypatch.setattr(main, "Orchestrator", lambda engine, mode: object())
     with TestClient(app) as live_client:
         for payload in (
             {"mode": "unknown", "question": "질문"},

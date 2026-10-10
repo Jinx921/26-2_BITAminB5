@@ -76,6 +76,11 @@ uvicorn backend.app.main:app --reload
 
 서버 실행 후 `http://127.0.0.1:8000/docs`에서 Swagger 문서를 확인할 수 있다.
 실제 Anthropic 호출에는 `agent/.env`의 API 키가 필요하다. 테스트는 mock으로 실행하며 API 키를 요구하지 않는다.
+프론트엔드는 같은 로컬 환경에서 기본 허용 주소(`http://localhost:5173`, `http://localhost:3000`)를 사용할 수 있다.
+프론트 개발 주소가 정해지면 `BACKEND_ALLOWED_ORIGINS`에 쉼표로 구분해 지정한다.
+예: `export BACKEND_ALLOWED_ORIGINS="http://localhost:5173,https://<FRONTEND_HOST>"`.
+운영 환경에서는 명시적인 주소가 필수이며 `*` 와일드카드는 거부된다. CORS credentials는 허용하지 않는다.
+API 계약은 [`docs/api-contract.md`](docs/api-contract.md)에 정리되어 있다.
 
 ```bash
 python -m pytest backend/tests -q

@@ -75,7 +75,7 @@ uvicorn backend.app.main:app --reload
 ```
 
 서버 실행 후 `http://127.0.0.1:8000/docs`에서 Swagger 문서를 확인할 수 있다.
-질문 API를 실제 Anthropic과 함께 사용하려면 `agent/.env`에 API 키를 설정한다.
+실제 Anthropic 호출에는 `agent/.env`의 API 키가 필요하다. 테스트는 mock으로 실행하며 API 키를 요구하지 않는다.
 
 ```bash
 python -m pytest backend/tests -q
@@ -86,41 +86,52 @@ python -m pytest agent/tests -q
 기본 로그 레벨은 `INFO`이며 요청 로그는 JSON 형식으로 출력된다.
 SQLite 파일은 기본 `backend/data/app.db`에 생성되며 `BACKEND_DB_PATH`로 경로를 바꿀 수 있다.
 DB와 `backend/data/`는 Git에서 제외된다.
+production에서는 `BACKEND_ENVIRONMENT=production` 및 `BACKEND_JWT_SECRET` 설정이 필수이며,
+키가 없으면 서버가 시작되지 않는다. development에서는 임시 키를 프로세스 시작 시 생성한다.
 
 ### 제공 API
 
 | Method | Endpoint | 설명 |
 | --- | --- | --- |
 | GET | `/health` | API 상태 확인 |
-| POST | `/api/v1/questions` | 관리자·시민 질문 처리. 시민 위치는 선택 사항이며 응답은 화면 표시 내용만 반환 |
-| POST | `/api/v1/support-requests` | 함께 가기·이동 도움 요청 생성. `pending`으로 저장 |
-| GET | `/api/v1/support-requests` | 지원 요청 목록 조회. 선택적 `status` 필터 지원 |
-| GET | `/api/v1/support-requests/{request_id}` | 지원 요청 상세 조회 |
-| POST | `/api/v1/field-checks` | 현장 확인 기록 생성 |
-| GET | `/api/v1/field-checks?cell_id=...` | 격자 ID 기준 현장 확인 기록 조회 |
+| POST | `/api/v1/auth/register` | 시민 계정 공개 가입 |
+| POST | `/api/v1/auth/login` | 이메일·비밀번호 로그인 및 JWT 발급 |
+| POST | `/api/v1/questions` | 질문 처리 (admin/citizen) |
+| POST | `/api/v1/support-requests` | 시민 지원 요청 생성 |
+| GET | `/api/v1/support-requests?status=...` | 관리자용 목록 조회 및 상태 필터 |
+| GET | `/api/v1/support-requests/{request_id}` | 관리자용 상세 조회 |
+| PATCH | `/api/v1/support-requests/{request_id}/status` | 관리자용 상태 변경 |
+| POST/GET | `/api/v1/field-checks` | 현장 담당자·관리자 기록 생성 및 조회 |
 
-질문 API 요청 예시:
+인증이 필요한 요청에는 `Authorization: Bearer <ACCESS_TOKEN>` 헤더를 전달한다.
+질문 요청의 `mode` 값은 호환성을 위해 받지만 권한으로 결정하며, admin은 admin, citizen은 citizen 모드로 처리한다.
+현장 담당자는 질문 API를 사용할 수 없다.
 
 ```bash
 curl -X POST http://127.0.0.1:8000/api/v1/questions \
   -H 'Content-Type: application/json' \
+  -H 'Authorization: Bearer <ACCESS_TOKEN>' \
   -d '{"mode":"citizen","question":"주변 교류 시설을 알려줘","location":{"lat":37.88,"lon":127.73}}'
 ```
 
 ### 지원 요청 및 현장 확인 기록
 
 함께 가기·이동 도움 요청은 `POST /api/v1/support-requests`로 등록한다.
-새 요청은 항상 `pending` 상태이며 자동 매칭·승인하지 않는다. 관리자가 별도로 검토하고 승인해야 한다.
-지원 요청 목록·상세 조회 API는 **현재 임시 관리자용**으로, 아직 인증·권한 검사가 없다.
-연락처 등 개인정보가 포함될 수 있으므로 신뢰된 로컬 환경에서만 사용한다.
+새 요청은 항상 `pending` 상태이며 자동 매칭·승인하지 않는다. 관리자만 상태를 `pending`, `approved`,
+`rejected`, `completed` 중 하나로 변경할 수 있다. 연락처는 요청에 `contact_consent: true`를 명시한 경우에만 저장한다.
 
 ```bash
 curl -X POST http://127.0.0.1:8000/api/v1/support-requests \
   -H 'Content-Type: application/json' \
-  -d '{"facility_id":"facility-123","requester_name":"홍길동","contact":"010-1234-5678","requested_at":"2026-10-10T10:00:00+09:00","request_type":"companion","note":"도착 전에 연락 바랍니다"}'
+  -H 'Authorization: Bearer <ACCESS_TOKEN>' \
+  -d '{"facility_id":"<FACILITY_ID>","requester_name":"<REQUESTER_NAME>","contact":"<CONTACT>","contact_consent":true,"requested_at":"<ISO_8601_DATETIME>","request_type":"companion","note":"<NOTE>"}'
 
-curl 'http://127.0.0.1:8000/api/v1/support-requests?status=pending'
-curl http://127.0.0.1:8000/api/v1/support-requests/1
+curl -H 'Authorization: Bearer <ADMIN_ACCESS_TOKEN>' \
+  'http://127.0.0.1:8000/api/v1/support-requests?status=pending'
+curl -X PATCH 'http://127.0.0.1:8000/api/v1/support-requests/<REQUEST_ID>/status' \
+  -H 'Authorization: Bearer <ADMIN_ACCESS_TOKEN>' \
+  -H 'Content-Type: application/json' \
+  -d '{"status":"approved"}'
 ```
 
 현장 확인은 `POST /api/v1/field-checks`로 저장하고, 격자 ID로 조회한다.
@@ -129,18 +140,51 @@ curl http://127.0.0.1:8000/api/v1/support-requests/1
 ```bash
 curl -X POST http://127.0.0.1:8000/api/v1/field-checks \
   -H 'Content-Type: application/json' \
-  -d '{"cell_id":"4026_7935","checklist":{"accessible":true,"bench":false},"checked_at":"2026-10-10T11:30:00+09:00","note":"입구에 계단이 있음"}'
+  -H 'Authorization: Bearer <FIELD_WORKER_ACCESS_TOKEN>' \
+  -d '{"cell_id":"<CELL_ID>","checklist":{"accessible":true,"bench":false},"checked_at":"<ISO_8601_DATETIME>","note":"<NOTE>"}'
 
-curl 'http://127.0.0.1:8000/api/v1/field-checks?cell_id=4026_7935'
+curl -H 'Authorization: Bearer <FIELD_WORKER_ACCESS_TOKEN>' \
+  'http://127.0.0.1:8000/api/v1/field-checks?cell_id=<CELL_ID>'
 ```
+
+### 계정 생성 및 권한
+
+공개 회원가입은 citizen 계정만 만들 수 있다. 가입 후 로그인해 응답의 토큰을 사용한다.
+
+```bash
+curl -X POST http://127.0.0.1:8000/api/v1/auth/register \
+  -H 'Content-Type: application/json' \
+  -d '{"email":"<EMAIL>","password":"<PASSWORD_AT_LEAST_12_CHARACTERS>"}'
+
+curl -X POST http://127.0.0.1:8000/api/v1/auth/login \
+  -H 'Content-Type: application/json' \
+  -d '{"email":"<EMAIL>","password":"<PASSWORD>"}'
+```
+
+admin·field_worker 계정은 공개 가입할 수 없다. 로컬 development에서만 아래 명령을 실행하면
+이메일과 비밀번호를 대화형으로 입력받아 계정을 만든다. 비밀번호는 화면에 표시되지 않는다.
+실제 계정 정보는 파일에 기록하거나 커밋하지 않는다.
+
+```bash
+python -m backend.seed_user --role admin
+python -m backend.seed_user --role field_worker
+```
+
+| API | citizen | field_worker | admin |
+| --- | --- | --- | --- |
+| 질문 | citizen 모드 | 거부 | admin 모드 |
+| 지원 요청 생성 | 허용 | 거부 | 거부 |
+| 지원 요청 조회·상태 변경 | 거부 | 거부 | 허용 |
+| 현장 확인 생성·조회 | 거부 | 허용 | 허용 |
 
 ### 현재 범위와 유의사항
 
-- 로그인·권한 관리는 아직 없다. 지원 요청 목록·상세 조회는 현재 임시 관리자용 API다.
+- 비밀번호는 Argon2 해시로 저장한다. JWT secret은 환경 변수로만 제공하고 토큰·비밀번호·Authorization 헤더는 로그에 남기지 않는다.
 - 지원 요청은 `pending`으로 저장되며 자동 매칭·승인과 알림 기능은 구현하지 않았다.
 - 프론트엔드 연결과 배포는 아직 구현하지 않았다.
 - 현장 확인 기록은 저장·조회 전용이며 에이전트 답변이나 엔진 분석 결과에 자동 반영되지 않는다.
-- 실제 사용자 데이터와 API 키 등 비밀값은 Git에 추가하거나 커밋하지 않는다. DB 파일과 `backend/data/`도 추적하지 않는다.
+- 실제 사용자 데이터, 비밀번호, JWT secret, Anthropic API 키 및 `.env` 파일은 Git에 추가하거나 커밋하지 않는다.
+  DB 파일과 `backend/data/`도 추적하지 않는다.
 
 ## 데이터 읽기
 

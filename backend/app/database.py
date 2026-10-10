@@ -12,6 +12,7 @@ class Database:
     def initialize(self) -> None:
         self.path.parent.mkdir(parents=True, exist_ok=True)
         with closing(sqlite3.connect(self.path, timeout=5)) as connection:
+            connection.row_factory = sqlite3.Row
             with connection:
                 connection.executescript(
                     """
@@ -42,8 +43,64 @@ class Database:
 
                     CREATE INDEX IF NOT EXISTS idx_field_checks_cell_id
                         ON field_checks(cell_id, id DESC);
+
+                    CREATE TABLE IF NOT EXISTS users (
+                        id INTEGER PRIMARY KEY AUTOINCREMENT,
+                        email TEXT NOT NULL UNIQUE COLLATE NOCASE,
+                        password_hash TEXT NOT NULL,
+                        role TEXT NOT NULL
+                            CHECK (role IN ('citizen', 'field_worker', 'admin')),
+                        created_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP
+                    );
                     """
                 )
+                columns = {
+                    row["name"]
+                    for row in connection.execute(
+                        "PRAGMA table_info(support_requests)"
+                    )
+                }
+                if "contact_consent" not in columns:
+                    connection.execute(
+                        """ALTER TABLE support_requests
+                           ADD COLUMN contact_consent INTEGER NOT NULL DEFAULT 0"""
+                    )
+
+    def create_user(
+        self, email: str, password_hash: str, role: str = "citizen"
+    ) -> dict[str, Any]:
+        if role not in {"citizen", "field_worker", "admin"}:
+            raise ValueError("Unsupported user role")
+        with closing(sqlite3.connect(self.path, timeout=5)) as connection:
+            connection.row_factory = sqlite3.Row
+            with connection:
+                cursor = connection.execute(
+                    "INSERT INTO users (email, password_hash, role) VALUES (?, ?, ?)",
+                    (email.lower(), password_hash, role),
+                )
+                row = connection.execute(
+                    "SELECT id, email, role, created_at FROM users WHERE id = ?",
+                    (cursor.lastrowid,),
+                ).fetchone()
+                return dict(row)
+
+    def get_user_by_email(self, email: str) -> dict[str, Any] | None:
+        with closing(sqlite3.connect(self.path, timeout=5)) as connection:
+            connection.row_factory = sqlite3.Row
+            row = connection.execute(
+                "SELECT * FROM users WHERE email = ? COLLATE NOCASE",
+                (email.lower(),),
+            ).fetchone()
+            return dict(row) if row is not None else None
+
+    def get_user_by_id(self, user_id: int) -> dict[str, Any] | None:
+        with closing(sqlite3.connect(self.path, timeout=5)) as connection:
+            connection.row_factory = sqlite3.Row
+            row = connection.execute(
+                "SELECT id, email, role, created_at FROM users WHERE id = ?",
+                (user_id,),
+            ).fetchone()
+            return dict(row) if row is not None else None
 
     def create_support_request(self, values: dict[str, Any]) -> dict[str, Any]:
         with closing(sqlite3.connect(self.path, timeout=5)) as connection:
@@ -53,8 +110,8 @@ class Database:
                     """
                     INSERT INTO support_requests (
                         facility_id, requester_name, contact, requested_at,
-                        request_type, note, status
-                    ) VALUES (?, ?, ?, ?, ?, ?, 'pending')
+                        request_type, note, status, contact_consent
+                    ) VALUES (?, ?, ?, ?, ?, ?, 'pending', ?)
                     """,
                     (
                         values["facility_id"],
@@ -63,13 +120,14 @@ class Database:
                         values["requested_at"],
                         values["request_type"],
                         values["note"],
+                        int(values["contact_consent"]),
                     ),
                 )
                 row = connection.execute(
                     "SELECT * FROM support_requests WHERE id = ?",
                     (cursor.lastrowid,),
                 ).fetchone()
-                return dict(row)
+                return self._decode_support_request(dict(row))
 
     def list_support_requests(
         self, status: str | None = None
@@ -85,7 +143,7 @@ class Database:
                     "SELECT * FROM support_requests WHERE status = ? ORDER BY id DESC",
                     (status,),
                 ).fetchall()
-            return [dict(row) for row in rows]
+            return [self._decode_support_request(dict(row)) for row in rows]
 
     def get_support_request(self, request_id: int) -> dict[str, Any] | None:
         with closing(sqlite3.connect(self.path, timeout=5)) as connection:
@@ -93,7 +151,31 @@ class Database:
             row = connection.execute(
                 "SELECT * FROM support_requests WHERE id = ?", (request_id,)
             ).fetchone()
-            return dict(row) if row is not None else None
+            return self._decode_support_request(dict(row)) if row is not None else None
+
+    def update_support_request_status(
+        self, request_id: int, status: str
+    ) -> dict[str, Any] | None:
+        if status not in {"pending", "approved", "rejected", "completed"}:
+            raise ValueError("Unsupported support request status")
+        with closing(sqlite3.connect(self.path, timeout=5)) as connection:
+            connection.row_factory = sqlite3.Row
+            with connection:
+                cursor = connection.execute(
+                    "UPDATE support_requests SET status = ? WHERE id = ?",
+                    (status, request_id),
+                )
+                if cursor.rowcount == 0:
+                    return None
+                row = connection.execute(
+                    "SELECT * FROM support_requests WHERE id = ?", (request_id,)
+                ).fetchone()
+                return self._decode_support_request(dict(row))
+
+    @staticmethod
+    def _decode_support_request(row: dict[str, Any]) -> dict[str, Any]:
+        row["contact_consent"] = bool(row["contact_consent"])
+        return row
 
     def create_field_check(self, values: dict[str, Any]) -> dict[str, Any]:
         checklist = json.dumps(values["checklist"], ensure_ascii=False)

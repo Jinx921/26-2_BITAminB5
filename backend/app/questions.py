@@ -1,8 +1,11 @@
 from typing import Literal
 
-from fastapi import APIRouter, Request
-from pydantic import BaseModel, ConfigDict, Field, field_validator, model_validator
+from fastapi import APIRouter, Depends, Request
+from pydantic import BaseModel, ConfigDict, Field, field_validator
 from starlette.concurrency import run_in_threadpool
+
+from backend.app.auth import require_roles
+from backend.app.errors import ApiError
 
 
 class QuestionLocation(BaseModel):
@@ -26,21 +29,29 @@ class QuestionRequest(BaseModel):
             raise ValueError("question must not be blank")
         return value
 
-    @model_validator(mode="after")
-    def location_is_citizen_only(self) -> "QuestionRequest":
-        if self.mode == "admin" and self.location is not None:
-            raise ValueError("location is only supported in citizen mode")
-        return self
-
-
 router = APIRouter(prefix="/api/v1", tags=["questions"])
 
 
 @router.post("/questions")
 async def ask_question(
-    payload: QuestionRequest, request: Request
+    payload: QuestionRequest,
+    request: Request,
+    user: dict = Depends(require_roles("admin", "citizen")),
 ) -> dict:
-    orchestrator = request.app.state.question_orchestrators[payload.mode]
+    if user["role"] == "admin" and payload.location is not None:
+        raise ApiError(
+            422,
+            "validation_error",
+            "Request validation failed",
+            [
+                {
+                    "location": ["body", "location"],
+                    "message": "location is only supported for citizen accounts",
+                    "type": "value_error",
+                }
+            ],
+        )
+    orchestrator = request.app.state.question_orchestrators[user["role"]]
     location = payload.location.model_dump() if payload.location is not None else None
     screen, _turn = await run_in_threadpool(
         orchestrator.ask, payload.question, location

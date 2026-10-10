@@ -64,6 +64,26 @@ pip install -r requirements.txt
 
 현재 환경: Python 3.12.5 / pandas 3.0.5 / numpy 2.5.3 / geopandas 1.1.4 / lightgbm 4.7.0
 
+## 백엔드 서버
+
+FastAPI 서버는 루트 `.venv`를 사용하며 의존성은 별도 파일로 관리한다.
+
+```bash
+source .venv/bin/activate
+python -m pip install -r backend/requirements.txt
+uvicorn backend.app.main:app --reload
+```
+
+서버 실행 후 `http://127.0.0.1:8000/health` 에서 상태를 확인할 수 있다.
+개발용 API 문서는 `http://127.0.0.1:8000/docs` 에서 제공한다. 테스트는 저장소 루트에서 실행한다.
+
+```bash
+python -m pytest backend/tests -q
+```
+
+설정은 `BACKEND_APP_NAME`과 `BACKEND_LOG_LEVEL` 환경 변수로 지정할 수 있다.
+기본 로그 레벨은 `INFO`이며 요청 로그는 JSON 형식으로 출력된다.
+
 ## 데이터 읽기
 
 노트북 첫 셀에서 `src` 를 경로에 추가한다.

@@ -12,6 +12,7 @@ from starlette.exceptions import HTTPException as StarletteHTTPException
 from agent.engine_client import LiveEngine
 from agent.orchestrator import Orchestrator
 from backend.app.auth import router as auth_router
+from backend.app.admin_signals import router as admin_signals_router
 from backend.app.database import Database
 from backend.app.errors import ApiError, AuthenticationError, error_response
 from backend.app.field_checks import router as field_checks_router
@@ -51,6 +52,7 @@ async def lifespan(app: FastAPI):
 
 app = FastAPI(title=settings.app_name, lifespan=lifespan)
 app.include_router(auth_router)
+app.include_router(admin_signals_router)
 app.include_router(questions_router)
 app.include_router(support_requests_router)
 app.include_router(field_checks_router)

@@ -102,6 +102,8 @@ production에서는 `BACKEND_ENVIRONMENT=production` 및 `BACKEND_JWT_SECRET` �
 | GET | `/api/v1/support-requests/{request_id}` | 관리자용 상세 조회 |
 | PATCH | `/api/v1/support-requests/{request_id}/status` | 관리자용 상태 변경 |
 | POST/GET | `/api/v1/field-checks` | 현장 담당자·관리자 기록 생성 및 조회 |
+| GET | `/api/v1/admin/demand-signals` | 관리자용 익명 지원 수요 집계 |
+| GET | `/api/v1/admin/field-feedback-summary` | 관리자용 현장 확인 건수·항목별 응답 요약 |
 
 인증이 필요한 요청에는 `Authorization: Bearer <ACCESS_TOKEN>` 헤더를 전달한다.
 질문 요청의 `mode` 값은 호환성을 위해 받지만 권한으로 결정하며, admin은 admin, citizen은 citizen 모드로 처리한다.
@@ -145,6 +147,26 @@ curl -X POST http://127.0.0.1:8000/api/v1/field-checks \
 
 curl -H 'Authorization: Bearer <FIELD_WORKER_ACCESS_TOKEN>' \
   'http://127.0.0.1:8000/api/v1/field-checks?cell_id=<CELL_ID>'
+```
+
+### 익명 운영 신호 (관리자 전용)
+
+`GET /api/v1/admin/demand-signals`는 지원 요청을 `facility_id`, `request_type`, `status`별로 집계한다.
+기존 시설 자료와 신뢰할 수 있는 매핑 근거가 없어 임의의 동네·셀 이름은 붙이지 않고 시설 ID만 제공한다.
+기본 최소 집계 수는 3이며, 3건 미만인 그룹은 응답에서 제외한다. 응답에는 그룹 키와 건수만 포함하고
+이름·연락처·이메일·메모나 원본 요청은 반환하지 않는다.
+
+`GET /api/v1/admin/field-feedback-summary`는 셀별 확인 건수와 체크리스트 응답 수만 제공한다.
+체크리스트의 원래 항목명은 신뢰할 수 없는 입력일 수 있어 반환하지 않고, 각 셀 응답 내 임시 항목 인덱스와 건수로만 제공한다.
+두 API 모두 향후 엔진 보정값으로 전달 가능한 익명 운영 신호이며 현재 agent·engine 판단에는 반영되지 않는다.
+엔진 보정 연동은 현준·혜진과 데이터 계약을 확정한 뒤 진행한다.
+
+```bash
+curl -H 'Authorization: Bearer <ADMIN_ACCESS_TOKEN>' \
+  'http://127.0.0.1:8000/api/v1/admin/demand-signals'
+
+curl -H 'Authorization: Bearer <ADMIN_ACCESS_TOKEN>' \
+  'http://127.0.0.1:8000/api/v1/admin/field-feedback-summary'
 ```
 
 ### 계정 생성 및 권한

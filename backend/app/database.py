@@ -177,6 +177,55 @@ class Database:
         row["contact_consent"] = bool(row["contact_consent"])
         return row
 
+    def demand_signals(self, minimum_count: int = 3) -> list[dict[str, Any]]:
+        with closing(sqlite3.connect(self.path, timeout=5)) as connection:
+            connection.row_factory = sqlite3.Row
+            rows = connection.execute(
+                """
+                SELECT facility_id, request_type, status, COUNT(*) AS count
+                FROM support_requests
+                GROUP BY facility_id, request_type, status
+                HAVING COUNT(*) >= ?
+                ORDER BY facility_id, request_type, status
+                """,
+                (minimum_count,),
+            ).fetchall()
+            return [dict(row) for row in rows]
+
+    def field_feedback_summary(self) -> list[dict[str, Any]]:
+        with closing(sqlite3.connect(self.path, timeout=5)) as connection:
+            connection.row_factory = sqlite3.Row
+            rows = connection.execute(
+                "SELECT cell_id, checklist FROM field_checks ORDER BY cell_id"
+            ).fetchall()
+
+        grouped: dict[str, dict[str, Any]] = {}
+        for row in rows:
+            summary = grouped.setdefault(
+                row["cell_id"],
+                {"cell_id": row["cell_id"], "checked_count": 0, "items": {}},
+            )
+            summary["checked_count"] += 1
+            checklist = json.loads(row["checklist"])
+            for item, response in checklist.items():
+                if response is None:
+                    continue
+                summary["items"][item] = summary["items"].get(item, 0) + 1
+
+        return [
+            {
+                "cell_id": summary["cell_id"],
+                "checked_count": summary["checked_count"],
+                "checklist_responses": [
+                    {"item_index": index, "response_count": count}
+                    for index, (_, count) in enumerate(
+                        sorted(summary["items"].items()), start=1
+                    )
+                ],
+            }
+            for _, summary in sorted(grouped.items())
+        ]
+
     def create_field_check(self, values: dict[str, Any]) -> dict[str, Any]:
         checklist = json.dumps(values["checklist"], ensure_ascii=False)
         with closing(sqlite3.connect(self.path, timeout=5)) as connection:

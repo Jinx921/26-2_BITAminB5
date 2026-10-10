@@ -19,6 +19,7 @@ from backend.app.errors import ApiError, AuthenticationError, error_response
 from backend.app.field_checks import router as field_checks_router
 from backend.app.logging_setup import configure_logging
 from backend.app.questions import router as questions_router
+from backend.app.question_capacity import QuestionExecutionGate
 from backend.app.settings import Settings
 from backend.app.support_requests import router as support_requests_router
 
@@ -30,6 +31,7 @@ logger = logging.getLogger("backend.api")
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     settings.validate_allowed_origins()
+    settings.validate_question_rate_limits()
     if settings.environment in {"production", "prod"}:
         if not settings.jwt_secret or len(settings.jwt_secret) < 32:
             raise RuntimeError(
@@ -39,6 +41,14 @@ async def lifespan(app: FastAPI):
     database.initialize()
     app.state.database = database
     app.state.jwt_secret = settings.jwt_secret or secrets.token_urlsafe(32)
+    app.state.question_execution_gate = QuestionExecutionGate(
+        settings.question_max_concurrency
+    )
+    app.state.question_rate_limits = {
+        "citizen": settings.citizen_question_rate_limit,
+        "admin": settings.admin_question_rate_limit,
+    }
+    app.state.question_rate_window_seconds = settings.question_rate_window_seconds
     try:
         engine = LiveEngine()
         app.state.question_orchestrators = {
@@ -48,6 +58,9 @@ async def lifespan(app: FastAPI):
     finally:
         del app.state.database
         del app.state.jwt_secret
+        del app.state.question_execution_gate
+        del app.state.question_rate_limits
+        del app.state.question_rate_window_seconds
         if hasattr(app.state, "question_orchestrators"):
             del app.state.question_orchestrators
 
@@ -94,9 +107,12 @@ async def log_requests(request: Request, call_next):
 
 @app.exception_handler(ApiError)
 async def handle_api_error(request: Request, exc: ApiError) -> JSONResponse:
-    return error_response(
+    response = error_response(
         request, exc.status_code, exc.code, exc.message, exc.details
     )
+    if exc.headers:
+        response.headers.update(exc.headers)
+    return response
 
 
 @app.exception_handler(AuthenticationError)

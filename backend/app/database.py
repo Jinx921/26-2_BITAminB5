@@ -1,4 +1,5 @@
 import json
+import math
 import sqlite3
 from contextlib import closing
 from pathlib import Path
@@ -52,6 +53,14 @@ class Database:
                             CHECK (role IN ('citizen', 'field_worker', 'admin')),
                         created_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP
                     );
+
+                    CREATE TABLE IF NOT EXISTS question_rate_limit_events (
+                        user_id INTEGER NOT NULL,
+                        requested_at REAL NOT NULL
+                    );
+
+                    CREATE INDEX IF NOT EXISTS idx_question_rate_limit_events_user_time
+                        ON question_rate_limit_events(user_id, requested_at);
                     """
                 )
                 columns = {
@@ -65,6 +74,54 @@ class Database:
                         """ALTER TABLE support_requests
                            ADD COLUMN contact_consent INTEGER NOT NULL DEFAULT 0"""
                     )
+
+    def record_question_request(
+        self,
+        user_id: int,
+        requested_at: float,
+        window_seconds: int,
+        limit: int,
+    ) -> int | None:
+        cutoff = requested_at - window_seconds
+        with closing(sqlite3.connect(self.path, timeout=5)) as connection:
+            connection.execute("BEGIN IMMEDIATE")
+            try:
+                connection.execute(
+                    "DELETE FROM question_rate_limit_events WHERE requested_at <= ?",
+                    (cutoff,),
+                )
+                count = connection.execute(
+                    """
+                    SELECT COUNT(*)
+                    FROM question_rate_limit_events
+                    WHERE user_id = ? AND requested_at > ?
+                    """,
+                    (user_id, cutoff),
+                ).fetchone()[0]
+                if count >= limit:
+                    oldest = connection.execute(
+                        """
+                        SELECT MIN(requested_at)
+                        FROM question_rate_limit_events
+                        WHERE user_id = ? AND requested_at > ?
+                        """,
+                        (user_id, cutoff),
+                    ).fetchone()[0]
+                    connection.commit()
+                    return max(1, math.ceil(oldest + window_seconds - requested_at))
+
+                connection.execute(
+                    """
+                    INSERT INTO question_rate_limit_events (user_id, requested_at)
+                    VALUES (?, ?)
+                    """,
+                    (user_id, requested_at),
+                )
+                connection.commit()
+                return None
+            except Exception:
+                connection.rollback()
+                raise
 
     def create_user(
         self, email: str, password_hash: str, role: str = "citizen"

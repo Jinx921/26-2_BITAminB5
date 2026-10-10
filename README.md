@@ -94,6 +94,23 @@ DB와 `backend/data/`는 Git에서 제외된다.
 production에서는 `BACKEND_ENVIRONMENT=production` 및 `BACKEND_JWT_SECRET` 설정이 필수이며,
 키가 없으면 서버가 시작되지 않는다. development에서는 임시 키를 프로세스 시작 시 생성한다.
 
+### 질문 API 사용량 제한
+
+질문 API는 로그인한 사용자 ID만으로 SQLite에 최근 요청 시각을 기록해 사용자별 rolling-window 제한을 적용한다.
+질문 원문, 위치, 토큰 또는 응답은 제한 기록이나 로그에 저장하지 않는다.
+development 기본값은 시민 60초당 10회, 관리자 60초당 30회이며, 동시 질문은 2개까지 처리하고 초과 요청은 대기시키지 않고 `503`으로 거절한다.
+제한 초과는 공통 오류 응답의 `429`와 `Retry-After` 헤더로 반환한다.
+
+운영 등 development 이외의 환경은 role별 요청 수와 시간 창을 모두 명시해야 하며 누락되면 시작을 거부한다.
+동시 실행 상한은 `BACKEND_QUESTION_MAX_CONCURRENCY`로 지정한다.
+
+```bash
+export BACKEND_QUESTION_RATE_LIMIT_CITIZEN=10
+export BACKEND_QUESTION_RATE_LIMIT_ADMIN=30
+export BACKEND_QUESTION_RATE_WINDOW_SECONDS=60
+export BACKEND_QUESTION_MAX_CONCURRENCY=4
+```
+
 ### 제공 API
 
 | Method | Endpoint | 설명 |

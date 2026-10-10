@@ -1,0 +1,4 @@
+# 에이전트 전용 (엔진 패키지는 engine/requirements.txt)
+anthropic>=1.0        # Claude API (Sonnet 5.5 tool use)
+python-dotenv>=1.0    # 루트 .env에서 ANTHROPIC_API_KEY 읽기
+pytest

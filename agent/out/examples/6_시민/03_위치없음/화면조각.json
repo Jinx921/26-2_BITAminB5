@@ -1,0 +1,34 @@
+{
+ "mode": "citizen",
+ "question": "집 근처에 갈 만한 곳 있어요?",
+ "region": null,
+ "display": {
+  "headline": "어느 동네 주변을 찾아볼까요? 지도에서 동네를 고르거나 주소를 입력해 주세요. 지금 계신 곳 주변을 찾으려면 위치 사용을 허용해 주세요.",
+  "details": [],
+  "caution": "",
+  "confidence": null,
+  "map": null,
+  "chart": null,
+  "document": null
+ },
+ "internal": {
+  "verification": {
+   "passed": false,
+   "attempts": 0,
+   "errors": [],
+   "warnings": []
+  },
+  "confidence_basis": {},
+  "citations": [],
+  "caveats": [],
+  "tool_trace": [],
+  "run": {
+   "model": "claude-sonnet-5-5",
+   "effort": "medium",
+   "end": "no_location",
+   "passed": false,
+   "calls": [],
+   "rejected": []
+  }
+ }
+}

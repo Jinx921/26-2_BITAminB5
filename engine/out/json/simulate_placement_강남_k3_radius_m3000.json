@@ -1,0 +1,138 @@
+{
+ "tool": "simulate_placement",
+ "region": "강남",
+ "result": {
+  "chosen_sites": [
+   {
+    "cell_id": "3844_7772",
+    "emd_name": "개포2동",
+    "x": 961125.0,
+    "y": 1943125.0,
+    "lat": 37.4866,
+    "lon": 127.0603,
+    "covers": 13
+   },
+   {
+    "cell_id": "3844_7773",
+    "emd_name": "개포2동",
+    "x": 961125.0,
+    "y": 1943375.0,
+    "lat": 37.4888,
+    "lon": 127.0603,
+    "covers": 13
+   },
+   {
+    "cell_id": "3845_7773",
+    "emd_name": "개포2동",
+    "x": 961375.0,
+    "y": 1943375.0,
+    "lat": 37.4888,
+    "lon": 127.0631,
+    "covers": 13
+   }
+  ],
+  "n_target_cells": 13,
+  "covered_cells": 13,
+  "covered_senior_share": 1.0,
+  "k_curve": [
+   {
+    "k": 1,
+    "covered_cells": 13,
+    "covered_cells_share": 1.0,
+    "covered_senior_share": 1.0,
+    "optimal": true
+   },
+   {
+    "k": 2,
+    "covered_cells": 13,
+    "covered_cells_share": 1.0,
+    "covered_senior_share": 1.0,
+    "optimal": true
+   },
+   {
+    "k": 3,
+    "covered_cells": 13,
+    "covered_cells_share": 1.0,
+    "covered_senior_share": 1.0,
+    "optimal": true
+   },
+   {
+    "k": 4,
+    "covered_cells": 13,
+    "covered_cells_share": 1.0,
+    "covered_senior_share": 1.0,
+    "optimal": true
+   },
+   {
+    "k": 5,
+    "covered_cells": 13,
+    "covered_cells_share": 1.0,
+    "covered_senior_share": 1.0,
+    "optimal": true
+   }
+  ],
+  "type_after": {
+   "연계형(이동형 도달)": 13
+  }
+ },
+ "evidence": [
+  {
+   "metric": "n_target_cells",
+   "value": 13
+  },
+  {
+   "metric": "covered_cells_k3",
+   "value": 13
+  },
+  {
+   "metric": "covered_senior_share_k3",
+   "value": 1.0
+  },
+  {
+   "metric": "covered_senior_share_k1",
+   "value": 1.0
+  },
+  {
+   "metric": "covered_senior_share_k2",
+   "value": 1.0
+  },
+  {
+   "metric": "covered_senior_share_k3",
+   "value": 1.0
+  },
+  {
+   "metric": "covered_senior_share_k4",
+   "value": 1.0
+  },
+  {
+   "metric": "covered_senior_share_k5",
+   "value": 1.0
+  }
+ ],
+ "caveats": [
+  "통신 유동인구는 머무는 사람 기준이며 거주자와 같지 않다. 거주 여부는 현장 확인이 필요하다.",
+  "개인이 아니라 250m 칸 단위 집계 결과다.",
+  "거리는 칸 중심에서 시설까지 직선거리다. 실제 이동 시간·경사·교통편은 반영하지 않는다.",
+  "수요 가중치는 60대 이상 유동인구(체류)이며 거주 고령 인구가 아니다.",
+  "커버는 반경 안 도달 가능성만 뜻하며 고립 감소 효과를 뜻하지 않는다.",
+  "강남 보건 거리는 공공 보건기관(3곳)만 반영해 민간 의원 접근성은 빠져 있다.",
+  "거주 칸 = 팀 기준(야간 비중 + SGIS 1km 주택 수) 통과 칸 중 GIS 주거·용도미상 건물이 있는 칸.",
+  "SGIS 값(주택 수·고령·1인가구)은 1km 격자 단위라 같은 1km 안의 250m 칸이 같은 값을 공유한다. 춘천은 신뢰 격자가 적다."
+ ],
+ "figures": [
+  "out\\sim_강남_k3_r3000.png",
+  "out\\curve_강남_r3000.png"
+ ],
+ "geojson": "out\\sim_강남_k3_r3000.geojson",
+ "params": {
+  "k": 3,
+  "radius_m": 3000,
+  "target_types": [
+   "긴급방문형"
+  ],
+  "weight": "60대+ 일평균 유동",
+  "sites": "거주 칸 중심",
+  "solver": "scipy.milp (HiGHS)",
+  "all_optimal": true
+ }
+}

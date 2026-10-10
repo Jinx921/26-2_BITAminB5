@@ -1,0 +1,42 @@
+{
+ "mode": "admin",
+ "question": "오늘 날씨 어때?",
+ "region": null,
+ "display": {
+  "headline": "날씨 정보는 제가 가지고 있지 않아 알려드릴 수 없어요. 저는 강남구와 춘천시에서 낮 활동이 줄어든 고령 거주 동네를 찾고, 어디를 먼저 방문하면 좋을지 살펴보는 일을 도와드려요. 예를 들어 \"강남에서 어디부터 확인해야 해?\"라고 물어보세요.",
+  "details": [],
+  "caution": "",
+  "confidence": null,
+  "map": null,
+  "chart": null,
+  "document": null
+ },
+ "internal": {
+  "verification": {
+   "passed": true,
+   "attempts": 1,
+   "errors": [],
+   "warnings": []
+  },
+  "confidence_basis": {},
+  "citations": [],
+  "caveats": [],
+  "tool_trace": [],
+  "run": {
+   "model": "claude-sonnet-5-5",
+   "effort": "medium",
+   "end": "passed",
+   "passed": true,
+   "calls": [
+    {
+     "stop_reason": "tool_use",
+     "input_tokens": 4,
+     "output_tokens": 192,
+     "cache_read_input_tokens": 0,
+     "cache_creation_input_tokens": 9799
+    }
+   ],
+   "rejected": []
+  }
+ }
+}

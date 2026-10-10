@@ -1,0 +1,59 @@
+{
+ "tool": "check_residential",
+ "region": "강남",
+ "result": {
+  "cells": [
+   {
+    "cell_id": "3851_7778",
+    "region": "강남",
+    "emd_name": "일원2동",
+    "res_status": "용도미상",
+    "n_bldg": 5,
+    "n_res": 0,
+    "n_apt": 0,
+    "n_na": 4,
+    "n_semi": 1,
+    "old_share": null,
+    "night_share": 0.1036
+   },
+   {
+    "cell_id": "3853_7769",
+    "region": "강남",
+    "emd_name": "일원본동",
+    "res_status": "용도미상",
+    "n_bldg": 8,
+    "n_res": 0,
+    "n_apt": 0,
+    "n_na": 4,
+    "n_semi": 0,
+    "old_share": null,
+    "night_share": 0.11
+   }
+  ],
+  "status_counts": {
+   "용도미상": 2
+  },
+  "not_found": []
+ },
+ "evidence": [
+  {
+   "metric": "n_checked",
+   "value": 2
+  },
+  {
+   "metric": "status_용도미상",
+   "value": 2
+  }
+ ],
+ "caveats": [
+  "통신 유동인구는 머무는 사람 기준이며 거주자와 같지 않다. 거주 여부는 현장 확인이 필요하다.",
+  "개인이 아니라 250m 칸 단위 집계 결과다.",
+  "거리는 칸 중심에서 시설까지 직선거리다. 실제 이동 시간·경사·교통편은 반영하지 않는다.",
+  "GIS 건물 용도 결측이 강남 21%·춘천 45%라 용도미상 칸은 현장 확인 필요"
+ ],
+ "figures": [],
+ "geojson": null,
+ "params": {
+  "rule": "주거=GIS 용도 01·02 건물 1채 이상, 용도미상=용도 결측만(아파트 가능), 비주거=그 외 건물만"
+ }
+}

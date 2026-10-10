@@ -1,5 +1,6 @@
 import logging
 import time
+from contextlib import asynccontextmanager
 from uuid import uuid4
 
 from fastapi import FastAPI, Request
@@ -7,15 +8,32 @@ from fastapi.exceptions import RequestValidationError
 from fastapi.responses import JSONResponse
 from starlette.exceptions import HTTPException as StarletteHTTPException
 
+from agent.engine_client import LiveEngine
+from agent.orchestrator import Orchestrator
 from backend.app.errors import ApiError, error_response
 from backend.app.logging_setup import configure_logging
+from backend.app.questions import router as questions_router
 from backend.app.settings import Settings
 
 settings = Settings.from_environment()
 configure_logging(settings.log_level)
 logger = logging.getLogger("backend.api")
 
-app = FastAPI(title=settings.app_name)
+
+@asynccontextmanager
+async def lifespan(app: FastAPI):
+    engine = LiveEngine()
+    app.state.question_orchestrators = {
+        mode: Orchestrator(engine, mode=mode) for mode in ("admin", "citizen")
+    }
+    try:
+        yield
+    finally:
+        del app.state.question_orchestrators
+
+
+app = FastAPI(title=settings.app_name, lifespan=lifespan)
+app.include_router(questions_router)
 
 
 @app.middleware("http")
@@ -72,9 +90,12 @@ async def handle_validation_error(
 
 @app.exception_handler(Exception)
 async def handle_unexpected_error(request: Request, exc: Exception) -> JSONResponse:
-    logger.exception(
+    logger.error(
         "unhandled application error",
-        extra={"request_id": getattr(request.state, "request_id", None)},
+        extra={
+            "request_id": getattr(request.state, "request_id", None),
+            "error_type": type(exc).__name__,
+        },
     )
     return error_response(
         request, 500, "internal_server_error", "Internal server error"

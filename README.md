@@ -76,6 +76,7 @@ uvicorn backend.app.main:app --reload
 
 서버 실행 후 `http://127.0.0.1:8000/health` 에서 상태를 확인할 수 있다.
 개발용 API 문서는 `http://127.0.0.1:8000/docs` 에서 제공한다. 테스트는 저장소 루트에서 실행한다.
+질문 API를 실제로 사용하려면 `agent/.env`에 `ANTHROPIC_API_KEY`를 설정한다.
 
 ```bash
 python -m pytest backend/tests -q
@@ -83,6 +84,27 @@ python -m pytest backend/tests -q
 
 설정은 `BACKEND_APP_NAME`과 `BACKEND_LOG_LEVEL` 환경 변수로 지정할 수 있다.
 기본 로그 레벨은 `INFO`이며 요청 로그는 JSON 형식으로 출력된다.
+
+### 질문 API
+
+`POST /api/v1/questions`는 `admin` 또는 `citizen` 모드로 질문을 처리한다.
+시민 위치는 선택 사항이며, 생략하면 위치 선택 안내를 반환한다. 성공 응답은 화면 표시용 내용만 포함한다.
+
+관리자 요청:
+
+```bash
+curl -X POST http://127.0.0.1:8000/api/v1/questions \
+  -H 'Content-Type: application/json' \
+  -d '{"mode":"admin","question":"춘천에서 어디부터 확인해야 해?"}'
+```
+
+시민 요청:
+
+```bash
+curl -X POST http://127.0.0.1:8000/api/v1/questions \
+  -H 'Content-Type: application/json' \
+  -d '{"mode":"citizen","question":"주변 교류 시설을 알려줘","location":{"lat":37.88,"lon":127.73}}'
+```
 
 ## 데이터 읽기
 

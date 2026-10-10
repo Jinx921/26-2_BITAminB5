@@ -46,6 +46,7 @@ dist/
 
 # ---- 가상환경 ----
 .venv/
+.venv312/
 venv/
 env/
 ENV/

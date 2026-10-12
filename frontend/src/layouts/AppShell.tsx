@@ -1,3 +1,4 @@
+import type { ReactNode } from 'react'
 import { NavLink, Outlet } from 'react-router-dom'
 import { useAuth } from '@/auth/useAuth'
 import { ROLE_LABEL } from '@/auth/roleHome'
@@ -13,7 +14,7 @@ export interface NavItem {
 /**
  * 공통 껍데기. 관리자는 상단 메뉴, 시민·현장은 모바일 우선이라 하단 탭으로 보인다.
  */
-export function AppShell({ title, nav, variant }: { title: string; nav: NavItem[]; variant: 'desktop' | 'mobile' }) {
+export function AppShell({ title, nav, variant, children }: { title: string; nav: NavItem[]; variant: 'desktop' | 'mobile'; children?: ReactNode }) {
   const { user, logout } = useAuth()
   const isMobile = variant === 'mobile'
 
@@ -54,8 +55,8 @@ export function AppShell({ title, nav, variant }: { title: string; nav: NavItem[
         </div>
       </header>
 
-      <main className={`mx-auto w-full max-w-6xl flex-1 px-4 py-6 ${isMobile ? 'pb-24' : ''}`}>
-        <Outlet />
+      <main className={`mx-auto w-full max-w-6xl flex-1 px-4 py-6 ${isMobile ? 'max-w-2xl pb-24' : ''}`}>
+        {children ?? <Outlet />}
       </main>
 
       {isMobile && (

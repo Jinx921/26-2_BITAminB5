@@ -14,3 +14,12 @@ body {
   font-family: "Pretendard Variable", Pretendard, -apple-system, BlinkMacSystemFont, system-ui,
     "Apple SD Gothic Neo", "Noto Sans KR", "Malgun Gothic", sans-serif;
 }
+
+/* leaflet divIcon 기본 배경 제거 */
+.bitamin-marker {
+  background: transparent;
+  border: 0;
+}
+.leaflet-container {
+  font-family: inherit;
+}

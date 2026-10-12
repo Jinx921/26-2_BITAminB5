@@ -1,0 +1,199 @@
+[
+ {
+  "id": "admin_01_어디부터_춘천",
+  "mode": "admin",
+  "region": "춘천",
+  "question": "춘천에서 어디부터 확인해야 해?",
+  "has": [
+   "map",
+   "confidence"
+  ],
+  "layer": "types"
+ },
+ {
+  "id": "admin_02_어디부터_강남",
+  "mode": "admin",
+  "region": "강남",
+  "question": "강남에서 어디부터 확인해야 해?",
+  "has": [
+   "map",
+   "confidence"
+  ],
+  "layer": "types"
+ },
+ {
+  "id": "admin_03_이동형배치",
+  "mode": "admin",
+  "region": "춘천",
+  "question": "춘천 외곽에 이동형 상담 2곳을 두려면 어디가 좋아?",
+  "has": [
+   "map",
+   "confidence"
+  ],
+  "layer": "sites"
+ },
+ {
+  "id": "admin_04_경로당폐쇄",
+  "mode": "admin",
+  "region": "춘천",
+  "question": "춘천 신북읍 지내2리 경로당이 문을 닫으면 어떻게 돼?",
+  "has": [
+   "map",
+   "confidence"
+  ],
+  "layer": "facilities"
+ },
+ {
+  "id": "admin_05_믿어도돼",
+  "mode": "admin",
+  "region": "춘천",
+  "question": "춘천 결과 믿어도 돼?",
+  "has": [
+   "map",
+   "confidence"
+  ],
+  "layer": "checks"
+ },
+ {
+  "id": "admin_06_현장확인목록",
+  "mode": "admin",
+  "region": "춘천",
+  "question": "춘천 현장 확인 목록 만들어 줘",
+  "has": [
+   "map",
+   "confidence"
+  ],
+  "layer": "checks"
+ },
+ {
+  "id": "admin_07_개입안비교_춘천",
+  "mode": "admin",
+  "region": "춘천",
+  "question": "춘천 외곽에 거점 3곳을 둔다면 이동형이랑 경로당 거점 중 뭐가 나아?",
+  "has": [
+   "map",
+   "chart",
+   "confidence"
+  ],
+  "layer": "interventions"
+ },
+ {
+  "id": "admin_08_개입안비교_강남",
+  "mode": "admin",
+  "region": "강남",
+  "question": "강남에서 거점 2곳을 둔다면 어떤 방식이 좋아?",
+  "has": [
+   "map",
+   "chart",
+   "confidence"
+  ],
+  "layer": "interventions"
+ },
+ {
+  "id": "admin_09_제안서",
+  "mode": "admin",
+  "region": "춘천",
+  "question": "춘천 외곽 이동형 건강상담 사업 제안서 써줘",
+  "has": [
+   "map",
+   "chart",
+   "document",
+   "confidence"
+  ],
+  "layer": "sites"
+ },
+ {
+  "id": "admin_10_현황보고",
+  "mode": "admin",
+  "region": "춘천",
+  "question": "춘천 현황 보고서 만들어 줘",
+  "has": [
+   "map",
+   "document",
+   "confidence"
+  ],
+  "layer": "checks"
+ },
+ {
+  "id": "admin_11_주민안내문",
+  "mode": "admin",
+  "region": "춘천",
+  "question": "춘천 외곽 이동형 건강상담을 알리는 주민 안내문 만들어 줘",
+  "has": [
+   "map",
+   "document",
+   "confidence"
+  ],
+  "layer": "candidates"
+ },
+ {
+  "id": "admin_12_인사",
+  "mode": "admin",
+  "region": null,
+  "question": "안녕",
+  "has": [],
+  "layer": null
+ },
+ {
+  "id": "admin_13_관계없는질문",
+  "mode": "admin",
+  "region": null,
+  "question": "오늘 날씨 어때?",
+  "has": [],
+  "layer": null
+ },
+ {
+  "id": "admin_14_서비스지역밖",
+  "mode": "admin",
+  "region": null,
+  "question": "부산에서 어디부터 확인해야 해?",
+  "has": [],
+  "layer": null
+ },
+ {
+  "id": "citizen_01_춘천",
+  "mode": "citizen",
+  "region": "춘천",
+  "question": "어머니 댁 근처에 다니실 만한 곳 있어요?",
+  "has": [
+   "map"
+  ],
+  "layer": "facilities"
+ },
+ {
+  "id": "citizen_02_강남",
+  "mode": "citizen",
+  "region": "강남",
+  "question": "아버지 댁 근처에 운동하거나 모일 만한 곳 있어요?",
+  "has": [
+   "map"
+  ],
+  "layer": "facilities"
+ },
+ {
+  "id": "citizen_03_위치없음",
+  "mode": "citizen",
+  "region": null,
+  "question": "집 근처에 갈 만한 곳 있어요?",
+  "has": [],
+  "layer": null
+ },
+ {
+  "id": "citizen_04_서비스지역밖",
+  "mode": "citizen",
+  "region": null,
+  "question": "어머니 댁 근처에 경로당 있어요?",
+  "has": [],
+  "layer": null
+ },
+ {
+  "id": "citizen_05_데이터없는질문",
+  "mode": "citizen",
+  "region": "춘천",
+  "question": "경로당 프로그램 시간표 알려줘",
+  "has": [
+   "map"
+  ],
+  "layer": "facilities"
+ }
+]

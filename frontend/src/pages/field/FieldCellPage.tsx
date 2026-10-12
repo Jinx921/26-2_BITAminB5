@@ -12,6 +12,7 @@ import { ANSWER_LABEL, ANSWER_OPTIONS, CHECKLIST_ITEMS, SUPPORT_NEEDED_LABEL, SU
 import { useDoneCells } from '@/features/field/doneStore'
 import { formatDateTime } from '@/lib/datetime'
 import { BaseMap, PointsLayer } from '@/map'
+import { COLUMN_WIDTH, useViewMode } from '@/features/viewMode'
 import { CHECK_LEVEL_COLOR } from '@/map/colors'
 import type { ChecklistAnswer, SupportNeededAnswer } from '@/types/api'
 
@@ -30,6 +31,8 @@ export function FieldCellPage() {
   const [answers, setAnswers] = useState<Partial<Record<ChecklistKey, ChecklistAnswer>>>({})
   const [support, setSupport] = useState<SupportNeededAnswer | undefined>()
   const [note, setNote] = useState('')
+  const [view] = useViewMode()
+  const desktop = view === 'desktop'
 
   const items = useMemo(() => (cell?.questions ?? []).map((q) => ({ question: q, key: keyForQuestion(q) })), [cell])
   const unmatched = items.filter((i) => i.key === null)
@@ -60,10 +63,15 @@ export function FieldCellPage() {
           <p className="text-sm text-ink-3">{cell.level}</p>
         </div>
       </div>
-      <BaseMap bounds={[[cell.lat - 0.004, cell.lon - 0.004], [cell.lat + 0.004, cell.lon + 0.004]]} className="h-40" scrollWheelZoom={false}>
+      <div className={desktop ? 'grid gap-8 md:grid-cols-[minmax(0,3fr)_minmax(0,2fr)]' : 'space-y-5'}>
+      <div className={desktop ? 'order-2 space-y-5 md:sticky md:top-4 md:self-start' : 'contents'}>
+      <BaseMap bounds={[[cell.lat - 0.004, cell.lon - 0.004], [cell.lat + 0.004, cell.lon + 0.004]]} className={desktop ? 'h-72' : 'h-40'} scrollWheelZoom={desktop}>
         <PointsLayer map={{ layer: 'checks', ref: 'cell', geojson: null, points: [cell] }} />
       </BaseMap>
+      {desktop && history.data && history.data.length > 0 && <p className="text-sm text-ink-3">이전 기록 {history.data.length}건은 아래 '이전 기록'에서 볼 수 있습니다.</p>}
+      </div>
 
+      <div className="order-1 space-y-5">
       <form id="field-check-form" className="space-y-5" onSubmit={(e) => { e.preventDefault(); save.mutate() }}>
         {items.map((it, i) => (
           <div key={i}>
@@ -85,6 +93,8 @@ export function FieldCellPage() {
         </label>
         {save.isError && <ErrorState error={save.error} title="저장하지 못했습니다" />}
       </form>
+      </div>
+      </div>
 
       <details className="text-sm">
         <summary className="cursor-pointer font-semibold text-ink-2">이 동네의 이전 기록 {history.data ? `(${history.data.length})` : ''}</summary>
@@ -107,7 +117,7 @@ export function FieldCellPage() {
       </details>
 
       <div data-fixed-bar className="fixed inset-x-0 bottom-0 z-20 border-t border-line bg-surface/95 backdrop-blur">
-        <div className="mx-auto max-w-[430px] px-4 py-3 pb-[calc(0.75rem+env(safe-area-inset-bottom))]">
+        <div className={`mx-auto px-4 py-3 pb-[calc(0.75rem+env(safe-area-inset-bottom))] ${COLUMN_WIDTH[view]}`}>
           <Button type="submit" form="field-check-form" size="lg" className="w-full" loading={save.isPending} disabled={!answeredAll}>
             결과 저장
           </Button>

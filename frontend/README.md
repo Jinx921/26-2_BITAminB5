@@ -73,7 +73,8 @@ python -m backend.seed_user --role field_worker # 현장 담당자 계정
 - 테두리 박스는 장소 카드·목록 행·강조 패널에만 쓴다. 박스 안에 박스를 넣지 않고 그림자는 쓰지 않는다.
 - 한 구획에 채움 버튼은 하나. 자주 안 쓰는 동작은 `Menu`(점 세 개)나 `Sheet`(바텀 시트)로.
 - 아이콘은 lucide-react. 지도 번호 마커는 1 초록, 2 파랑, 3 주황.
-- 공통 부품: `Button`(fill/outline/text/dark), `SegmentedControl`, `Sheet`, `List`/`ListRow`, `DayChip`, `Menu`, `PlaceCard`.
+- 공통 부품: `Button`(fill/outline/text/dark), `SegmentedControl`, `Sheet`, `List`/`ListRow`, `DayChip`, `Menu`, `PlaceCard`, `HeaderActions`(PC/모바일 전환 + 로그아웃).
+- 시민·현장 화면은 기본 430px 단일 컬럼이고, 상단 "PC 화면" 버튼으로 1040px 2단 보기(답변·지도 | 일정·도움 / 목록 | 지도)로 바꿀 수 있다. 선택은 기기에 기억된다(`features/viewMode.ts`). 로그아웃은 모든 역할에서 상단의 단일 버튼이다.
 
 ## 폴더 구조
 

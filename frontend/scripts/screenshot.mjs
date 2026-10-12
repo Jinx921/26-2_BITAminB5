@@ -93,6 +93,19 @@ async function newPage(viewport) {
   await page.goto(`${BASE}/citizen/places`)
   await settle(page, 2500)
   await fullShot(page, file('citizen-places'))
+  // PC 보기 (1440)
+  await page.setViewportSize(DESKTOP)
+  await page.goto(`${BASE}/citizen`)
+  await settle(page, 800)
+  await page.getByRole('button', { name: /PC 화면/ }).click()
+  await settle(page, 2500)
+  await fullShot(page, file('citizen-answer-desktop'))
+  await page.goto(`${BASE}/citizen/places`)
+  await settle(page, 2500)
+  await fullShot(page, file('citizen-places-desktop'))
+  await page.getByRole('button', { name: /모바일 화면/ }).click()
+  await settle(page, 300)
+  await page.setViewportSize(MOBILE)
   const help = page.locator('a[href*="/citizen/help/"]').first()
   if (await help.count()) {
     await help.click()
@@ -145,6 +158,19 @@ async function newPage(viewport) {
     await settle(page, 2000)
     await fullShot(page, file('field-cell'))
   }
+  await page.setViewportSize(DESKTOP)
+  await page.goto(`${BASE}/field`)
+  await settle(page, 800)
+  await page.getByRole('button', { name: /PC 화면/ }).click()
+  await settle(page, 2500)
+  await fullShot(page, file('field-list-desktop'))
+  const firstD = page.locator('a[href*="/field/cells/"]').first()
+  if (await firstD.count()) {
+    await firstD.click()
+    await settle(page, 2000)
+    await fullShot(page, file('field-cell-desktop'))
+  }
+  await page.getByRole('button', { name: /모바일 화면/ }).click()
   await page.close()
 }
 

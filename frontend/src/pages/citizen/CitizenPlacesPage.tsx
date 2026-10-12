@@ -8,12 +8,15 @@ import { EmptyState } from '@/components/ui/EmptyState'
 import { regionOf } from '@/config'
 import { useCitizenSession } from '@/features/citizen/useCitizenSession'
 import { BaseMap, NumberedPointsLayer, boundsOfPoints, inServiceArea } from '@/map'
+import { useViewMode } from '@/features/viewMode'
 
 /** 마지막 답변의 시설 전체. 종류 필터 + 번호 지도 + 카드 */
 export function CitizenPlacesPage() {
   const s = useCitizenSession()
   const [kind, setKind] = useState<string | null>(null)
   const [selectedId, setSelectedId] = useState<string | null>(null)
+  const [view] = useViewMode()
+  const desktop = view === 'desktop'
 
   const all = useMemo(() => s.places.filter(inServiceArea).slice().sort((a, b) => Number(b.highlight) - Number(a.highlight) || (a.dist_m ?? 1e9) - (b.dist_m ?? 1e9)), [s.places])
   const kinds = useMemo(() => [...new Set(all.map((p) => p.kind))], [all])
@@ -37,15 +40,21 @@ export function CitizenPlacesPage() {
               </button>
             ))}
           </div>
-          <BaseMap bounds={bounds} region={region} className="h-64" scrollWheelZoom={false}>
-            <NumberedPointsLayer points={shown} home={home} selectedId={selected?.id} onSelect={setSelectedId} />
-          </BaseMap>
-          <div className="space-y-2">
-            {shown.map((p, i) => (
-              <PlaceCard key={p.id} place={p} number={i + 1} selected={selected?.id === p.id} onSelect={() => setSelectedId(p.id)} />
-            ))}
+          <div className={desktop ? 'grid gap-6 md:grid-cols-[minmax(0,1fr)_minmax(0,1fr)]' : 'space-y-5'}>
+            <div className={desktop ? 'md:sticky md:top-4 md:self-start' : ''}>
+              <BaseMap bounds={bounds} region={region} className={desktop ? 'h-[32rem]' : 'h-64'} scrollWheelZoom={desktop}>
+                <NumberedPointsLayer points={shown} home={home} selectedId={selected?.id} onSelect={setSelectedId} />
+              </BaseMap>
+            </div>
+            <div className="space-y-5">
+              <div className="space-y-2">
+                {shown.map((p, i) => (
+                  <PlaceCard key={p.id} place={p} number={i + 1} selected={selected?.id === p.id} onSelect={() => setSelectedId(p.id)} />
+                ))}
+              </div>
+              <HelpPanel facilityId={selected?.id ?? null} facilityName={selected?.name} />
+            </div>
           </div>
-          <HelpPanel facilityId={selected?.id ?? null} facilityName={selected?.name} />
         </>
       )}
     </div>

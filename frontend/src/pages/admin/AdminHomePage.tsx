@@ -1,5 +1,6 @@
 import { useMemo, useState } from 'react'
-import { useQuery } from '@tanstack/react-query'
+import { useMutation, useQuery } from '@tanstack/react-query'
+import { useNavigate } from 'react-router-dom'
 import { api, describeError } from '@/api'
 import { SAMPLE_QUESTIONS } from '@/api/mock/questions'
 import { QuestionBox } from '@/components/QuestionBox'
@@ -10,7 +11,9 @@ import { EmptyState } from '@/components/ui/EmptyState'
 import { ErrorState } from '@/components/ui/ErrorState'
 import { PageHeader } from '@/components/ui/PageHeader'
 import { Spinner } from '@/components/ui/Spinner'
+import { Button } from '@/components/ui/Button'
 import { REGION_KEYS, regionOf, type RegionKey } from '@/config'
+import { displayToFieldCheckList } from '@/features/admin/fieldList'
 import { FragmentRenderer } from '@/fragments'
 import { useAskQuestion } from '@/lib/useAskQuestion'
 import { BaseMap, GridLayer, PointsLayer, applyFieldOverrides, computeFieldOverrides, useTypesLayer } from '@/map'
@@ -30,6 +33,15 @@ export function AdminHomePage() {
   const grid = useTypesLayer(region)
   const ask = useAskQuestion()
   const display = ask.data ?? null
+  const navigate = useNavigate()
+  const sendList = useMutation({
+    mutationFn: async () => {
+      const list = display ? displayToFieldCheckList(display) : null
+      if (!list) throw new Error('이 답변에는 현장 확인 동네가 없습니다.')
+      return api.publishFieldCheckList(list)
+    },
+    onSuccess: () => navigate('/admin/field-list'),
+  })
 
   // ⚠️ 임시: 현장 기록으로 판정 덮어쓰기 (map/applyFieldOverrides.ts 참고). 백엔드가 반영하면 이 조회는 뺀다
   const checkedCells = useMemo(() => {
@@ -123,6 +135,15 @@ export function AdminHomePage() {
           {display && !ask.isPending && (
             <Card className="space-y-4">
               <FragmentRenderer display={display} mode="admin" context={{ region: effectiveRegion, selectedPointId: selectedId, onSelectPoint, mapClassName: 'h-64' }} />
+              {display.map?.layer === 'checks' && (
+                <div className="flex flex-wrap items-center gap-2 border-t border-slate-200 pt-3">
+                  <Button onClick={() => sendList.mutate()} loading={sendList.isPending}>
+                    이 목록을 현장 담당자에게 보내기
+                  </Button>
+                  <span className="text-sm text-slate-500">{display.map.points.length}곳 · 현장 확인 목록 화면에서 복사·내려받기도 할 수 있습니다</span>
+                </div>
+              )}
+              {sendList.isError && <ErrorState error={sendList.error} title="보내지 못했습니다" />}
             </Card>
           )}
           {!display && !ask.isPending && !ask.isError && (

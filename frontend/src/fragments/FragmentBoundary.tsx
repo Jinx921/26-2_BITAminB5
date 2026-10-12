@@ -23,7 +23,7 @@ export class FragmentBoundary extends Component<Props, State> {
   render() {
     if (this.state.error) {
       return (
-        <div role="alert" className="rounded-xl border border-slate-200 bg-slate-50 p-3 text-sm text-slate-600">
+        <div role="alert" className="rounded-btn bg-canvas p-3 text-sm text-ink-3">
           이 부분({this.props.name})은 표시하지 못했습니다.
         </div>
       )

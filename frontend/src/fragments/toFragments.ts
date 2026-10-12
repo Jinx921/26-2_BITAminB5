@@ -8,7 +8,7 @@ import type { Mode } from './types'
  */
 export const FRAGMENT_ORDER: Record<Mode, FragmentType[]> = {
   admin: ['headline', 'confidence', 'map', 'chart', 'details', 'caution', 'document'],
-  citizen: ['headline', 'map', 'details', 'caution'],
+  citizen: ['headline', 'details', 'map', 'caution'],
 }
 
 const KNOWN_KEYS = new Set<string>(['headline', 'details', 'caution', 'confidence', 'map', 'chart', 'document'])

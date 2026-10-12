@@ -1,7 +1,7 @@
 import 'leaflet/dist/leaflet.css'
 import { useEffect, type ReactNode } from 'react'
 import type { LatLngBoundsExpression } from 'leaflet'
-import { MapContainer, TileLayer, useMap } from 'react-leaflet'
+import { MapContainer, TileLayer, ZoomControl, useMap } from 'react-leaflet'
 import { REGIONS, type RegionKey } from '@/config'
 
 /** bounds 가 바뀌면 지도를 맞춘다 */
@@ -23,13 +23,16 @@ export interface BaseMapProps {
   children?: ReactNode
   /** 모바일에서 스크롤 중 지도가 잡히지 않게 */
   scrollWheelZoom?: boolean
+  /** 줌 버튼 위치. 지도 위에 다른 컨트롤을 올릴 때 옮긴다 */
+  zoomPosition?: 'topleft' | 'topright' | 'bottomright' | 'bottomleft'
 }
 
-export function BaseMap({ bounds, region, className = 'h-80', children, scrollWheelZoom = true }: BaseMapProps) {
+export function BaseMap({ bounds, region, className = 'h-80', children, scrollWheelZoom = true, zoomPosition = 'topleft' }: BaseMapProps) {
   const r = REGIONS[region ?? '춘천']
   return (
     <div className={`relative overflow-hidden rounded-2xl border border-slate-200 ${className}`}>
-      <MapContainer center={r.center} zoom={11} scrollWheelZoom={scrollWheelZoom} className="h-full w-full" attributionControl>
+      <MapContainer center={r.center} zoom={11} scrollWheelZoom={scrollWheelZoom} className="h-full w-full" attributionControl zoomControl={false}>
+        <ZoomControl position={zoomPosition} />
         <TileLayer
           attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
           url="https://tile.openstreetmap.org/{z}/{x}/{y}.png"

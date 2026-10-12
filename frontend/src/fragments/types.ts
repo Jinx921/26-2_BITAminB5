@@ -11,6 +11,13 @@ export interface FragmentContext {
   onSelectPoint?: (p: MapPoint) => void
   /** 지도 조각 높이 클래스 */
   mapClassName?: string
+  /** 관리자 메인처럼 큰 지도가 따로 있으면 조각 지도는 숨긴다 */
+  hideMap?: boolean
+  /** 시민: 번호 마커 순서(id 배열)와 "우리 집" 위치 */
+  orderedIds?: string[]
+  home?: { lat: number; lon: number; label?: string } | null
+  /** 시민: 설명을 첫 문단만 보여주고 나머지는 접는다 */
+  compactDetails?: boolean
 }
 
 export interface FragmentProps<T = unknown> {

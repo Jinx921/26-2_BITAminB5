@@ -12,7 +12,7 @@ export interface FragmentRendererProps {
 }
 
 /** display 를 조각 배열로 바꿔 등록된 컴포넌트로 순서대로 그린다 */
-export function FragmentRenderer({ display, mode, context, className = 'space-y-4' }: FragmentRendererProps) {
+export function FragmentRenderer({ display, mode, context, className = 'space-y-3' }: FragmentRendererProps) {
   const fragments = toFragments(display, mode)
   if (fragments.length === 0) return null
   return (

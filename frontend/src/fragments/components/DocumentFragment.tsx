@@ -1,45 +1,51 @@
 import { useState } from 'react'
+import { ChevronDown, Copy, Download, FileText } from 'lucide-react'
 import { Button } from '@/components/ui/Button'
 import { copyToClipboard, downloadTextFile, safeFilename } from '@/lib/download'
 import type { DocumentData } from '@/types/display'
 import type { FragmentProps } from '../types'
 
-/** 문서(제안서·현황 보고·주민 안내문). sections 로 그리고 markdown 은 복사·.md 내려받기에 쓴다 */
+/** 문서: 접힌 한 줄 항목. 누르면 본문이 펼쳐지고 복사·.md 내려받기가 있다 */
 export function DocumentFragment({ fragment }: FragmentProps<DocumentData>) {
   const doc = fragment.data
+  const [open, setOpen] = useState(false)
   const [copied, setCopied] = useState(false)
 
   async function copy() {
-    const ok = await copyToClipboard(doc.markdown ?? '')
-    setCopied(ok)
+    setCopied(await copyToClipboard(doc.markdown ?? ''))
     setTimeout(() => setCopied(false), 1500)
   }
 
   return (
-    <article className="rounded-2xl border border-slate-200 bg-white p-5" data-fragment="document">
-      <div className="mb-4 flex flex-wrap items-start justify-between gap-3">
-        <div>
-          <span className="rounded-full bg-slate-100 px-2 py-0.5 text-xs font-semibold text-slate-700">{doc.type_name}</span>
-          <h2 className="mt-2 text-xl font-bold">{doc.title}</h2>
-          <p className="mt-1 text-sm text-slate-500">초안입니다. 담당자 검토 후 사용하세요.</p>
+    <div className="rounded-card border border-line" data-fragment="document">
+      <button type="button" onClick={() => setOpen((v) => !v)} aria-expanded={open} className="flex w-full items-center gap-3 p-3 text-left">
+        <FileText className="size-5 shrink-0 text-primary" aria-hidden />
+        <div className="min-w-0 flex-1">
+          <p className="truncate font-semibold text-ink">{doc.title}</p>
+          <p className="text-xs text-ink-3">{doc.type_name} 초안 · 담당자 검토 후 사용</p>
         </div>
-        <div className="flex gap-2">
-          <Button variant="secondary" onClick={copy}>
-            {copied ? '복사됨' : '복사'}
-          </Button>
-          <Button onClick={() => downloadTextFile(`${safeFilename(doc.title)}.md`, doc.markdown ?? '', 'text/markdown;charset=utf-8')}>
-            .md 내려받기
-          </Button>
+        <ChevronDown className={`size-5 shrink-0 text-ink-3 transition-transform ${open ? 'rotate-180' : ''}`} aria-hidden />
+      </button>
+      {open && (
+        <div className="border-t border-line p-4">
+          <div className="mb-4 flex gap-2">
+            <Button variant="outline" size="sm" icon={<Copy className="size-4" />} onClick={copy}>
+              {copied ? '복사됨' : '복사'}
+            </Button>
+            <Button size="sm" icon={<Download className="size-4" />} onClick={() => downloadTextFile(`${safeFilename(doc.title)}.md`, doc.markdown ?? '', 'text/markdown;charset=utf-8')}>
+              .md 내려받기
+            </Button>
+          </div>
+          <div className="space-y-4">
+            {(doc.sections ?? []).map((s, i) => (
+              <section key={i}>
+                <h3 className="mb-1 text-sm font-bold text-ink">{s.heading}</h3>
+                <p className="whitespace-pre-line text-[15px] leading-relaxed text-ink-2">{s.body}</p>
+              </section>
+            ))}
+          </div>
         </div>
-      </div>
-      <div className="space-y-5">
-        {(doc.sections ?? []).map((s, i) => (
-          <section key={i}>
-            <h3 className="mb-1 font-semibold text-slate-900">{s.heading}</h3>
-            <p className="whitespace-pre-line leading-relaxed text-slate-800">{s.body}</p>
-          </section>
-        ))}
-      </div>
-    </article>
+      )}
+    </div>
   )
 }

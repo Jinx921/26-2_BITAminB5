@@ -1,11 +1,12 @@
 import { useState } from 'react'
 import { Link } from 'react-router-dom'
-import { A11yBar } from '@/components/citizen/A11yBar'
+import { CalendarArrowDown, ChevronLeft, Navigation, Trash2 } from 'lucide-react'
+import { CitizenHeader } from '@/components/citizen/CitizenHeader'
 import { Button } from '@/components/ui/Button'
 import { EmptyState } from '@/components/ui/EmptyState'
+import { List, ListRow } from '@/components/ui/ListRow'
 import { downloadIcs, formatWhen, isThisWeek, useSchedule } from '@/features/citizen/schedule'
 import { directionsUrl } from '@/features/citizen/share'
-import { FACILITY_KIND_ICON } from '@/map/colors'
 
 /** 이번 주 일정 (기기에만 저장). 캘린더(.ics)로 내보낼 수 있다 */
 export function CitizenSchedulePage() {
@@ -15,55 +16,44 @@ export function CitizenSchedulePage() {
   const later = items.filter((i) => !isThisWeek(i.when, now) && new Date(i.when) > now)
   const readText = thisWeek.map((i) => `${formatWhen(i.when)} ${i.name}`).join('. ')
 
-  function Row({ id, name, kind, when, lat, lon }: (typeof items)[number]) {
-    return (
-      <li className="flex flex-wrap items-center gap-3 rounded-2xl border border-slate-200 bg-white p-4">
-        <span className="text-3xl" aria-hidden>
-          {FACILITY_KIND_ICON[kind] ?? '📍'}
-        </span>
-        <div className="min-w-0 flex-1">
-          <p className="text-xl font-bold">{name}</p>
-          <p className="text-lg text-slate-600">{formatWhen(when)}</p>
+  const row = (i: (typeof items)[number]) => (
+    <ListRow
+      key={i.id}
+      title={<span className="text-lg">{i.name}</span>}
+      subtitle={<span className="text-base">{formatWhen(i.when)}</span>}
+      trailing={
+        <div className="flex items-center gap-1">
+          <a href={directionsUrl(i.name, i.lat, i.lon)} target="_blank" rel="noreferrer" aria-label={`${i.name} 길찾기`} className="inline-flex size-11 items-center justify-center rounded-full text-green hover:bg-green-soft">
+            <Navigation className="size-5" />
+          </a>
+          <button type="button" onClick={() => remove(i.id)} aria-label={`${i.name} 일정 지우기`} className="inline-flex size-11 items-center justify-center rounded-full text-ink-3 hover:bg-canvas">
+            <Trash2 className="size-5" />
+          </button>
         </div>
-        <a href={directionsUrl(name, lat, lon)} target="_blank" rel="noreferrer" className="inline-flex min-h-12 items-center rounded-xl border border-slate-300 px-4 text-lg font-semibold">
-          길찾기
-        </a>
-        <Button variant="ghost" size="lg" onClick={() => remove(id)} aria-label={`${name} 일정 지우기`}>
-          지우기
-        </Button>
-      </li>
-    )
-  }
+      }
+    />
+  )
 
   return (
-    <div className="space-y-4">
-      <A11yBar textToRead={readText || undefined} />
+    <div className="space-y-5">
+      <CitizenHeader textToRead={readText || undefined} subtitle={<Link to="/citizen" className="inline-flex min-h-11 items-center gap-1 text-base text-ink-2"><ChevronLeft className="size-4" aria-hidden />물어보기로</Link>} />
       <div className="flex items-center justify-between">
-        <h1 className="text-2xl font-bold">이번 주 일정</h1>
+        <h2 className="text-xl font-bold">이번 주 일정</h2>
         {items.length > 0 && (
-          <Button variant="secondary" size="lg" onClick={() => downloadIcs(items)}>
-            달력에 저장(.ics)
+          <Button variant="outline" size="sm" pill icon={<CalendarArrowDown className="size-4" />} onClick={() => downloadIcs(items)}>
+            달력에 저장
           </Button>
         )}
       </div>
       {items.length === 0 ? (
-        <EmptyState
-          title="저장한 일정이 없어요"
-          description="갈 곳 카드에서 '일정 저장'을 누르면 여기에 모여요."
-          action={
-            <Link to="/citizen/places" className="text-lg font-semibold text-blue-700 underline">
-              갈 곳 보기
-            </Link>
-          }
-        />
+        <EmptyState title="저장한 일정이 없어요" description="장소 카드에서 '일정 저장'을 누르면 여기에 모여요." action={<Link to="/citizen/places" className="font-semibold text-primary">갈 곳 보기</Link>} />
       ) : (
         <>
-          {thisWeek.length === 0 && <p className="text-lg text-slate-600">이번 주에는 잡힌 일정이 없어요.</p>}
-          <ul className="space-y-3">{thisWeek.map((i) => <Row key={i.id} {...i} />)}</ul>
+          {thisWeek.length === 0 ? <p className="text-base text-ink-3">이번 주에는 잡힌 일정이 없어요.</p> : <List>{thisWeek.map(row)}</List>}
           {later.length > 0 && (
             <>
-              <h2 className="pt-2 text-xl font-bold text-slate-700">다음에</h2>
-              <ul className="space-y-3">{later.map((i) => <Row key={i.id} {...i} />)}</ul>
+              <h3 className="pt-2 text-base font-bold text-ink-3">다음에</h3>
+              <List>{later.map(row)}</List>
             </>
           )}
         </>

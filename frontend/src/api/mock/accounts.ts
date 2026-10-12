@@ -1,4 +1,4 @@
-/** 목업 전용 데모 계정. 실제 모드에서는 쓰이지 않는다 (비밀번호 12자 이상 규칙만 맞춤). */
+/** 목업 전용 데모 계정. 실제 모드에서는 쓰이지 않는다 (비밀번호 12자 이상, 이메일은 백엔드 검증기가 받는 도메인). */
 import type { Role, User } from '@/types/api'
 
 export interface DemoAccount {
@@ -9,9 +9,9 @@ export interface DemoAccount {
 }
 
 export const DEMO_ACCOUNTS: DemoAccount[] = [
-  { email: 'admin@demo.local', password: 'demo-admin-1234', role: 'admin', label: '관리자' },
-  { email: 'citizen@demo.local', password: 'demo-citizen-1234', role: 'citizen', label: '시민' },
-  { email: 'field@demo.local', password: 'demo-field-1234', role: 'field_worker', label: '현장 담당자' },
+  { email: 'admin@example.com', password: 'demo-admin-1234', role: 'admin', label: '관리자' },
+  { email: 'citizen@example.com', password: 'demo-citizen-1234', role: 'citizen', label: '시민' },
+  { email: 'field@example.com', password: 'demo-field-1234', role: 'field_worker', label: '현장 담당자' },
 ]
 
 export function demoUser(a: DemoAccount, id: number): User {

@@ -86,10 +86,11 @@ export interface DemandSignal {
   count: number
 }
 
+/** 실제 백엔드 응답 키는 checklist_responses (계약서 본문에는 키 이름이 없어 실측으로 맞춤) */
 export interface FieldFeedbackSummary {
   cell_id: string
   checked_count: number
-  items: { item_index: number; response_count: number }[]
+  checklist_responses: { item_index: number; response_count: number }[]
 }
 
 /**

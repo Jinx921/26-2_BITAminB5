@@ -7,6 +7,7 @@ import { EmptyState } from '@/components/ui/EmptyState'
 import { ErrorState } from '@/components/ui/ErrorState'
 import { PageHeader } from '@/components/ui/PageHeader'
 import { Spinner } from '@/components/ui/Spinner'
+import { formatDateTime } from '@/lib/datetime'
 import { useCellIndex, useFacilityIndex } from '@/lib/geoIndex'
 import type { SupportRequestStatus, SupportRequestType } from '@/types/api'
 
@@ -69,11 +70,11 @@ export function AdminRequestsPage() {
                         <span className="font-semibold">{facName(r.facility_id)}</span>
                       </div>
                       <p className="mt-1 text-sm text-slate-700">
-                        {r.requester_name} · 희망 {new Date(r.requested_at).toLocaleString('ko-KR', { dateStyle: 'short', timeStyle: 'short' })}
+                        {r.requester_name} · 희망 {formatDateTime(r.requested_at)}
                         {r.contact_consent && r.contact ? ` · ${r.contact}` : ' · 연락처 미동의'}
                       </p>
                       {r.note && <p className="mt-1 text-sm text-slate-600">“{r.note}”</p>}
-                      <p className="mt-1 text-xs text-slate-400">접수 {new Date(r.created_at).toLocaleString('ko-KR')}</p>
+                      <p className="mt-1 text-xs text-slate-400">접수 {formatDateTime(r.created_at)}</p>
                     </div>
                     <div className="flex flex-wrap gap-1">
                       {r.status === 'pending' && (
@@ -141,7 +142,7 @@ export function AdminRequestsPage() {
                 {feedback.data.map((f) => (
                   <li key={f.cell_id} className="flex justify-between border-t border-slate-100 py-1">
                     <span>{cells.get(f.cell_id)?.emd_name ?? '동네 (이름 확인 중)'}</span>
-                    <span className="tabular-nums text-slate-600">{f.checked_count}회 · 응답 항목 {f.items.length}개</span>
+                    <span className="tabular-nums text-slate-600">{f.checked_count}회 · 응답 항목 {f.checklist_responses?.length ?? 0}개</span>
                   </li>
                 ))}
               </ul>

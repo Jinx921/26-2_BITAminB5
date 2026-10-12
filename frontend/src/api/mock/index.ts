@@ -132,12 +132,13 @@ export const mockApi: ApiClient = {
     await delay(250)
     const byCell = new Map<string, FieldFeedbackSummary>()
     for (const fc of mockStore.get().fieldChecks) {
-      const s = byCell.get(fc.cell_id) ?? { cell_id: fc.cell_id, checked_count: 0, items: [] }
+      const s = byCell.get(fc.cell_id) ?? { cell_id: fc.cell_id, checked_count: 0, checklist_responses: [] }
       s.checked_count += 1
-      Object.values(fc.checklist).forEach((answer, i) => {
-        if (answer === 'unknown' || answer === 'unsure') return
-        const item = s.items.find((it) => it.item_index === i) ?? { item_index: i, response_count: 0 }
-        if (!s.items.includes(item)) s.items.push(item)
+      // 실제 백엔드처럼 항목 순번(1부터)별 응답 수를 센다
+      Object.values(fc.checklist).forEach((_answer, i) => {
+        const idx = i + 1
+        const item = s.checklist_responses.find((it) => it.item_index === idx) ?? { item_index: idx, response_count: 0 }
+        if (!s.checklist_responses.includes(item)) s.checklist_responses.push(item)
         item.response_count += 1
       })
       byCell.set(fc.cell_id, s)

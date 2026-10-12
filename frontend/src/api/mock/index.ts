@@ -5,6 +5,8 @@ import { DEMO_ACCOUNTS, demoUser, roleFromMockToken } from './accounts'
 import { mockAnswer } from './questions'
 import { mockStore } from './store'
 import type { DemandSignal, FieldCheck, FieldFeedbackSummary, Role, SupportRequest } from '@/types/api'
+import { env, type RegionKey } from '@/config'
+import type { FacilityCollection, GridCollection } from '@/types/geo'
 
 const delay = (ms: number) => new Promise((r) => setTimeout(r, ms))
 
@@ -18,6 +20,20 @@ function requireRole(...allowed: Role[]): Role {
   const role = currentRole()
   if (!allowed.includes(role)) throw new ApiError(403, 'forbidden', 'Insufficient role')
   return role
+}
+
+async function loadMockGeoJson<T>(name: string): Promise<T> {
+  const response = await fetch(`${env.geoBaseUrl}/${encodeURIComponent(name)}.geojson`)
+  if (!response.ok) throw new Error(`지도 파일을 불러오지 못했습니다 (${name}.geojson, ${response.status})`)
+  return (await response.json()) as T
+}
+
+const mockGeoApi = {
+  facilities: (region: RegionKey) => loadMockGeoJson<FacilityCollection>(`facilities_${region}`),
+  types: (region: RegionKey) => loadMockGeoJson<GridCollection>(`types_${region}`),
+  candidates: (region: RegionKey) => loadMockGeoJson<GridCollection>(`candidates_${region}`),
+  placements: (region: RegionKey, radiusM: 1000 | 3000, sites: 3) =>
+    loadMockGeoJson<GridCollection>(`sim_${region}_k${sites}_r${radiusM}`),
 }
 
 export const mockApi: ApiClient = {
@@ -111,6 +127,26 @@ export const mockApi: ApiClient = {
     requireRole('field_worker', 'admin')
     await delay(200)
     return mockStore.get().fieldChecks.filter((r) => r.cell_id === cellId)
+  },
+
+  async getFacilitiesMap(region: RegionKey) {
+    requireRole('citizen', 'admin')
+    return mockGeoApi.facilities(region)
+  },
+
+  async getAdminTypesMap(region: RegionKey) {
+    requireRole('admin')
+    return mockGeoApi.types(region)
+  },
+
+  async getAdminCandidatesMap(region: RegionKey) {
+    requireRole('admin')
+    return mockGeoApi.candidates(region)
+  },
+
+  async getAdminPlacementsMap(region: RegionKey, radiusM: 1000 | 3000, sites: 3) {
+    requireRole('admin')
+    return mockGeoApi.placements(region, radiusM, sites)
   },
 
   async getDemandSignals() {

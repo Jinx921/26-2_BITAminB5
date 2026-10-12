@@ -33,8 +33,15 @@ function tooltipFor(p: GridProps, variant: GridLayerProps['variant']): string {
     parts.push(p.type ?? '')
     if (p.gap_tag) parts.push(`${p.gap_tag} 시설이 먼 동네`)
   }
-  if (p.field_status === 'downgraded') parts.push(`현장 확인으로 변경 (원래 ${p.engine_type})`)
-  if (p.field_status === 'excluded') parts.push('현장 확인으로 제외')
+  if (p.field_status === 'downgraded') {
+    parts.push(`현장 확인으로 변경 (원래 ${p.engine_type ?? ''}, 우선순위 ${p.engine_priority ?? ''})`)
+  }
+  if (p.field_status === 'excluded') {
+    parts.push('현장 확인으로 제외')
+    if (p.engine_type) parts.push(`엔진 원래 유형: ${p.engine_type}`)
+    if (p.engine_priority !== undefined) parts.push(`엔진 원래 우선순위: ${p.engine_priority}`)
+  }
+  if (p.field_checked_at) parts.push(`현장 확인: ${p.field_checked_at}`)
   return parts.filter(Boolean).join('<br/>')
 }
 

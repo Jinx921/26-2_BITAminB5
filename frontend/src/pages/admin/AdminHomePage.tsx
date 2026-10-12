@@ -1,8 +1,8 @@
 import { useMemo, useState } from 'react'
-import { useMutation, useQuery } from '@tanstack/react-query'
+import { useMutation } from '@tanstack/react-query'
 import { useNavigate } from 'react-router-dom'
-import { Send } from 'lucide-react'
-import { api } from '@/api'
+import { Download, Send } from 'lucide-react'
+import { api, isMockMode } from '@/api'
 import { SAMPLE_QUESTIONS } from '@/api/mock/questions'
 import { QuestionBox } from '@/components/QuestionBox'
 import { RegionTabs } from '@/components/map/RegionTabs'
@@ -13,8 +13,9 @@ import { Spinner } from '@/components/ui/Spinner'
 import { REGION_KEYS, regionOf, type RegionKey } from '@/config'
 import { displayToFieldCheckList } from '@/features/admin/fieldList'
 import { FragmentRenderer } from '@/fragments'
+import { downloadTextFile } from '@/lib/download'
 import { useAskQuestion } from '@/lib/useAskQuestion'
-import { BaseMap, GridLayer, PointsLayer, applyFieldOverrides, computeFieldOverrides, useTypesLayer } from '@/map'
+import { BaseMap, GridLayer, PointsLayer, useTypesLayer } from '@/map'
 import { TYPE_ORDER } from '@/map/colors'
 import type { GridCollection } from '@/types/geo'
 import type { IsolationType, MapPoint } from '@/types/display'
@@ -33,32 +34,20 @@ export function AdminHomePage() {
   const [selectedId, setSelectedId] = useState<string | null>(null)
   const navigate = useNavigate()
 
-  const grid = useTypesLayer(region)
+  const grid = useTypesLayer(region, showExcluded)
   const ask = useAskQuestion()
   const display = ask.data ?? null
+  const fieldCheckList = display ? displayToFieldCheckList(display) : null
 
   const sendList = useMutation({
     mutationFn: async () => {
-      const list = display ? displayToFieldCheckList(display) : null
-      if (!list) throw new Error('이 답변에는 현장 확인 동네가 없습니다.')
-      return api.publishFieldCheckList(list)
+      if (!fieldCheckList) throw new Error('이 답변에는 현장 확인 동네가 없습니다.')
+      return api.publishFieldCheckList(fieldCheckList)
     },
     onSuccess: () => navigate('/admin/field-list'),
   })
 
-  // ⚠️ 임시: 현장 기록으로 판정 덮어쓰기 (map/applyFieldOverrides.ts). 백엔드가 반영하면 이 조회는 뺀다
-  const checkedCells = useMemo(() => {
-    const ids = new Set<string>()
-    if (display?.map?.layer === 'types' || display?.map?.layer === 'checks') display.map.points.forEach((p) => ids.add(p.id))
-    return [...ids]
-  }, [display])
-  const fieldChecks = useQuery({
-    queryKey: ['field-checks', 'for-map', checkedCells],
-    enabled: checkedCells.length > 0,
-    queryFn: async () => (await Promise.all(checkedCells.map((id) => api.listFieldChecks(id).catch(() => [])))).flat(),
-  })
-  const overrides = useMemo(() => computeFieldOverrides(fieldChecks.data ?? []), [fieldChecks.data])
-  const gridData = useMemo(() => (grid.data ? applyFieldOverrides(grid.data, overrides, { showExcluded }) : null), [grid.data, overrides, showExcluded])
+  const gridData = grid.data
   const bounds = useMemo(() => (grid.data ? gridBounds(grid.data) : null), [grid.data])
 
   const counts = useMemo(() => {
@@ -88,10 +77,10 @@ export function AdminHomePage() {
       {/* 지도 */}
       <section className="relative min-w-0 flex-1">
         {grid.isPending && <div className="absolute inset-0 z-10 flex items-center justify-center bg-surface/60"><Spinner label="지도를 불러오는 중" /></div>}
-        {grid.isError && <div className="p-4"><ErrorState error={grid.error} onRetry={() => grid.refetch()} title="지도 파일을 불러오지 못했습니다" /></div>}
+        {grid.isError && <div className="p-4"><ErrorState error={grid.error} onRetry={() => grid.refetch()} title="지도를 불러오지 못했습니다" /></div>}
         {gridData && (
           <BaseMap bounds={bounds} region={effectiveRegion} className="h-full rounded-none border-0" zoomPosition="topright">
-            <GridLayer data={gridData} variant="types" visibleTypes={visible} highlightIds={highlightIds} selectedId={selectedId} onSelect={(p) => setSelectedId(p.cell_id)} />
+            <GridLayer key={`${region}-${showExcluded}`} data={gridData} variant="types" visibleTypes={visible} highlightIds={highlightIds} selectedId={selectedId} onSelect={(p) => setSelectedId(p.cell_id)} />
             {display?.map && display.map.layer !== 'types' && <PointsLayer map={display.map} selectedId={selectedId} onSelect={onSelectPoint} />}
           </BaseMap>
         )}
@@ -100,12 +89,10 @@ export function AdminHomePage() {
         </div>
         <div className="absolute bottom-6 left-3 z-[1000] w-44 space-y-2">
           <TypeLegend counts={counts} visible={visible} onToggle={(t) => setVisible((prev) => { const n = new Set(prev); if (n.has(t)) n.delete(t); else n.add(t); return n })} />
-          {overrides.size > 0 && (
-            <label className="flex items-center gap-2 rounded-btn border border-line bg-surface/95 px-2 py-1.5 text-xs text-ink-2 shadow-card">
-              <input type="checkbox" checked={showExcluded} onChange={(e) => setShowExcluded(e.target.checked)} className="accent-primary" />
-              현장 확인으로 제외된 곳 보기
-            </label>
-          )}
+          <label className="flex items-center gap-2 rounded-btn border border-line bg-surface/95 px-2 py-1.5 text-xs text-ink-2 shadow-card">
+            <input type="checkbox" checked={showExcluded} onChange={(e) => setShowExcluded(e.target.checked)} className="accent-primary" />
+            현장 확인으로 제외된 곳 보기
+          </label>
         </div>
       </section>
 
@@ -120,7 +107,7 @@ export function AdminHomePage() {
           {display && !ask.isPending && (
             <div className="space-y-4">
               <FragmentRenderer display={display} mode="admin" context={{ region: effectiveRegion, selectedPointId: selectedId, onSelectPoint, hideMap: true }} />
-              {display.map?.layer === 'checks' && (
+              {display.map?.layer === 'checks' && isMockMode && (
                 <div className="border-t border-line pt-3">
                   <Button icon={<Send className="size-4" />} onClick={() => sendList.mutate()} loading={sendList.isPending}>
                     현장 담당자에게 보내기
@@ -129,7 +116,22 @@ export function AdminHomePage() {
                   {sendList.isError && <ErrorState error={sendList.error} title="보내지 못했습니다" />}
                 </div>
               )}
-              {overrides.size > 0 && <p className="text-xs text-ink-3">현장 확인 기록 {overrides.size}곳이 지도에 반영됨 (임시: 프론트 계산, 답변 속 숫자에는 반영되지 않음).</p>}
+              {display.map?.layer === 'checks' && !isMockMode && (
+                <div className="border-t border-line pt-3">
+                  {fieldCheckList ? (
+                    <Button
+                      variant="outline"
+                      icon={<Download className="size-4" />}
+                      onClick={() => downloadTextFile(`현장확인목록_${fieldCheckList.region ?? ''}.json`, JSON.stringify(fieldCheckList, null, 2), 'application/json')}
+                    >
+                      현장 확인 목록 JSON 내려받기
+                    </Button>
+                  ) : (
+                    <ErrorState error={new Error('이 답변에서 현장 확인 목록을 만들 수 없습니다.')} title="목록을 내려받지 못했습니다" />
+                  )}
+                  <p className="mt-1 text-xs text-ink-3">백엔드 전달 API는 아직 없습니다. 내려받은 JSON을 현장 담당자에게 직접 전달해 주세요.</p>
+                </div>
+              )}
             </div>
           )}
           {!display && !ask.isPending && !ask.isError && (

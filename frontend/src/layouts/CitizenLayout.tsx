@@ -1,21 +1,15 @@
 import { Outlet } from 'react-router-dom'
 import { CitizenSessionProvider } from '@/features/citizen/session'
-import { AppShell } from './AppShell'
 
+/** 시민: 최대 430px 단일 컬럼, 바깥은 옅은 회색, 컬럼은 흰색 */
 export function CitizenLayout() {
   return (
     <CitizenSessionProvider>
-      <AppShell
-        title="우리 동네"
-        variant="mobile"
-        nav={[
-          { to: '/citizen', label: '물어보기', end: true },
-          { to: '/citizen/places', label: '갈 곳' },
-          { to: '/citizen/schedule', label: '이번 주' },
-        ]}
-      >
-        <Outlet />
-      </AppShell>
+      <div className="min-h-full bg-canvas">
+        <div className="relative mx-auto min-h-dvh w-full max-w-[430px] bg-surface px-4 pb-28 shadow-[0_0_0_1px_var(--color-line)]">
+          <Outlet />
+        </div>
+      </div>
     </CitizenSessionProvider>
   )
 }

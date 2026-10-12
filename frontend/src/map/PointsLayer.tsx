@@ -1,8 +1,8 @@
-import { CircleMarker, Marker, Tooltip } from 'react-leaflet'
+import { CircleMarker, Marker, Polyline, Tooltip } from 'react-leaflet'
 import type { FacilityCollection } from '@/types/geo'
 import type { FacilitiesPoint, MapFragmentData, MapPoint } from '@/types/display'
 import { CHECK_LEVEL_COLOR, HIGHLIGHT_STROKE, MONTHS_COLOR, OPTION_COLORS, SELECTED_STROKE, SITE_COLOR, TYPE_COLOR } from './colors'
-import { badgeHtml, divIcon, facilityIcon, formatDistance, groupOfKind, inServiceArea } from './markers'
+import { badgeHtml, divIcon, facilityIcon, formatDistance, groupOfKind, homeIcon, inServiceArea, numberIcon } from './markers'
 
 export interface PointsLayerProps {
   map: MapFragmentData
@@ -176,6 +176,34 @@ export function FacilitiesGeoLayer({
             </Marker>
           )
         })}
+    </>
+  )
+}
+
+/** 번호 마커 + 우리 집 + 선택한 곳까지 점선 (시민 화면) */
+export function NumberedPointsLayer({
+  points,
+  home,
+  selectedId,
+  onSelect,
+}: {
+  points: { id: string; lat: number; lon: number; name?: string }[]
+  home?: { lat: number; lon: number; label?: string } | null
+  selectedId?: string | null
+  onSelect?: (id: string) => void
+}) {
+  const target = points.find((p) => p.id === selectedId) ?? points[0]
+  return (
+    <>
+      {home && target && (
+        <Polyline positions={[[home.lat, home.lon], [target.lat, target.lon]]} pathOptions={{ color: '#2f855a', weight: 2.5, dashArray: '6 6', opacity: 0.9 }} />
+      )}
+      {points.map((p, i) => (
+        <Marker key={p.id} position={[p.lat, p.lon]} icon={numberIcon(i + 1, { selected: selectedId === p.id })} eventHandlers={{ click: () => onSelect?.(p.id) }} zIndexOffset={selectedId === p.id ? 500 : 0}>
+          {p.name && <Tooltip direction="top">{p.name}</Tooltip>}
+        </Marker>
+      ))}
+      {home && <Marker position={[home.lat, home.lon]} icon={homeIcon(home.label)} zIndexOffset={600} interactive={false} />}
     </>
   )
 }

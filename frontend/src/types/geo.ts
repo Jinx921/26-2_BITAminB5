@@ -1,4 +1,4 @@
-/** engine/지도_규격.md 의 GeoJSON properties. 파일은 public/geo/ 에 있고 좌표계는 WGS84 */
+/** engine/지도_규격.md 및 지도 API GeoJSON properties (WGS84) */
 import type { Feature, FeatureCollection, Point, Polygon } from 'geojson'
 import type { GapTag, IsolationType } from './display'
 
@@ -16,9 +16,10 @@ export interface GridProps {
   res_status?: string
   // 배치 지도
   covered?: 0 | 1
-  // 현장 확인으로 덮어쓴 칸 (현장기록_규격 4절). 지금은 프론트가 임시로 붙인다
+  // 현장 확인 반영 결과. 서버가 원본 engine 값과 함께 반환한다.
   field_status?: FieldStatus
   engine_type?: IsolationType
+  engine_priority?: 1 | 2 | 3 | 4
   field_checked_at?: string
 }
 

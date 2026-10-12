@@ -1,11 +1,11 @@
 /** docs/api-contract.md 그대로 호출하는 실제 구현 */
-import { request } from './client'
+import { ApiError, request } from './client'
+import type { RegionKey } from '@/config'
 import type { ApiClient } from './types'
 import type {
   DemandSignal,
   FieldCheck,
   FieldCheckCreate,
-  FieldCheckList,
   FieldFeedbackSummary,
   LoginResponse,
   QuestionRequest,
@@ -15,8 +15,7 @@ import type {
   User,
 } from '@/types/api'
 import type { Display } from '@/types/display'
-
-const FIELD_LIST_KEY = 'bitamin.fieldCheckList.local'
+import type { FacilityCollection, GridCollection } from '@/types/geo'
 
 export const realApi: ApiClient = {
   health: () => request<{ status: string }>('/health', { auth: false }),
@@ -46,26 +45,27 @@ export const realApi: ApiClient = {
 
   listFieldChecks: (cellId) => request<FieldCheck[]>('/api/v1/field-checks', { query: { cell_id: cellId } }),
 
+  getFacilitiesMap: (region: RegionKey) =>
+    request<FacilityCollection>('/api/v1/maps/facilities', { query: { region } }),
+
+  getAdminTypesMap: (region: RegionKey, showExcluded = false) =>
+    request<GridCollection>('/api/v1/admin/maps/types', { query: { region, show_excluded: showExcluded } }),
+
+  getAdminCandidatesMap: (region: RegionKey) =>
+    request<GridCollection>('/api/v1/admin/maps/candidates', { query: { region } }),
+
+  getAdminPlacementsMap: (region: RegionKey, radiusM: 1000 | 3000, sites: 3) =>
+    request<GridCollection>('/api/v1/admin/maps/placements', { query: { region, radius_m: radiusM, sites } }),
+
   getDemandSignals: () => request<DemandSignal[]>('/api/v1/admin/demand-signals'),
 
   getFieldFeedbackSummary: () => request<FieldFeedbackSummary[]>('/api/v1/admin/field-feedback-summary'),
 
-  // TODO(backend): 현장 확인 목록 전달 API 가 생기면 아래 두 함수를 request() 로 바꾼다.
-  // 지금은 같은 브라우저 안에서만 보이도록 localStorage 에 두고, 화면은 복사·내려받기를 기본으로 안내한다.
-  publishFieldCheckList: async (list: FieldCheckList) => {
-    try {
-      localStorage.setItem(FIELD_LIST_KEY, JSON.stringify(list))
-    } catch {
-      /* ignore */
-    }
-    return { stored: false }
+  publishFieldCheckList: async () => {
+    throw new ApiError(501, 'integration_pending', '현장 확인 목록 전달 API가 백엔드에 아직 없습니다.')
   },
+
   fetchFieldCheckList: async () => {
-    try {
-      const raw = localStorage.getItem(FIELD_LIST_KEY)
-      return raw ? (JSON.parse(raw) as FieldCheckList) : null
-    } catch {
-      return null
-    }
+    throw new ApiError(501, 'integration_pending', '현장 확인 목록 조회 API가 백엔드에 아직 없습니다.')
   },
 }

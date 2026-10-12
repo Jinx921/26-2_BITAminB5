@@ -27,7 +27,7 @@ npm run dev              # http://localhost:5173 (포트 고정, 사용 중이�
 | --- | --- | --- |
 | `VITE_API_BASE_URL` | `http://127.0.0.1:8000` | FastAPI 백엔드 주소 |
 | `VITE_USE_MOCK` | `true` | `true`면 백엔드 없이 목업으로 전 화면 동작 |
-| `VITE_GEO_BASE_URL` | `/geo` | 격자·시설 GeoJSON 위치. 백엔드가 정적 서빙을 시작하면 그 주소로 바꾼다 |
+| `VITE_GEO_BASE_URL` | `/geo` | 목업 모드에서만 읽는 격자·시설 GeoJSON 위치 |
 
 ### 목업 모드 데모 계정
 
@@ -86,7 +86,7 @@ src/
   types/          api.ts (docs/api-contract.md)  display.ts (에이전트 화면 조각)  geo.ts (GeoJSON properties)
   config.ts       환경 변수, 지역(강남·춘천) 중심·bbox, 주민센터 전화 자리
   fragments/      toFragments (display → 조각 배열, 모드별 순서)  registry  FragmentRenderer  components/ 조각 8종
-  map/            BaseMap(OSM)  GridLayer(격자 색칠)  PointsLayer(레이어별 점)  markers  colors  useGeoLayer  applyFieldOverrides(임시)
+  map/            BaseMap(OSM)  GridLayer(격자 색칠)  PointsLayer(레이어별 점)  markers  colors  API 기반 useGeoLayer
   features/       citizen/ (세션, 접근성, 지오코딩, 공유, 일정)  admin/ (현장 목록 변환)  field/ (체크리스트 키, 저장 표시)
   components/     ui/ 공통(Button·SegmentedControl·Sheet·ListRow·DayChip·Menu), QuestionBox(관리자), map/ (지역 탭·범례), citizen/ (헤더·위치 시트·질문 바·장소 카드·이번 주·도움 패널)
   layouts/        AppShell (관리자 상단 메뉴 / 시민·현장 하단 탭), 역할별 레이아웃
@@ -127,9 +127,9 @@ scripts/          sync-geo.sh
 
 ## 지도
 
-- 좌표계는 WGS84(경도, 위도)라 변환 없이 Leaflet 에 올린다. 250m 격자는 `public/geo/types_{지역}.geojson` 폴리곤을 유형별로 색칠한다(긴급방문형·연계형·예방인프라형·관찰형).
-- 질문 응답의 `display.map.points` 는 칸 중심점이다. `types` 레이어는 50행 제한 이슈가 있어 관리자 유형 지도는 points 가 아니라 GeoJSON 전체를 기준으로 색칠하고, points 의 `highlight` 칸만 굵은 테두리로 강조한다.
-- 시설(`facilities_*.geojson`)은 점. 강남·춘천 bbox 를 벗어난 점은 그리지 않는다(원천 데이터 좌표 오류 4건: 봉은테니스장, 역삼청소년수련관수영장, 대치유수지체육공원축구장, 꿈자람구장).
+- 좌표계는 WGS84(경도, 위도)라 변환 없이 Leaflet 에 올린다. 실제 모드는 시민 시설·관리자 유형 지도 API를 사용하고 목업 모드만 `public/geo/` GeoJSON fixture를 읽는다.
+- 질문 응답의 `display.map.points` 는 칸 중심점이다. 관리자 유형 지도는 서버 GeoJSON 전체를 기준으로 색칠하고, 응답 points 의 `highlight` 칸만 굵은 테두리로 강조한다.
+- 시민 시설 목록은 `GET /api/v1/maps/facilities?region=...` allowlist에 포함된 시설만 표시한다. `fac_id`·`cell_id` 는 툴팁·카드에 쓰지 않고 조회 키로만 쓴다.
 - `cell_id`·`fac_id` 는 툴팁·카드에 쓰지 않고 조회 키로만 쓴다.
 
 ## 지킬 것 (agent/README.md 7절, engine/지도_규격.md)
@@ -140,13 +140,13 @@ scripts/          sync-geo.sh
 - 함께 가기·이동 도움 요청은 자동 매칭 없이 담당자가 확인한 뒤 연결한다.
 - `agent/`, `engine/` 폴더는 읽기만 하고 수정하지 않는다.
 
-## 임시 처리 (백엔드 API 가 생기면 교체)
+## API 연결 상태
 
 | 항목 | 지금 | 교체 지점 |
 | --- | --- | --- |
-| 현장 확인 목록 전달 | 목업: 공유 저장소 / 실제: `.json` 내려받기 → 현장 앱 "목록 불러오기" | `api/types.ts` 의 `publishFieldCheckList`, `fetchFieldCheckList` |
-| 현장 판정 덮어쓰기(`has_residents=no` 숨김, `support_needed=not_needed` → 관찰형) | 프론트가 `GET /field-checks` 를 읽어 지도에만 적용 | `map/applyFieldOverrides.ts` 삭제 후 GeoJSON `field_status` 사용 |
-| GeoJSON 제공 | `public/geo/` 정적 복사본 | `VITE_GEO_BASE_URL` |
+| 지도 조회 | 실제 모드: 시민 시설·관리자 유형/후보/배치 API, 목업: `public/geo/` 정적 복사본 | `api/types.ts`, `api/endpoints.ts`, `api/mock/index.ts` |
+| 현장 판정 덮어쓰기 | 실제 모드: 관리자 유형 지도 응답의 `field_status`, `engine_type`, `engine_priority`, `field_checked_at` 사용 | `map/useGeoLayer.ts`, `map/GridLayer.tsx` |
+| 현장 확인 목록 전달 | 목업: 공유 저장소 / 실제: 전달·조회 API 미지원. JSON 직접 다운로드·가져오기만 가능 | 백엔드 API가 제공되면 `publishFieldCheckList`, `fetchFieldCheckList` 연결 |
 | 시민 일정, 큰 글씨 설정 | 기기 localStorage | 필요하면 백엔드 |
 | 시설 전화번호 | 데이터에 없어 카드에 전화 버튼 없음 | 시설 데이터에 전화 필드가 생기면 `PlaceCard` |
 | 주민센터 전화 | `src/config.ts` `communityCenterPhone` 비어 있음(버튼 숨김) | 번호 확인 후 채우기 |
@@ -156,6 +156,9 @@ scripts/          sync-geo.sh
 - 회원가입·로그인·401/403 오류 형식·CORS(localhost:5173) 모두 계약서대로 동작. 이메일은 `.local` 같은 예약 도메인을 거부하므로 `example.com` 등을 쓴다.
 - 지원 요청 생성/목록/상태 변경, 현장 기록 생성/조회: 프론트가 보내는 payload 그대로 201/200.
 - checklist 는 현장기록 규격의 문자열 값(`yes/no/unknown`, `needed/not_needed/unsure`)으로 저장되고 그대로 조회된다.
+- 시민 시설 지도는 `GET /api/v1/maps/facilities?region=...`, 관리자 지도는 유형·후보·배치별 관리자 API를 사용한다. 시민 시설 응답은 allowlist 속성만 포함하며 `fac_id`는 화면에 표시하지 않는다.
+- 관리자 유형 지도는 서버가 처리한 최신 현장기록을 사용한다. `has_residents=no`가 제외 우선이고 `support_needed=not_needed`는 관찰형/우선순위 4로 표시된다. 원본 엔진 값은 별도 속성에 보존한다.
+- 관리자와 현장 담당자 사이의 목록 전달 API는 아직 없다. 실제 모드의 목록은 JSON 직접 전달이며, 현장 앱에서 가져온 목록은 현재 탭 세션에만 보관한다.
 - `GET /admin/field-feedback-summary` 응답 키는 `checklist_responses` (계약서에는 키 이름이 없었음). `unknown` 답도 응답으로 센다 → 채원에게 전달.
 - 날짜 `created_at` 은 `"YYYY-MM-DD HH:MM:SS"` (UTC, 시간대 없음) 형식이라 `lib/datetime.ts` 에서 보정한다.
 - 질문 API 는 Anthropic 키가 없으면 500 `internal_server_error` 를 돌려준다. 프론트는 안내 문구로 바꿔 보여준다.

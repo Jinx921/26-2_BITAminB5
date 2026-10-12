@@ -877,6 +877,22 @@
     "near_health_name": "강남구보건소분소",
     "dist_health": 1715.3,
     "res_status": "주거"
+   },
+   {
+    "cell_id": "3855_7770",
+    "emd_name": "일원본동",
+    "lat": 37.4822,
+    "lon": 127.0914,
+    "type": "연계형",
+    "gap_tag": "",
+    "priority": 2,
+    "cause": "낮 활동 저하 4개월 / 60대+ 비중 27% / 교류 168m / 보건 1.2km",
+    "recommendation": "가까운 강남데시앙포레㉵(168m) 프로그램 연결·동행",
+    "near_social_name": "강남데시앙포레㉵",
+    "dist_social": 168.3,
+    "near_health_name": "세곡보건지소",
+    "dist_health": 1213.6,
+    "res_status": "용도미상"
    }
   ],
   "type_actions": {

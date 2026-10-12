@@ -241,7 +241,7 @@ def _recommend(r) -> str:
 
 def classify(region: str, far_social_m: int = C.FAR_SOCIAL_M, far_health_m: int = C.FAR_HEALTH_M,
              persist_min: int = C.PERSIST_MIN, residential_filter: bool = True, render: bool = True,
-             table_top: int = 50) -> dict:
+             table_top: int | None = None) -> dict:
     """2x2 고립 유형 (활동위축 O/X x 자원 가까움/멂) + 공백 태그 + 원인·추천 표."""
     _check_region(region)
     u = _universe(region, persist_min, residential_filter, far_social_m, far_health_m)

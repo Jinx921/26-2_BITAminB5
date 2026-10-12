@@ -73,7 +73,7 @@
 | `gap_tags` | {유형: {교류/보건/둘다: int}} | 무엇이 멀어서 공백인지 |
 | `n_universe_cells` | int | 분류 대상 거주 칸 수 |
 | `by_emd_withdrawn` | {행정동: {유형: int}} | 긴급방문·연계형의 행정동별 수 |
-| `table` | list(최대 50) | 원인·추천 표 `cell_id, emd_name, lat, lon, type, gap_tag, priority, cause, recommendation, near_social_name, dist_social, near_health_name, dist_health, res_status` |
+| `table` | list(위축 칸 전체: 긴급방문형+연계형) | 원인·추천 표 `cell_id, emd_name, lat, lon, type, gap_tag, priority, cause, recommendation, near_social_name, dist_social, near_health_name, dist_health, res_status` |
 | `type_actions` | {유형: {priority, action}} | 유형별 우선순위·조치 |
 | `layers` | {층 이름: {유형: int}} | 위축 신호 층 / 자원 구조 층. **두 층을 합쳐 위험 숫자로 말하지 말 것** |
 

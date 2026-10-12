@@ -34,6 +34,10 @@ Authorization: Bearer <ACCESS_TOKEN>
 | POST | `/api/v1/auth/register` | 공개 (시민 계정만 생성) |
 | POST | `/api/v1/auth/login` | 공개 |
 | POST | `/api/v1/questions` | `citizen`, `admin` |
+| GET | `/api/v1/maps/facilities?region=<REGION>` | `citizen`, `admin` |
+| GET | `/api/v1/admin/maps/types?region=<REGION>&show_excluded=<BOOL>` | `admin` |
+| GET | `/api/v1/admin/maps/candidates?region=<REGION>` | `admin` |
+| GET | `/api/v1/admin/maps/placements?region=<REGION>&radius_m=<METERS>&sites=<COUNT>` | `admin` |
 | POST | `/api/v1/support-requests` | `citizen` |
 | GET | `/api/v1/support-requests?status=<STATUS>` | `admin` |
 | GET | `/api/v1/support-requests/<REQUEST_ID>` | `admin` |
@@ -112,6 +116,34 @@ Authorization: Bearer <ACCESS_TOKEN>
 display에는 `headline`, `details`, `caution`, `confidence`, `map` 등이 포함될 수 있다.
 권한이 없거나 토큰이 유효하지 않으면 각각 `403` 또는 `401`을 반환한다.
 
+### 지도
+
+지도 API는 `engine/out`의 GeoJSON을 읽기 전용으로 제공한다. 지역은 `강남`, `춘천`만 허용한다.
+인증 누락·무효는 `401`, 허용되지 않은 역할은 `403`, 허용되지 않은 지역·배치 선택값은 `422`다.
+
+**GET `/api/v1/maps/facilities?region=<REGION>`** — `citizen`, `admin`.
+
+성공 응답은 시설 GeoJSON `FeatureCollection`이다. 시민 응답의 feature properties는
+`fac_id`, `name`, `addr`, `kind`, `group`만 포함하며 후보·유형·배치·위험도·현장기록 정보는
+포함하지 않는다. `fac_id`는 시설 연결에 쓰는 내부 키다. **프론트엔드는 `fac_id`를 화면에
+글자로 표시하면 안 된다.**
+
+**GET `/api/v1/admin/maps/types?region=<REGION>&show_excluded=<BOOL>`** — `admin`.
+
+전체 격자 유형 GeoJSON을 반환한다. `show_excluded`는 기본 `false`이며,
+`true`일 때 현장 확인으로 제외된 칸을 포함한다. 최신 현장기록이 있는 칸에는
+`field_status`, `field_checked_at` 및 보존된 엔진 판정(`engine_type`, `engine_priority`)이
+포함될 수 있다. 지원 불필요 판정은 `type=관찰형`, `priority=4`로 반환한다.
+
+**GET `/api/v1/admin/maps/candidates?region=<REGION>`** — `admin`.
+
+후보 칸 GeoJSON을 반환한다.
+
+**GET `/api/v1/admin/maps/placements?region=<REGION>&radius_m=<METERS>&sites=<COUNT>`** — `admin`.
+
+거점 배치 GeoJSON을 반환한다. 허용 반경은 `1000`, `3000`m이며 거점 수는 현재 파일이 있는
+`3`만 허용한다.
+
 ### 지원 요청
 
 **POST `/api/v1/support-requests`** — `citizen`.
@@ -168,11 +200,21 @@ display에는 `headline`, `details`, `caution`, `confidence`, `map` 등이 포�
 ```json
 {
   "cell_id": "<CELL_ID>",
-  "checklist": {"<ITEM>": true},
+  "checklist": {
+    "has_residents": "yes",
+    "social_hard_to_reach": "unknown",
+    "health_hard_to_reach": "unknown",
+    "seniors_out_daytime": "unknown",
+    "support_needed": "needed"
+  },
   "checked_at": "<ISO_8601_DATETIME>",
   "note": "<NOTE>"
 }
 ```
+
+`has_residents`, `social_hard_to_reach`, `health_hard_to_reach`, `seniors_out_daytime`는
+`yes`, `no`, `unknown`을 사용하고, `support_needed`는 `needed`, `not_needed`, `unsure`를
+사용한다. `checklist`의 나머지 값과 `note`는 그대로 저장되며 판정 덮어쓰기는 위 두 규칙만 적용한다.
 
 성공 응답 핵심 필드: `id`, `cell_id`, `checklist`, `checked_at`, `note`, `created_at`.
 토큰 누락·무효는 `401`, 시민 역할은 `403`.
@@ -181,6 +223,14 @@ display에는 `headline`, `details`, `caution`, `confidence`, `map` 등이 포�
 
 성공 응답은 해당 셀의 현장 확인 기록 목록이다. 원본 현장 확인 내용을 포함하므로 인가된
 현장 담당자·관리자만 사용해야 한다. 토큰 누락·무효는 `401`, 시민 역할은 `403`.
+
+유형 지도에는 칸별 `checked_at`이 가장 최신인 기록 하나만 반영한다. `has_residents=no`는
+`excluded`로 분류해 기본 지도에서 숨기며, 두 규칙이 함께 맞으면 제외가 우선한다.
+그 외에 `support_needed=not_needed`는 `관찰형`(우선순위 4)으로 낮춘다.
+최신 기록의 값이 `unknown`/`unsure`이거나 두 규칙에 해당하지 않으면 이전 기록으로 되돌아가지
+않고 엔진 판정을 유지한다. 변경 시 원본 유형·우선순위를 `engine_type`, `engine_priority`로
+보존하고, `field_status`, `field_checked_at`을 함께 반환한다. 원본 엔진 GeoJSON 파일은 변경하지 않는다.
+현장기록은 관리자 유형 지도에서만 사용하며 시민 지도 API에는 포함하지 않는다.
 
 ### 관리자 운영 신호
 
@@ -199,7 +249,6 @@ display에는 `headline`, `details`, `caution`, `confidence`, `map` 등이 포�
 
 ## 아직 제공하지 않는 API
 
-- 지도 전용 조회 API는 아직 없다. 질문 응답의 `display.map`은 질문 결과의 일부다.
 - 문서 생성 결과 다운로드 API는 아직 없다.
 - 계정 관리·권한 변경 공개 API는 없다.
 

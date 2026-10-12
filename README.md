@@ -119,6 +119,10 @@ export BACKEND_QUESTION_MAX_CONCURRENCY=4
 | POST | `/api/v1/auth/register` | 시민 계정 공개 가입 |
 | POST | `/api/v1/auth/login` | 이메일·비밀번호 로그인 및 JWT 발급 |
 | POST | `/api/v1/questions` | 질문 처리 (admin/citizen) |
+| GET | `/api/v1/maps/facilities?region=...` | 시민·관리자용 시설 지도 |
+| GET | `/api/v1/admin/maps/types?region=...` | 관리자용 유형 지도 및 최신 현장기록 반영 |
+| GET | `/api/v1/admin/maps/candidates?region=...` | 관리자용 후보 지도 |
+| GET | `/api/v1/admin/maps/placements?region=...&radius_m=...&sites=...` | 관리자용 거점 배치 지도 |
 | POST | `/api/v1/support-requests` | 시민 지원 요청 생성 |
 | GET | `/api/v1/support-requests?status=...` | 관리자용 목록 조회 및 상태 필터 |
 | GET | `/api/v1/support-requests/{request_id}` | 관리자용 상세 조회 |
@@ -159,7 +163,12 @@ curl -X PATCH 'http://127.0.0.1:8000/api/v1/support-requests/<REQUEST_ID>/status
 ```
 
 현장 확인은 `POST /api/v1/field-checks`로 저장하고, 격자 ID로 조회한다.
-이 기록은 저장·조회 전용이며 현재 에이전트 답변이나 엔진 분석 결과에 반영되지 않는다.
+관리자 유형 지도 API는 셀별 최신 `checked_at` 기록을 반영한다. `has_residents=no`이면 제외
+(기본 지도에서 숨김), 그렇지 않고 `support_needed=not_needed`이면 관찰형(우선순위 4)으로
+낮춘다. 두 규칙이 모두 맞으면 제외가 우선한다. `unknown`/`unsure` 등 적용 조건에 해당하지
+않는 최신 기록은 이전 기록으로 되돌아가지 않고 엔진 판정을 유지한다. 원본 엔진 유형·우선순위는
+`engine_type`, `engine_priority`로 보존하며 GeoJSON 원본 파일은 변경하지 않는다. 이 반영은
+관리자 지도에 한정되고 에이전트 답변의 수치는 변경하지 않는다.
 
 ```bash
 curl -X POST http://127.0.0.1:8000/api/v1/field-checks \
@@ -169,6 +178,23 @@ curl -X POST http://127.0.0.1:8000/api/v1/field-checks \
 
 curl -H 'Authorization: Bearer <FIELD_WORKER_ACCESS_TOKEN>' \
   'http://127.0.0.1:8000/api/v1/field-checks?cell_id=<CELL_ID>'
+```
+
+### 지도 API
+
+시민 시설 지도는 다음 API를 사용한다. 지역은 `강남`, `춘천`만 허용한다.
+시민 응답은 시설 GeoJSON만 제공하며 유형·후보·배치·위험도·현장기록 필드는 포함하지 않는다.
+`fac_id`는 시설 연결용 내부 키이므로 프론트엔드는 화면에 글자로 표시하지 않는다.
+
+```bash
+curl -H 'Authorization: ******' \
+  'http://127.0.0.1:8000/api/v1/maps/facilities?region=춘천'
+curl -H 'Authorization: ******' \
+  'http://127.0.0.1:8000/api/v1/admin/maps/types?region=춘천&show_excluded=false'
+curl -H 'Authorization: ******' \
+  'http://127.0.0.1:8000/api/v1/admin/maps/candidates?region=춘천'
+curl -H 'Authorization: ******' \
+  'http://127.0.0.1:8000/api/v1/admin/maps/placements?region=춘천&radius_m=1000&sites=3'
 ```
 
 ### 익명 운영 신호 (관리자 전용)
@@ -220,13 +246,17 @@ python -m backend.seed_user --role field_worker
 | 지원 요청 생성 | 허용 | 거부 | 거부 |
 | 지원 요청 조회·상태 변경 | 거부 | 거부 | 허용 |
 | 현장 확인 생성·조회 | 거부 | 허용 | 허용 |
+| 시설 지도 조회 | 허용 | 거부 | 허용 |
+| 유형·후보·배치 지도 조회 | 거부 | 거부 | 허용 |
+| 시설 지도 조회 | 허용 | 거부 | 허용 |
+| 유형·후보·배치 지도 조회 | 거부 | 거부 | 허용 |
 
 ### 현재 범위와 유의사항
 
 - 비밀번호는 Argon2 해시로 저장한다. JWT secret은 환경 변수로만 제공하고 토큰·비밀번호·Authorization 헤더는 로그에 남기지 않는다.
 - 지원 요청은 `pending`으로 저장되며 자동 매칭·승인과 알림 기능은 구현하지 않았다.
 - 프론트엔드 연결과 배포는 아직 구현하지 않았다.
-- 현장 확인 기록은 저장·조회 전용이며 에이전트 답변이나 엔진 분석 결과에 자동 반영되지 않는다.
+- 현장 확인 기록은 에이전트 답변·엔진 원본 결과에는 자동 반영하지 않고, 관리자 유형 지도 응답에서만 최신 기록을 덮어써 표시한다.
 - 실제 사용자 데이터, 비밀번호, JWT secret, Anthropic API 키 및 `.env` 파일은 Git에 추가하거나 커밋하지 않는다.
   DB 파일과 `backend/data/`도 추적하지 않는다.
 

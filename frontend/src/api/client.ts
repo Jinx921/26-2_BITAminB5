@@ -161,6 +161,8 @@ export function describeError(e: unknown): string {
         return '입력 내용을 다시 확인해 주세요.'
       case 'network_error':
         return e.message
+      case 'internal_server_error':
+        return '서버에서 답을 만들지 못했습니다. 백엔드 로그와 에이전트 API 키(agent/.env) 설정을 확인해 주세요.'
       default:
         return e.message || '요청에 실패했습니다.'
     }

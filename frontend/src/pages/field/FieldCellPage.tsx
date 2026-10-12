@@ -18,6 +18,7 @@ import {
   type ChecklistKey,
 } from '@/features/field/checklist'
 import { useDoneCells } from '@/features/field/doneStore'
+import { formatDateTime } from '@/lib/datetime'
 import { BaseMap, PointsLayer } from '@/map'
 import { CHECK_LEVEL_COLOR } from '@/map/colors'
 import type { ChecklistAnswer, SupportNeededAnswer } from '@/types/api'
@@ -169,7 +170,7 @@ export function FieldCellPage() {
           <ul className="mt-2 space-y-2 text-sm">
             {history.data.map((h) => (
               <li key={h.id} className="rounded-xl bg-slate-50 p-3">
-                <p className="text-slate-500">{new Date(h.checked_at).toLocaleString('ko-KR')}</p>
+                <p className="text-slate-500">{formatDateTime(h.checked_at)}</p>
                 <ul className="mt-1">
                   {CHECKLIST_ITEMS.map((it) =>
                     h.checklist[it.key] !== 'unknown' ? (

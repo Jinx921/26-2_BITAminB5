@@ -28,6 +28,8 @@ export function toFragments(display: Display | null | undefined, mode: Mode): Fr
   for (const type of FRAGMENT_ORDER[mode]) {
     const data = record[type]
     if (isEmpty(data)) continue
+    // 시민 모드 지도는 시설 레이어만 (유형·후보·배치·현장 레이어는 시민에게 내보내지 않음)
+    if (mode === 'citizen' && type === 'map' && (data as { layer?: string }).layer !== 'facilities') continue
     out.push({ type, key: type, data })
   }
 

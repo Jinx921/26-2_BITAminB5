@@ -1,9 +1,12 @@
 /** 환경 변수와 지역 상수를 한 곳에 모은다. */
 
+// Vite 밖(테스트 스크립트 등)에서 import 될 때도 깨지지 않게 한다
+const viteEnv: ImportMetaEnv = import.meta.env ?? {}
+
 export const env = {
-  apiBaseUrl: (import.meta.env.VITE_API_BASE_URL ?? 'http://127.0.0.1:8000').replace(/\/$/, ''),
-  useMock: import.meta.env.VITE_USE_MOCK === 'true',
-  geoBaseUrl: (import.meta.env.VITE_GEO_BASE_URL ?? '/geo').replace(/\/$/, ''),
+  apiBaseUrl: (viteEnv.VITE_API_BASE_URL ?? 'http://127.0.0.1:8000').replace(/\/$/, ''),
+  useMock: viteEnv.VITE_USE_MOCK === 'true',
+  geoBaseUrl: (viteEnv.VITE_GEO_BASE_URL ?? '/geo').replace(/\/$/, ''),
 } as const
 
 export type RegionKey = '강남' | '춘천'

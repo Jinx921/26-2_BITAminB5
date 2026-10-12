@@ -1,0 +1,16 @@
+@import "tailwindcss";
+
+/* 시민 화면 큰 글씨 모드: Tailwind 는 rem 단위를 쓰므로 루트 글꼴 크기만 키우면 전체가 커진다 */
+html.big-text {
+  font-size: 125%;
+}
+
+html, body, #root {
+  height: 100%;
+}
+
+body {
+  -webkit-font-smoothing: antialiased;
+  font-family: "Pretendard Variable", Pretendard, -apple-system, BlinkMacSystemFont, system-ui,
+    "Apple SD Gothic Neo", "Noto Sans KR", "Malgun Gothic", sans-serif;
+}

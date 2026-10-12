@@ -12,6 +12,7 @@ import { type RegionKey } from '@/config'
 import { useDoneCells } from '@/features/field/doneStore'
 import { formatDateTime } from '@/lib/datetime'
 import { BaseMap, PointsLayer, boundsOfPoints } from '@/map'
+import { useViewMode } from '@/features/viewMode'
 import { CHECK_LEVEL_COLOR } from '@/map/colors'
 import type { FieldCheckList } from '@/types/api'
 
@@ -24,6 +25,8 @@ export function FieldHomePage() {
   const [pasted, setPasted] = useState('')
   const [importError, setImportError] = useState<string | null>(null)
   const fileRef = useRef<HTMLInputElement>(null)
+  const [view] = useViewMode()
+  const desktop = view === 'desktop'
 
   const importList = useMutation({
     mutationFn: async (text: string) => {
@@ -68,12 +71,15 @@ export function FieldHomePage() {
         <p className="text-sm text-ink-3">{list.data.region ?? ''} · {cells.length}곳 · {formatDateTime(list.data.created_at)} · <span className="font-semibold text-green">완료 {doneCount}</span></p>
         <p className="mt-1 text-base text-ink-2">{list.data.headline}</p>
       </div>
+      <div className={desktop ? 'grid gap-6 md:grid-cols-[minmax(0,1fr)_minmax(0,1fr)]' : 'space-y-4'}>
       {cells.length > 0 && (
-        <BaseMap bounds={bounds} region={(list.data.region as RegionKey | null) ?? undefined} className="h-52" scrollWheelZoom={false}>
-          <PointsLayer map={{ layer: 'checks', ref: 'list', geojson: null, points: cells }} />
-        </BaseMap>
+        <div className={desktop ? 'order-2 md:sticky md:top-4 md:self-start' : ''}>
+          <BaseMap bounds={bounds} region={(list.data.region as RegionKey | null) ?? undefined} className={desktop ? 'h-[36rem]' : 'h-52'} scrollWheelZoom={desktop}>
+            <PointsLayer map={{ layer: 'checks', ref: 'list', geojson: null, points: cells }} />
+          </BaseMap>
+        </div>
       )}
-      <List className="border-t border-line">
+      <List className="order-1 border-t border-line">
         {cells.map((c) => (
           <ListRow
             key={c.id}
@@ -86,6 +92,7 @@ export function FieldHomePage() {
           />
         ))}
       </List>
+      </div>
       <Button variant="text" size="sm" className="-ml-3" icon={<Upload className="size-4" />} onClick={() => setImportOpen(true)}>다른 목록 불러오기</Button>
       {importer}
     </div>

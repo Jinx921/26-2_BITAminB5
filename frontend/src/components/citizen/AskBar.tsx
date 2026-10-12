@@ -1,6 +1,7 @@
 import { useCallback, type FormEvent } from 'react'
 import { Mic, MicOff, SendHorizonal } from 'lucide-react'
 import { useSpeechInput } from '@/features/citizen/a11y'
+import { COLUMN_WIDTH, useViewMode } from '@/features/viewMode'
 
 export interface AskBarProps {
   value: string
@@ -11,6 +12,7 @@ export interface AskBarProps {
 
 /** 화면 하단 고정 한 줄 입력 바. 마이크는 입력창 안 아이콘 */
 export function AskBar({ value, onChange, onSubmit, pending }: AskBarProps) {
+  const [mode] = useViewMode()
   const speech = useSpeechInput(
     useCallback(
       (t: string) => {
@@ -30,7 +32,7 @@ export function AskBar({ value, onChange, onSubmit, pending }: AskBarProps) {
 
   return (
     <div data-fixed-bar className="fixed inset-x-0 bottom-0 z-20 border-t border-line bg-surface/95 backdrop-blur">
-      <form onSubmit={submit} className="mx-auto flex max-w-[430px] items-center gap-2 px-4 py-2 pb-[calc(0.5rem+env(safe-area-inset-bottom))]">
+      <form onSubmit={submit} className={`mx-auto flex items-center gap-2 px-4 py-2 pb-[calc(0.5rem+env(safe-area-inset-bottom))] ${COLUMN_WIDTH[mode]}`}>
         <div className="relative min-w-0 flex-1">
           <input
             value={value}
@@ -56,7 +58,7 @@ export function AskBar({ value, onChange, onSubmit, pending }: AskBarProps) {
           <SendHorizonal className="size-5" />
         </button>
       </form>
-      {speech.error && <p className="mx-auto max-w-[430px] px-4 pb-2 text-sm text-amber-ink">{speech.error}</p>}
+      {speech.error && <p className={`mx-auto px-4 pb-2 text-sm text-amber-ink ${COLUMN_WIDTH[mode]}`}>{speech.error}</p>}
     </div>
   )
 }

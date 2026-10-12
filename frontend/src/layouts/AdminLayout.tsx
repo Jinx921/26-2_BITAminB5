@@ -1,6 +1,7 @@
 import { NavLink, Outlet } from 'react-router-dom'
 import { useAuth } from '@/auth/useAuth'
-import { Menu } from '@/components/ui/Menu'
+import { LogOut } from 'lucide-react'
+import { Button } from '@/components/ui/Button'
 import { MockBadge } from '@/components/ui/MockBadge'
 
 const NAV = [
@@ -27,7 +28,10 @@ export function AdminLayout() {
             ))}
           </nav>
         </div>
-        <Menu header={user?.email} items={[{ label: '로그아웃', onSelect: logout, danger: true }]} />
+        <div className="flex items-center gap-2 text-xs text-ink-3">
+          <span className="hidden sm:inline">{user?.email}</span>
+          <Button variant="text" size="sm" className="px-2 text-ink-2" onClick={logout} icon={<LogOut className="size-4" />}>로그아웃</Button>
+        </div>
       </header>
       <main className="min-h-0 flex-1">
         <Outlet />

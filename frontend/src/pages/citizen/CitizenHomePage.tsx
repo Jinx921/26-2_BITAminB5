@@ -16,6 +16,7 @@ import { useCitizenSession } from '@/features/citizen/useCitizenSession'
 import { answerToShareText, shareText } from '@/features/citizen/share'
 import { FragmentRenderer } from '@/fragments'
 import { useAskQuestion } from '@/lib/useAskQuestion'
+import { useViewMode } from '@/features/viewMode'
 import type { FacilitiesPoint, MapPoint } from '@/types/display'
 
 /** 시민 첫 화면. 시안의 순서: 제목 → 위치 한 줄 → 내 질문 말풍선 → 답 → 지도 → 번호 카드 → 이번 주 → 도움 패널 → 공유·전화 */
@@ -25,6 +26,8 @@ export function CitizenHomePage() {
   const [sheet, setSheet] = useState(false)
   const [asked, setAsked] = useState<{ text: string; voice: boolean } | null>(null)
   const [selectedId, setSelectedId] = useState<string | null>(null)
+  const [view] = useViewMode()
+  const desktop = view === 'desktop'
 
   const submit = useCallback(
     (question: string, viaVoice: boolean) => {
@@ -56,16 +59,16 @@ export function CitizenHomePage() {
       <CitizenHeader
         textToRead={readText}
         subtitle={
-          <button type="button" onClick={() => setSheet(true)} data-testid="location-trigger" className="inline-flex min-h-11 items-center gap-1 text-base text-ink-2">
+          <button type="button" onClick={() => setSheet(true)} data-testid="location-trigger" className="inline-flex min-h-11 max-w-full items-center gap-1 text-base text-ink-2">
             <MapPin className="size-4 text-primary" aria-hidden />
             {s.location ? (
-              <>
+              <span className="truncate">
                 {s.location.label} 근처 · <span className="text-primary">위치 사용 중</span>
-              </>
+              </span>
             ) : (
-              <span className="font-semibold text-primary">어디 주변을 찾을까요? 위치 고르기</span>
+              <span className="truncate font-semibold text-primary">어디 주변을 찾을까요? 위치 고르기</span>
             )}
-            <ChevronRight className="size-4 text-ink-3" aria-hidden />
+            <ChevronRight className="size-4 shrink-0 text-ink-3" aria-hidden />
           </button>
         }
       />
@@ -101,11 +104,12 @@ export function CitizenHomePage() {
       )}
 
       {answer && !ask.isPending && (
-        <>
+        <div className={desktop ? 'grid gap-8 md:grid-cols-[minmax(0,3fr)_minmax(0,2fr)]' : 'space-y-6'}>
+          <div className="space-y-6">
           <FragmentRenderer
             display={answer}
             mode="citizen"
-            context={{ region, selectedPointId: selected?.id ?? null, onSelectPoint, mapClassName: 'h-60', orderedIds: top.map((p) => p.id), home: s.location ? { lat: s.location.lat, lon: s.location.lon, label: '우리 집' } : null, compactDetails: true }}
+            context={{ region, selectedPointId: selected?.id ?? null, onSelectPoint, mapClassName: desktop ? 'h-80' : 'h-60', orderedIds: top.map((p) => p.id), home: s.location ? { lat: s.location.lat, lon: s.location.lon, label: '우리 집' } : null, compactDetails: true }}
           />
 
           {top.length > 0 && (
@@ -120,7 +124,9 @@ export function CitizenHomePage() {
               )}
             </section>
           )}
+          </div>
 
+          <div className="space-y-6">
           <WeekStrip />
           <HelpPanel facilityId={selected?.id ?? null} facilityName={selected?.name} />
 
@@ -139,7 +145,8 @@ export function CitizenHomePage() {
               </Button>
             )}
           </div>
-        </>
+          </div>
+        </div>
       )}
 
       <AskBar value={s.question} onChange={s.setQuestion} onSubmit={submit} pending={ask.isPending} />

@@ -1,52 +1,21 @@
 import { useMemo, useState } from 'react'
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { Link, useNavigate, useParams } from 'react-router-dom'
+import { ChevronLeft } from 'lucide-react'
 import { api } from '@/api'
 import { Button } from '@/components/ui/Button'
-import { Card } from '@/components/ui/Card'
 import { EmptyState } from '@/components/ui/EmptyState'
 import { ErrorState } from '@/components/ui/ErrorState'
+import { SegmentedControl } from '@/components/ui/SegmentedControl'
 import { Spinner } from '@/components/ui/Spinner'
-import {
-  ANSWER_LABEL,
-  ANSWER_OPTIONS,
-  CHECKLIST_ITEMS,
-  SUPPORT_NEEDED_LABEL,
-  SUPPORT_OPTIONS,
-  buildChecklist,
-  keyForQuestion,
-  type ChecklistKey,
-} from '@/features/field/checklist'
+import { ANSWER_LABEL, ANSWER_OPTIONS, CHECKLIST_ITEMS, SUPPORT_NEEDED_LABEL, SUPPORT_OPTIONS, buildChecklist, keyForQuestion, type ChecklistKey } from '@/features/field/checklist'
 import { useDoneCells } from '@/features/field/doneStore'
 import { formatDateTime } from '@/lib/datetime'
 import { BaseMap, PointsLayer } from '@/map'
 import { CHECK_LEVEL_COLOR } from '@/map/colors'
 import type { ChecklistAnswer, SupportNeededAnswer } from '@/types/api'
 
-function OptionRow<T extends string>({ options, value, onChange, name }: { options: { value: T; label: string }[]; value: T | undefined; onChange: (v: T) => void; name: string }) {
-  return (
-    <div role="radiogroup" aria-label={name} className="grid grid-cols-3 gap-2">
-      {options.map((o) => (
-        <button
-          key={o.value}
-          type="button"
-          role="radio"
-          aria-checked={value === o.value}
-          onClick={() => onChange(o.value)}
-          className={`min-h-14 rounded-xl border px-2 text-lg font-semibold ${value === o.value ? 'border-blue-700 bg-blue-700 text-white' : 'border-slate-300 bg-white text-slate-800'}`}
-        >
-          {o.label}
-        </button>
-      ))}
-    </div>
-  )
-}
-
-/**
- * 동네 하나의 확인 항목에 답하고 저장한다 (POST /api/v1/field-checks).
- * 에이전트가 준 질문만 보여주고, '지원 필요 여부'는 모든 동네에서 묻는다 (현장기록_규격 3절).
- * cell_id 는 화면에 쓰지 않는다.
- */
+/** 동네 하나의 확인 항목. 질문마다 세그먼트 한 줄, 메모 한 칸, 저장은 하단 고정 버튼 하나 */
 export function FieldCellPage() {
   const { cellId = '' } = useParams()
   const id = decodeURIComponent(cellId)
@@ -62,133 +31,89 @@ export function FieldCellPage() {
   const [support, setSupport] = useState<SupportNeededAnswer | undefined>()
   const [note, setNote] = useState('')
 
-  // 에이전트 질문 → 저장 키. 매칭 안 되는 질문은 메모로만 남긴다
-  const items = useMemo(() => {
-    const qs = cell?.questions ?? []
-    return qs.map((q) => ({ question: q, key: keyForQuestion(q) }))
-  }, [cell])
+  const items = useMemo(() => (cell?.questions ?? []).map((q) => ({ question: q, key: keyForQuestion(q) })), [cell])
   const unmatched = items.filter((i) => i.key === null)
 
   const save = useMutation({
-    mutationFn: () => {
-      const extra = unmatched.length ? unmatched.map((u) => `[저장 항목 없음] ${u.question}`).join('\n') : ''
-      return api.createFieldCheck({
+    mutationFn: () =>
+      api.createFieldCheck({
         cell_id: id,
         checklist: buildChecklist(answers, support ?? 'unsure'),
         checked_at: new Date().toISOString(),
-        note: [note.trim(), extra].filter(Boolean).join('\n'),
-      })
-    },
-    onSuccess: () => {
-      markDone(id)
-      qc.invalidateQueries({ queryKey: ['field-checks'] })
-      navigate('/field')
-    },
+        note: [note.trim(), unmatched.length ? unmatched.map((u) => `[저장 항목 없음] ${u.question}`).join('\n') : ''].filter(Boolean).join('\n'),
+      }),
+    onSuccess: () => { markDone(id); qc.invalidateQueries({ queryKey: ['field-checks'] }); navigate('/field') },
   })
 
-  if (list.isPending) return <Spinner className="p-4" />
-  if (!cell) {
-    return (
-      <EmptyState
-        title="목록에 없는 동네입니다"
-        action={
-          <Link to="/field" className="text-lg font-semibold text-blue-700 underline">
-            확인 목록으로
-          </Link>
-        }
-      />
-    )
-  }
+  if (list.isPending) return <Spinner className="py-6" />
+  if (!cell) return <EmptyState title="목록에 없는 동네입니다" action={<Link to="/field" className="font-semibold text-primary">확인 목록으로</Link>} />
 
   const answeredAll = items.every((i) => i.key === null || answers[i.key]) && support !== undefined
 
   return (
-    <div className="space-y-4">
-      <Link to="/field" className="text-lg text-blue-700">
-        ‹ 확인 목록
-      </Link>
-      <Card className="flex items-center gap-3">
-        <span className="inline-flex size-10 shrink-0 items-center justify-center rounded-full text-lg font-bold text-white" style={{ background: CHECK_LEVEL_COLOR[cell.level] ?? '#334155' }}>
-          {cell.order}
-        </span>
+    <div className="space-y-5">
+      <Link to="/field" className="inline-flex min-h-11 items-center gap-1 text-base text-ink-2"><ChevronLeft className="size-4" aria-hidden />확인 목록</Link>
+      <div className="flex items-center gap-3">
+        <span className="inline-flex size-10 shrink-0 items-center justify-center rounded-full text-lg font-bold text-white" style={{ background: CHECK_LEVEL_COLOR[cell.level] ?? '#111827' }}>{cell.order}</span>
         <div>
-          <h1 className="text-2xl font-bold">{cell.emd_name}</h1>
-          <p className="text-base text-slate-600">{cell.level}</p>
+          <h2 className="text-2xl font-bold leading-tight">{cell.emd_name}</h2>
+          <p className="text-sm text-ink-3">{cell.level}</p>
         </div>
-      </Card>
-
-      <BaseMap bounds={[[cell.lat - 0.004, cell.lon - 0.004], [cell.lat + 0.004, cell.lon + 0.004]]} className="h-48" scrollWheelZoom={false}>
+      </div>
+      <BaseMap bounds={[[cell.lat - 0.004, cell.lon - 0.004], [cell.lat + 0.004, cell.lon + 0.004]]} className="h-40" scrollWheelZoom={false}>
         <PointsLayer map={{ layer: 'checks', ref: 'cell', geojson: null, points: [cell] }} />
       </BaseMap>
 
-      <form
-        className="space-y-4"
-        onSubmit={(e) => {
-          e.preventDefault()
-          save.mutate()
-        }}
-      >
+      <form id="field-check-form" className="space-y-5" onSubmit={(e) => { e.preventDefault(); save.mutate() }}>
         {items.map((it, i) => (
-          <Card key={i} className="space-y-3">
-            <p className="text-lg font-semibold">
-              {i + 1}. {it.question}
-            </p>
+          <div key={i}>
+            <p className="mb-2 text-base font-semibold">{i + 1}. {it.question}</p>
             {it.key ? (
-              <OptionRow name={it.question} options={ANSWER_OPTIONS} value={answers[it.key]} onChange={(v) => setAnswers((a) => ({ ...a, [it.key as ChecklistKey]: v }))} />
+              <SegmentedControl fill size="lg" aria-label={it.question} options={ANSWER_OPTIONS} value={answers[it.key]} onChange={(v) => setAnswers((a) => ({ ...a, [it.key as ChecklistKey]: v }))} />
             ) : (
-              <p className="text-sm text-amber-800">이 질문은 저장 항목이 정해지지 않아 메모로 함께 저장됩니다.</p>
+              <p className="text-sm text-amber-ink">이 질문은 저장 항목이 정해지지 않아 메모로 함께 저장됩니다.</p>
             )}
-          </Card>
+          </div>
         ))}
-
-        <Card className="space-y-3 border-blue-200">
-          <p className="text-lg font-semibold">
-            {items.length + 1}. {SUPPORT_NEEDED_LABEL}
-          </p>
-          <OptionRow name={SUPPORT_NEEDED_LABEL} options={SUPPORT_OPTIONS} value={support} onChange={setSupport} />
-        </Card>
-
-        <Card>
-          <label className="block">
-            <span className="mb-1 block text-lg font-semibold">메모 (선택)</span>
-            <textarea value={note} onChange={(e) => setNote(e.target.value)} rows={4} className="w-full rounded-xl border border-slate-300 px-3 py-3 text-lg" placeholder="현장에서 본 것, 주민 이야기 등. 판정에는 쓰이지 않습니다." />
-          </label>
-        </Card>
-
+        <div>
+          <p className="mb-2 text-base font-semibold">{items.length + 1}. {SUPPORT_NEEDED_LABEL}</p>
+          <SegmentedControl fill size="lg" aria-label={SUPPORT_NEEDED_LABEL} options={SUPPORT_OPTIONS} value={support} onChange={setSupport} />
+        </div>
+        <label className="block">
+          <span className="mb-1 block text-base font-semibold">메모 (선택)</span>
+          <textarea value={note} onChange={(e) => setNote(e.target.value)} rows={3} className="w-full rounded-btn border border-line-strong px-3 py-3 text-base focus:border-primary focus:outline-none" placeholder="현장에서 본 것, 주민 이야기 등. 판정에는 쓰이지 않습니다." />
+        </label>
         {save.isError && <ErrorState error={save.error} title="저장하지 못했습니다" />}
-        <Button type="submit" size="xl" className="w-full" loading={save.isPending} disabled={!answeredAll}>
-          결과 저장
-        </Button>
-        {!answeredAll && <p className="text-center text-sm text-slate-500">모든 질문에 답하면 저장할 수 있습니다.</p>}
       </form>
 
-      <details className="rounded-2xl border border-slate-200 bg-white p-4">
-        <summary className="cursor-pointer font-semibold">이 동네의 이전 기록 {history.data ? `(${history.data.length})` : ''}</summary>
+      <details className="text-sm">
+        <summary className="cursor-pointer font-semibold text-ink-2">이 동네의 이전 기록 {history.data ? `(${history.data.length})` : ''}</summary>
         {history.isPending && <Spinner className="mt-2" />}
-        {history.data && history.data.length === 0 && <p className="mt-2 text-slate-600">저장된 기록이 없습니다.</p>}
+        {history.data && history.data.length === 0 && <p className="mt-2 text-ink-3">저장된 기록이 없습니다.</p>}
         {history.data && history.data.length > 0 && (
-          <ul className="mt-2 space-y-2 text-sm">
+          <ul className="mt-2 divide-y divide-line">
             {history.data.map((h) => (
-              <li key={h.id} className="rounded-xl bg-slate-50 p-3">
-                <p className="text-slate-500">{formatDateTime(h.checked_at)}</p>
-                <ul className="mt-1">
-                  {CHECKLIST_ITEMS.map((it) =>
-                    h.checklist[it.key] !== 'unknown' ? (
-                      <li key={it.key}>
-                        {it.label} → <b>{ANSWER_LABEL[h.checklist[it.key]]}</b>
-                      </li>
-                    ) : null,
-                  )}
-                  <li>
-                    지원 필요 → <b>{ANSWER_LABEL[h.checklist.support_needed] ?? h.checklist.support_needed}</b>
-                  </li>
+              <li key={h.id} className="py-2">
+                <p className="text-ink-3">{formatDateTime(h.checked_at)}</p>
+                <ul className="mt-1 text-ink-2">
+                  {CHECKLIST_ITEMS.map((it) => (h.checklist[it.key] !== 'unknown' ? <li key={it.key}>{it.label} → <b>{ANSWER_LABEL[h.checklist[it.key]]}</b></li> : null))}
+                  <li>지원 필요 → <b>{ANSWER_LABEL[h.checklist.support_needed] ?? h.checklist.support_needed}</b></li>
                 </ul>
-                {h.note && <p className="mt-1 whitespace-pre-line text-slate-700">{h.note}</p>}
+                {h.note && <p className="mt-1 whitespace-pre-line text-ink-2">{h.note}</p>}
               </li>
             ))}
           </ul>
         )}
       </details>
+
+      <div data-fixed-bar className="fixed inset-x-0 bottom-0 z-20 border-t border-line bg-surface/95 backdrop-blur">
+        <div className="mx-auto max-w-[430px] px-4 py-3 pb-[calc(0.75rem+env(safe-area-inset-bottom))]">
+          <Button type="submit" form="field-check-form" size="lg" className="w-full" loading={save.isPending} disabled={!answeredAll}>
+            결과 저장
+          </Button>
+          {!answeredAll && <p className="mt-1 text-center text-xs text-ink-3">모든 질문에 답하면 저장할 수 있습니다.</p>}
+        </div>
+      </div>
     </div>
   )
 }

@@ -470,6 +470,15 @@
      "type": "연계형",
      "gap": "",
      "highlight": false
+    },
+    {
+     "id": "3855_7770",
+     "lat": 37.4822,
+     "lon": 127.0914,
+     "emd_name": "일원본동",
+     "type": "연계형",
+     "gap": "",
+     "highlight": false
     }
    ],
    "geojson": null

@@ -464,6 +464,933 @@
      "type": "긴급방문형",
      "gap": "교류",
      "highlight": false
+    },
+    {
+     "id": "4088_7973",
+     "lat": 37.94,
+     "lon": 127.7518,
+     "emd_name": "신북읍",
+     "type": "긴급방문형",
+     "gap": "교류",
+     "highlight": false
+    },
+    {
+     "id": "4089_7970",
+     "lat": 37.9333,
+     "lon": 127.7546,
+     "emd_name": "신북읍",
+     "type": "긴급방문형",
+     "gap": "교류",
+     "highlight": false
+    },
+    {
+     "id": "4089_7972",
+     "lat": 37.9378,
+     "lon": 127.7546,
+     "emd_name": "신북읍",
+     "type": "긴급방문형",
+     "gap": "교류",
+     "highlight": false
+    },
+    {
+     "id": "4089_7982",
+     "lat": 37.9603,
+     "lon": 127.7547,
+     "emd_name": "신북읍",
+     "type": "긴급방문형",
+     "gap": "교류",
+     "highlight": false
+    },
+    {
+     "id": "4094_7980",
+     "lat": 37.9558,
+     "lon": 127.7689,
+     "emd_name": "신북읍",
+     "type": "긴급방문형",
+     "gap": "교류",
+     "highlight": false
+    },
+    {
+     "id": "4026_7933",
+     "lat": 37.8501,
+     "lon": 127.5753,
+     "emd_name": "서면",
+     "type": "연계형",
+     "gap": "",
+     "highlight": false
+    },
+    {
+     "id": "4059_7959",
+     "lat": 37.9086,
+     "lon": 127.6692,
+     "emd_name": "서면",
+     "type": "연계형",
+     "gap": "",
+     "highlight": false
+    },
+    {
+     "id": "4061_7956",
+     "lat": 37.9019,
+     "lon": 127.6749,
+     "emd_name": "서면",
+     "type": "연계형",
+     "gap": "",
+     "highlight": false
+    },
+    {
+     "id": "4064_7967",
+     "lat": 37.9266,
+     "lon": 127.6835,
+     "emd_name": "서면",
+     "type": "연계형",
+     "gap": "",
+     "highlight": false
+    },
+    {
+     "id": "4065_7964",
+     "lat": 37.9199,
+     "lon": 127.6863,
+     "emd_name": "서면",
+     "type": "연계형",
+     "gap": "",
+     "highlight": false
+    },
+    {
+     "id": "4067_7969",
+     "lat": 37.9311,
+     "lon": 127.692,
+     "emd_name": "서면",
+     "type": "연계형",
+     "gap": "",
+     "highlight": false
+    },
+    {
+     "id": "4070_7970",
+     "lat": 37.9334,
+     "lon": 127.7006,
+     "emd_name": "서면",
+     "type": "연계형",
+     "gap": "",
+     "highlight": false
+    },
+    {
+     "id": "4072_7976",
+     "lat": 37.9469,
+     "lon": 127.7063,
+     "emd_name": "신북읍",
+     "type": "연계형",
+     "gap": "",
+     "highlight": false
+    },
+    {
+     "id": "4073_7913",
+     "lat": 37.8049,
+     "lon": 127.7087,
+     "emd_name": "신동면",
+     "type": "연계형",
+     "gap": "",
+     "highlight": false
+    },
+    {
+     "id": "4075_7911",
+     "lat": 37.8004,
+     "lon": 127.7144,
+     "emd_name": "신동면",
+     "type": "연계형",
+     "gap": "",
+     "highlight": false
+    },
+    {
+     "id": "4077_7982",
+     "lat": 37.9604,
+     "lon": 127.7206,
+     "emd_name": "신북읍",
+     "type": "연계형",
+     "gap": "",
+     "highlight": false
+    },
+    {
+     "id": "4077_7983",
+     "lat": 37.9626,
+     "lon": 127.7206,
+     "emd_name": "신북읍",
+     "type": "연계형",
+     "gap": "",
+     "highlight": false
+    },
+    {
+     "id": "4080_7981",
+     "lat": 37.9581,
+     "lon": 127.7291,
+     "emd_name": "신북읍",
+     "type": "연계형",
+     "gap": "",
+     "highlight": false
+    },
+    {
+     "id": "4080_7982",
+     "lat": 37.9603,
+     "lon": 127.7291,
+     "emd_name": "신북읍",
+     "type": "연계형",
+     "gap": "",
+     "highlight": false
+    },
+    {
+     "id": "4080_7983",
+     "lat": 37.9626,
+     "lon": 127.7291,
+     "emd_name": "신북읍",
+     "type": "연계형",
+     "gap": "",
+     "highlight": false
+    },
+    {
+     "id": "4081_7981",
+     "lat": 37.9581,
+     "lon": 127.7319,
+     "emd_name": "신북읍",
+     "type": "연계형",
+     "gap": "",
+     "highlight": false
+    },
+    {
+     "id": "4081_7982",
+     "lat": 37.9603,
+     "lon": 127.7319,
+     "emd_name": "신북읍",
+     "type": "연계형",
+     "gap": "",
+     "highlight": false
+    },
+    {
+     "id": "4081_7983",
+     "lat": 37.9626,
+     "lon": 127.732,
+     "emd_name": "신북읍",
+     "type": "연계형",
+     "gap": "",
+     "highlight": false
+    },
+    {
+     "id": "4085_7971",
+     "lat": 37.9355,
+     "lon": 127.7432,
+     "emd_name": "신북읍",
+     "type": "연계형",
+     "gap": "",
+     "highlight": false
+    },
+    {
+     "id": "4086_7971",
+     "lat": 37.9355,
+     "lon": 127.7461,
+     "emd_name": "신북읍",
+     "type": "연계형",
+     "gap": "",
+     "highlight": false
+    },
+    {
+     "id": "4089_7971",
+     "lat": 37.9355,
+     "lon": 127.7546,
+     "emd_name": "신북읍",
+     "type": "연계형",
+     "gap": "",
+     "highlight": false
+    },
+    {
+     "id": "4091_7982",
+     "lat": 37.9603,
+     "lon": 127.7604,
+     "emd_name": "신북읍",
+     "type": "연계형",
+     "gap": "",
+     "highlight": false
+    },
+    {
+     "id": "4091_7983",
+     "lat": 37.9625,
+     "lon": 127.7604,
+     "emd_name": "신북읍",
+     "type": "연계형",
+     "gap": "",
+     "highlight": false
+    },
+    {
+     "id": "4092_7982",
+     "lat": 37.9603,
+     "lon": 127.7632,
+     "emd_name": "신북읍",
+     "type": "연계형",
+     "gap": "",
+     "highlight": false
+    },
+    {
+     "id": "4092_7983",
+     "lat": 37.9625,
+     "lon": 127.7633,
+     "emd_name": "신북읍",
+     "type": "연계형",
+     "gap": "",
+     "highlight": false
+    },
+    {
+     "id": "4093_7979",
+     "lat": 37.9535,
+     "lon": 127.7661,
+     "emd_name": "신북읍",
+     "type": "연계형",
+     "gap": "",
+     "highlight": false
+    },
+    {
+     "id": "4099_7962",
+     "lat": 37.9152,
+     "lon": 127.783,
+     "emd_name": "동면",
+     "type": "연계형",
+     "gap": "",
+     "highlight": false
+    },
+    {
+     "id": "4026_7932",
+     "lat": 37.8479,
+     "lon": 127.5753,
+     "emd_name": "서면",
+     "type": "연계형",
+     "gap": "",
+     "highlight": false
+    },
+    {
+     "id": "4027_7934",
+     "lat": 37.8524,
+     "lon": 127.5781,
+     "emd_name": "서면",
+     "type": "연계형",
+     "gap": "",
+     "highlight": false
+    },
+    {
+     "id": "4064_7968",
+     "lat": 37.9289,
+     "lon": 127.6835,
+     "emd_name": "서면",
+     "type": "연계형",
+     "gap": "",
+     "highlight": false
+    },
+    {
+     "id": "4065_7966",
+     "lat": 37.9244,
+     "lon": 127.6863,
+     "emd_name": "서면",
+     "type": "연계형",
+     "gap": "",
+     "highlight": false
+    },
+    {
+     "id": "4073_7881",
+     "lat": 37.7328,
+     "lon": 127.7085,
+     "emd_name": "남산면",
+     "type": "연계형",
+     "gap": "",
+     "highlight": false
+    },
+    {
+     "id": "4074_7911",
+     "lat": 37.8004,
+     "lon": 127.7116,
+     "emd_name": "신동면",
+     "type": "연계형",
+     "gap": "",
+     "highlight": false
+    },
+    {
+     "id": "4076_7982",
+     "lat": 37.9604,
+     "lon": 127.7177,
+     "emd_name": "신북읍",
+     "type": "연계형",
+     "gap": "",
+     "highlight": false
+    },
+    {
+     "id": "4078_7981",
+     "lat": 37.9581,
+     "lon": 127.7234,
+     "emd_name": "신북읍",
+     "type": "연계형",
+     "gap": "",
+     "highlight": false
+    },
+    {
+     "id": "4079_7980",
+     "lat": 37.9558,
+     "lon": 127.7262,
+     "emd_name": "신북읍",
+     "type": "연계형",
+     "gap": "",
+     "highlight": false
+    },
+    {
+     "id": "4079_7981",
+     "lat": 37.9581,
+     "lon": 127.7262,
+     "emd_name": "신북읍",
+     "type": "연계형",
+     "gap": "",
+     "highlight": false
+    },
+    {
+     "id": "4081_7978",
+     "lat": 37.9513,
+     "lon": 127.7319,
+     "emd_name": "신북읍",
+     "type": "연계형",
+     "gap": "",
+     "highlight": false
+    },
+    {
+     "id": "4084_7980",
+     "lat": 37.9558,
+     "lon": 127.7405,
+     "emd_name": "신북읍",
+     "type": "연계형",
+     "gap": "",
+     "highlight": false
+    },
+    {
+     "id": "4084_7982",
+     "lat": 37.9603,
+     "lon": 127.7405,
+     "emd_name": "신북읍",
+     "type": "연계형",
+     "gap": "",
+     "highlight": false
+    },
+    {
+     "id": "4087_7983",
+     "lat": 37.9626,
+     "lon": 127.749,
+     "emd_name": "신북읍",
+     "type": "연계형",
+     "gap": "",
+     "highlight": false
+    },
+    {
+     "id": "4087_7984",
+     "lat": 37.9648,
+     "lon": 127.749,
+     "emd_name": "신북읍",
+     "type": "연계형",
+     "gap": "",
+     "highlight": false
+    },
+    {
+     "id": "4088_7907",
+     "lat": 37.7913,
+     "lon": 127.7513,
+     "emd_name": "동산면",
+     "type": "연계형",
+     "gap": "",
+     "highlight": false
+    },
+    {
+     "id": "4088_7979",
+     "lat": 37.9535,
+     "lon": 127.7518,
+     "emd_name": "신북읍",
+     "type": "연계형",
+     "gap": "",
+     "highlight": false
+    },
+    {
+     "id": "4092_7981",
+     "lat": 37.958,
+     "lon": 127.7632,
+     "emd_name": "신북읍",
+     "type": "연계형",
+     "gap": "",
+     "highlight": false
+    },
+    {
+     "id": "4093_7977",
+     "lat": 37.949,
+     "lon": 127.7661,
+     "emd_name": "신북읍",
+     "type": "연계형",
+     "gap": "",
+     "highlight": false
+    },
+    {
+     "id": "4093_7980",
+     "lat": 37.9558,
+     "lon": 127.7661,
+     "emd_name": "신북읍",
+     "type": "연계형",
+     "gap": "",
+     "highlight": false
+    },
+    {
+     "id": "4093_7982",
+     "lat": 37.9603,
+     "lon": 127.7661,
+     "emd_name": "신북읍",
+     "type": "연계형",
+     "gap": "",
+     "highlight": false
+    },
+    {
+     "id": "4100_7931",
+     "lat": 37.8453,
+     "lon": 127.7856,
+     "emd_name": "동내면",
+     "type": "연계형",
+     "gap": "",
+     "highlight": false
+    },
+    {
+     "id": "4104_7885",
+     "lat": 37.7416,
+     "lon": 127.7965,
+     "emd_name": "동산면",
+     "type": "연계형",
+     "gap": "",
+     "highlight": false
+    },
+    {
+     "id": "4104_7886",
+     "lat": 37.7439,
+     "lon": 127.7965,
+     "emd_name": "동산면",
+     "type": "연계형",
+     "gap": "",
+     "highlight": false
+    },
+    {
+     "id": "4024_7885",
+     "lat": 37.742,
+     "lon": 127.5695,
+     "emd_name": "남면",
+     "type": "연계형",
+     "gap": "",
+     "highlight": false
+    },
+    {
+     "id": "4024_7886",
+     "lat": 37.7442,
+     "lon": 127.5695,
+     "emd_name": "남면",
+     "type": "연계형",
+     "gap": "",
+     "highlight": false
+    },
+    {
+     "id": "4024_7887",
+     "lat": 37.7465,
+     "lon": 127.5695,
+     "emd_name": "남면",
+     "type": "연계형",
+     "gap": "",
+     "highlight": false
+    },
+    {
+     "id": "4025_7885",
+     "lat": 37.742,
+     "lon": 127.5724,
+     "emd_name": "남면",
+     "type": "연계형",
+     "gap": "",
+     "highlight": false
+    },
+    {
+     "id": "4025_7886",
+     "lat": 37.7442,
+     "lon": 127.5724,
+     "emd_name": "남면",
+     "type": "연계형",
+     "gap": "",
+     "highlight": false
+    },
+    {
+     "id": "4026_7934",
+     "lat": 37.8524,
+     "lon": 127.5753,
+     "emd_name": "서면",
+     "type": "연계형",
+     "gap": "",
+     "highlight": false
+    },
+    {
+     "id": "4036_7991",
+     "lat": 37.9808,
+     "lon": 127.6039,
+     "emd_name": "사북면",
+     "type": "연계형",
+     "gap": "",
+     "highlight": false
+    },
+    {
+     "id": "4037_7992",
+     "lat": 37.9831,
+     "lon": 127.6068,
+     "emd_name": "사북면",
+     "type": "연계형",
+     "gap": "",
+     "highlight": false
+    },
+    {
+     "id": "4058_7958",
+     "lat": 37.9064,
+     "lon": 127.6664,
+     "emd_name": "서면",
+     "type": "연계형",
+     "gap": "",
+     "highlight": false
+    },
+    {
+     "id": "4065_7968",
+     "lat": 37.9289,
+     "lon": 127.6863,
+     "emd_name": "서면",
+     "type": "연계형",
+     "gap": "",
+     "highlight": false
+    },
+    {
+     "id": "4067_7965",
+     "lat": 37.9221,
+     "lon": 127.692,
+     "emd_name": "서면",
+     "type": "연계형",
+     "gap": "",
+     "highlight": false
+    },
+    {
+     "id": "4070_7971",
+     "lat": 37.9356,
+     "lon": 127.7006,
+     "emd_name": "서면",
+     "type": "연계형",
+     "gap": "",
+     "highlight": false
+    },
+    {
+     "id": "4073_7970",
+     "lat": 37.9333,
+     "lon": 127.7091,
+     "emd_name": "서면",
+     "type": "연계형",
+     "gap": "",
+     "highlight": false
+    },
+    {
+     "id": "4073_7976",
+     "lat": 37.9469,
+     "lon": 127.7091,
+     "emd_name": "신북읍",
+     "type": "연계형",
+     "gap": "",
+     "highlight": false
+    },
+    {
+     "id": "4074_7913",
+     "lat": 37.8049,
+     "lon": 127.7116,
+     "emd_name": "신동면",
+     "type": "연계형",
+     "gap": "",
+     "highlight": false
+    },
+    {
+     "id": "4074_7916",
+     "lat": 37.8117,
+     "lon": 127.7116,
+     "emd_name": "신동면",
+     "type": "연계형",
+     "gap": "",
+     "highlight": false
+    },
+    {
+     "id": "4074_7998",
+     "lat": 37.9964,
+     "lon": 127.7121,
+     "emd_name": "사북면",
+     "type": "연계형",
+     "gap": "",
+     "highlight": false
+    },
+    {
+     "id": "4076_7983",
+     "lat": 37.9626,
+     "lon": 127.7177,
+     "emd_name": "신북읍",
+     "type": "연계형",
+     "gap": "",
+     "highlight": false
+    },
+    {
+     "id": "4077_7981",
+     "lat": 37.9581,
+     "lon": 127.7206,
+     "emd_name": "신북읍",
+     "type": "연계형",
+     "gap": "",
+     "highlight": false
+    },
+    {
+     "id": "4078_7982",
+     "lat": 37.9604,
+     "lon": 127.7234,
+     "emd_name": "신북읍",
+     "type": "연계형",
+     "gap": "",
+     "highlight": false
+    },
+    {
+     "id": "4079_7982",
+     "lat": 37.9604,
+     "lon": 127.7263,
+     "emd_name": "신북읍",
+     "type": "연계형",
+     "gap": "",
+     "highlight": false
+    },
+    {
+     "id": "4081_7924",
+     "lat": 37.8297,
+     "lon": 127.7315,
+     "emd_name": "신동면",
+     "type": "연계형",
+     "gap": "",
+     "highlight": false
+    },
+    {
+     "id": "4082_7924",
+     "lat": 37.8296,
+     "lon": 127.7344,
+     "emd_name": "신동면",
+     "type": "연계형",
+     "gap": "",
+     "highlight": false
+    },
+    {
+     "id": "4084_7968",
+     "lat": 37.9288,
+     "lon": 127.7404,
+     "emd_name": "신북읍",
+     "type": "연계형",
+     "gap": "",
+     "highlight": false
+    },
+    {
+     "id": "4084_7981",
+     "lat": 37.9581,
+     "lon": 127.7405,
+     "emd_name": "신북읍",
+     "type": "연계형",
+     "gap": "",
+     "highlight": false
+    },
+    {
+     "id": "4085_7968",
+     "lat": 37.9288,
+     "lon": 127.7432,
+     "emd_name": "신북읍",
+     "type": "연계형",
+     "gap": "",
+     "highlight": false
+    },
+    {
+     "id": "4085_7969",
+     "lat": 37.931,
+     "lon": 127.7432,
+     "emd_name": "신북읍",
+     "type": "연계형",
+     "gap": "",
+     "highlight": false
+    },
+    {
+     "id": "4086_7968",
+     "lat": 37.9288,
+     "lon": 127.7461,
+     "emd_name": "신북읍",
+     "type": "연계형",
+     "gap": "",
+     "highlight": false
+    },
+    {
+     "id": "4086_7979",
+     "lat": 37.9536,
+     "lon": 127.7462,
+     "emd_name": "신북읍",
+     "type": "연계형",
+     "gap": "",
+     "highlight": false
+    },
+    {
+     "id": "4086_7982",
+     "lat": 37.9603,
+     "lon": 127.7462,
+     "emd_name": "신북읍",
+     "type": "연계형",
+     "gap": "",
+     "highlight": false
+    },
+    {
+     "id": "4086_7983",
+     "lat": 37.9626,
+     "lon": 127.7462,
+     "emd_name": "신북읍",
+     "type": "연계형",
+     "gap": "",
+     "highlight": false
+    },
+    {
+     "id": "4087_7969",
+     "lat": 37.931,
+     "lon": 127.7489,
+     "emd_name": "신북읍",
+     "type": "연계형",
+     "gap": "",
+     "highlight": false
+    },
+    {
+     "id": "4087_7982",
+     "lat": 37.9603,
+     "lon": 127.749,
+     "emd_name": "신북읍",
+     "type": "연계형",
+     "gap": "",
+     "highlight": false
+    },
+    {
+     "id": "4088_7974",
+     "lat": 37.9423,
+     "lon": 127.7518,
+     "emd_name": "신북읍",
+     "type": "연계형",
+     "gap": "",
+     "highlight": false
+    },
+    {
+     "id": "4089_7969",
+     "lat": 37.931,
+     "lon": 127.7546,
+     "emd_name": "신북읍",
+     "type": "연계형",
+     "gap": "",
+     "highlight": false
+    },
+    {
+     "id": "4090_7970",
+     "lat": 37.9332,
+     "lon": 127.7575,
+     "emd_name": "신북읍",
+     "type": "연계형",
+     "gap": "",
+     "highlight": false
+    },
+    {
+     "id": "4092_7980",
+     "lat": 37.9558,
+     "lon": 127.7632,
+     "emd_name": "신북읍",
+     "type": "연계형",
+     "gap": "",
+     "highlight": false
+    },
+    {
+     "id": "4093_7981",
+     "lat": 37.958,
+     "lon": 127.7661,
+     "emd_name": "신북읍",
+     "type": "연계형",
+     "gap": "",
+     "highlight": false
+    },
+    {
+     "id": "4094_7978",
+     "lat": 37.9512,
+     "lon": 127.7689,
+     "emd_name": "신북읍",
+     "type": "연계형",
+     "gap": "",
+     "highlight": false
+    },
+    {
+     "id": "4094_7983",
+     "lat": 37.9625,
+     "lon": 127.7689,
+     "emd_name": "신북읍",
+     "type": "연계형",
+     "gap": "",
+     "highlight": false
+    },
+    {
+     "id": "4095_7977",
+     "lat": 37.949,
+     "lon": 127.7717,
+     "emd_name": "신북읍",
+     "type": "연계형",
+     "gap": "",
+     "highlight": false
+    },
+    {
+     "id": "4098_7975",
+     "lat": 37.9445,
+     "lon": 127.7803,
+     "emd_name": "신북읍",
+     "type": "연계형",
+     "gap": "",
+     "highlight": false
+    },
+    {
+     "id": "4099_7938",
+     "lat": 37.8611,
+     "lon": 127.7828,
+     "emd_name": "동내면",
+     "type": "연계형",
+     "gap": "",
+     "highlight": false
+    },
+    {
+     "id": "4099_7961",
+     "lat": 37.9129,
+     "lon": 127.783,
+     "emd_name": "동면",
+     "type": "연계형",
+     "gap": "",
+     "highlight": false
+    },
+    {
+     "id": "4100_7934",
+     "lat": 37.8521,
+     "lon": 127.7856,
+     "emd_name": "동내면",
+     "type": "연계형",
+     "gap": "",
+     "highlight": false
+    },
+    {
+     "id": "4100_7962",
+     "lat": 37.9152,
+     "lon": 127.7858,
+     "emd_name": "동면",
+     "type": "연계형",
+     "gap": "",
+     "highlight": false
+    },
+    {
+     "id": "4103_7956",
+     "lat": 37.9016,
+     "lon": 127.7943,
+     "emd_name": "동면",
+     "type": "연계형",
+     "gap": "",
+     "highlight": false
     }
    ],
    "geojson": null

@@ -5,9 +5,10 @@ import { DEMO_ACCOUNTS } from '@/api/mock/accounts'
 import { ROLE_HOME } from '@/auth/roleHome'
 import { useAuth } from '@/auth/useAuth'
 import { Button } from '@/components/ui/Button'
-import { Card } from '@/components/ui/Card'
 import { MockBadge } from '@/components/ui/MockBadge'
 import type { Role } from '@/types/api'
+
+const input = 'w-full rounded-btn border border-line-strong px-3 py-3 text-base focus:border-primary focus:outline-none'
 
 export function LoginPage() {
   const { user, login } = useAuth()
@@ -19,7 +20,6 @@ export function LoginPage() {
   const [busy, setBusy] = useState(false)
 
   if (user) return <Navigate to={ROLE_HOME[user.role]} replace />
-
   const from = (location.state as { from?: string } | null)?.from
 
   async function submit(e?: FormEvent, creds?: { email: string; password: string }) {
@@ -28,8 +28,7 @@ export function LoginPage() {
     setBusy(true)
     try {
       const u = await login(creds?.email ?? email, creds?.password ?? password)
-      const target = from && isAllowed(from, u.role) ? from : ROLE_HOME[u.role]
-      navigate(target, { replace: true })
+      navigate(from && isAllowed(from, u.role) ? from : ROLE_HOME[u.role], { replace: true })
     } catch (err) {
       setError(describeError(err))
     } finally {
@@ -38,64 +37,38 @@ export function LoginPage() {
   }
 
   return (
-    <div className="flex min-h-full items-center justify-center px-4 py-10">
-      <Card className="w-full max-w-md p-6">
-        <div className="mb-6 flex items-center justify-between">
-          <h1 className="text-2xl font-bold">동네 돌봄 지도</h1>
-          <MockBadge />
-        </div>
-        <form onSubmit={submit} className="space-y-4">
+    <div className="flex min-h-full items-center justify-center bg-canvas px-4 py-10">
+      <div className="w-full max-w-sm rounded-card border border-line bg-surface p-8">
+        <h1 className="flex items-center gap-2 text-2xl font-bold tracking-tight">우리 동네 함께 <MockBadge /></h1>
+        <p className="mt-1 text-sm text-ink-3">관리자, 현장 담당자, 시민 계정으로 들어갑니다.</p>
+        <form onSubmit={submit} className="mt-6 space-y-4">
           <label className="block">
-            <span className="mb-1 block font-medium">이메일</span>
-            <input
-              type="email"
-              autoComplete="username"
-              required
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
-              className="w-full rounded-lg border border-slate-300 px-3 py-3 text-lg"
-            />
+            <span className="mb-1 block text-sm font-semibold text-ink-2">이메일</span>
+            <input type="email" autoComplete="username" required value={email} onChange={(e) => setEmail(e.target.value)} className={input} />
           </label>
           <label className="block">
-            <span className="mb-1 block font-medium">비밀번호</span>
-            <input
-              type="password"
-              autoComplete="current-password"
-              required
-              minLength={1}
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-              className="w-full rounded-lg border border-slate-300 px-3 py-3 text-lg"
-            />
+            <span className="mb-1 block text-sm font-semibold text-ink-2">비밀번호</span>
+            <input type="password" autoComplete="current-password" required value={password} onChange={(e) => setPassword(e.target.value)} className={input} />
           </label>
-          {error && (
-            <p role="alert" className="rounded-lg bg-red-50 px-3 py-2 text-red-700">
-              {error}
-            </p>
-          )}
-          <Button type="submit" size="lg" className="w-full" loading={busy}>
-            로그인
-          </Button>
+          {error && <p role="alert" className="text-sm text-danger">{error}</p>}
+          <Button type="submit" size="lg" className="w-full" loading={busy}>로그인</Button>
         </form>
-
-        {isMockMode && (
-          <div className="mt-6 border-t border-slate-200 pt-4">
-            <p className="mb-2 text-sm text-slate-600">목업 모드 데모 계정 (클릭하면 바로 로그인)</p>
-            <div className="grid gap-2">
-              {DEMO_ACCOUNTS.map((a) => (
-                <Button key={a.email} variant="secondary" disabled={busy} onClick={() => submit(undefined, a)}>
-                  {a.label}로 들어가기
-                </Button>
-              ))}
-            </div>
-          </div>
-        )}
-        {!isMockMode && (
-          <p className="mt-6 text-sm text-slate-500">
-            시민 계정은 백엔드 /api/v1/auth/register 로 만들고, 관리자·현장 계정은 backend/seed_user.py 로 만듭니다.
+        {isMockMode ? (
+          <p className="mt-6 text-center text-sm text-ink-3">
+            데모로 들어가기:{' '}
+            {DEMO_ACCOUNTS.map((a, i) => (
+              <span key={a.email}>
+                {i > 0 && ' · '}
+                <button type="button" disabled={busy} onClick={() => submit(undefined, a)} className="font-semibold text-primary underline-offset-2 hover:underline">
+                  {a.label}
+                </button>
+              </span>
+            ))}
           </p>
+        ) : (
+          <p className="mt-6 text-center text-xs text-ink-3">시민 계정은 가입 API 로, 관리자·현장 계정은 backend/seed_user.py 로 만듭니다.</p>
         )}
-      </Card>
+      </div>
     </div>
   )
 }

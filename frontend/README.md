@@ -18,6 +18,7 @@ npm run dev              # http://localhost:5173 (포트 고정, 사용 중이�
 | `npm run build` | 타입 검사 후 `dist/` 빌드 |
 | `npm run typecheck` | `tsc -b` |
 | `npm run lint` | oxlint |
+| `node scripts/screenshot.mjs [out-dir]` | Playwright 로 화면별 스크린샷 (개발 서버 필요) |
 | `npm run sync-geo` | `engine/out/*.geojson` → `public/geo/` 복사 (시설 지도는 `origin/hyunjun` 에서 추출) |
 
 ## 환경 변수 (`.env`, 커밋하지 않음)
@@ -64,6 +65,16 @@ python -m backend.seed_user --role field_worker # 현장 담당자 계정
 | 시민 | 위치 고르기(지도에서 춘천 시내 클릭) → "어머니 댁 근처에 다니실 만한 곳 있어요?" → 장소 카드 → `함께 갈 이웃 찾기` → 요청 보내기 → 관리자 "시민 요청" 탭에 대기 건으로 표시 |
 | 현장 | 로그인 → 관리자가 보낸 목록 → 동네 선택 → 버튼 답변 + "지원 필요 여부" + 메모 → 저장 → 목록에 "저장됨". `has_residents = 아니오` 로 저장하면 관리자 지도에서 그 칸이 사라진다(임시 처리) |
 
+## 디자인
+
+기준 시안은 [design/citizen-mock.png](design/citizen-mock.png) (구성·위계·여백의 기준, 색은 파란색 주색 유지). 화면별 최종 스크린샷은 `design/*.png` 에 있고 `node scripts/screenshot.mjs design` 으로 다시 찍는다(개발 서버가 목업 모드로 떠 있어야 함. 시민·현장 390px, 관리자·로그인 1440px).
+
+- 색·둥글기·글꼴은 `src/index.css` 의 `@theme` 토큰 한 곳에서 정의한다 (`bg-primary`, `text-ink-3`, `rounded-card` 등으로 사용).
+- 테두리 박스는 장소 카드·목록 행·강조 패널에만 쓴다. 박스 안에 박스를 넣지 않고 그림자는 쓰지 않는다.
+- 한 구획에 채움 버튼은 하나. 자주 안 쓰는 동작은 `Menu`(점 세 개)나 `Sheet`(바텀 시트)로.
+- 아이콘은 lucide-react. 지도 번호 마커는 1 초록, 2 파랑, 3 주황.
+- 공통 부품: `Button`(fill/outline/text/dark), `SegmentedControl`, `Sheet`, `List`/`ListRow`, `DayChip`, `Menu`, `PlaceCard`.
+
 ## 폴더 구조
 
 ```
@@ -76,7 +87,7 @@ src/
   fragments/      toFragments (display → 조각 배열, 모드별 순서)  registry  FragmentRenderer  components/ 조각 8종
   map/            BaseMap(OSM)  GridLayer(격자 색칠)  PointsLayer(레이어별 점)  markers  colors  useGeoLayer  applyFieldOverrides(임시)
   features/       citizen/ (세션, 접근성, 지오코딩, 공유, 일정)  admin/ (현장 목록 변환)  field/ (체크리스트 키, 저장 표시)
-  components/     ui/ 공통, QuestionBox, map/ (지역 탭·범례), citizen/ (위치 고르기·장소 카드·접근성 바)
+  components/     ui/ 공통(Button·SegmentedControl·Sheet·ListRow·DayChip·Menu), QuestionBox(관리자), map/ (지역 탭·범례), citizen/ (헤더·위치 시트·질문 바·장소 카드·이번 주·도움 패널)
   layouts/        AppShell (관리자 상단 메뉴 / 시민·현장 하단 탭), 역할별 레이아웃
   pages/          login, admin/, citizen/, field/
   lib/            queryClient, useAskQuestion, download, geoIndex (ID → 이름)
@@ -92,7 +103,7 @@ scripts/          sync-geo.sh
 | `/admin` | admin | 동네 유형 지도(GeoJSON 전체 색칠) + 질문창 + 응답 조각, 현장 목록 보내기 |
 | `/admin/requests` | admin | 시민 요청 목록(승인·반려·완료), 수요 신호·현장 피드백 집계 |
 | `/admin/field-list` | admin | 현장 확인 목록 생성·보내기·복사·내려받기 |
-| `/citizen` | citizen | 위치 고르기, 질문(음성), 답변, 장소 카드, 공유·전화 |
+| `/citizen` | citizen | 위치 한 줄(시트로 변경), 질문 말풍선, 답변, 번호 지도, 장소 카드 3개, 이번 주, 도움 패널, 공유·전화. 하단 고정 질문 바(마이크) |
 | `/citizen/places` | citizen | 시설 지도 + 카드(길찾기·일정 저장·함께 가기·이동 도움) |
 | `/citizen/schedule` | citizen | 이번 주 일정(.ics) |
 | `/citizen/help/:facilityId` | citizen | 함께 가기 / 이동 도움 요청 폼 |

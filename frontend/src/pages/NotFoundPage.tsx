@@ -7,7 +7,7 @@ export function NotFoundPage() {
       <EmptyState
         title="없는 페이지입니다"
         action={
-          <Link to="/" className="font-semibold text-blue-700 underline">
+          <Link to="/" className="font-semibold text-primary">
             처음으로
           </Link>
         }

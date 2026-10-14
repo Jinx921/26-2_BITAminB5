@@ -61,3 +61,14 @@ export function homeIcon(label = '우리 집') {
     iconAnchor: [30, 11],
   })
 }
+
+/** 거점 마커: ★ 배지 옆에 '닿는 N곳' 작은 라벨 */
+export function siteIcon(covers: number | null | undefined, border = '#fff') {
+  const label = covers !== null && covers !== undefined ? `<span style="margin-left:4px;padding:2px 6px;border-radius:9999px;background:#fff;border:1px solid #c7d7fe;color:#1d4ed8;font-size:11px;font-weight:700;white-space:nowrap;box-shadow:0 1px 2px rgba(0,0,0,.15)">닿는 ${covers}곳</span>` : ''
+  return L.divIcon({
+    html: `<div style="display:flex;align-items:center">${badgeHtml('★', '#1d4ed8', border, 30, 14)}${label}</div>`,
+    className: 'bitamin-marker',
+    iconSize: [110, 30],
+    iconAnchor: [15, 15],
+  })
+}

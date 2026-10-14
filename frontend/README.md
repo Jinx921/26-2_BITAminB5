@@ -101,7 +101,7 @@ scripts/          sync-geo.sh
 | 경로 | 역할 | 화면 |
 | --- | --- | --- |
 | `/login` | 공개 | 로그인 |
-| `/admin` | admin | 동네 유형 지도(GeoJSON 전체 색칠) + 질문창 + 응답 조각, 현장 목록 보내기 |
+| `/admin` | admin | 지도(유형 / 후보 / 배치 레이어 전환, 지역 공통) + 질문창 + 응답 조각, 현장 목록 보내기 |
 | `/admin/requests` | admin | 시민 요청 목록(승인·반려·완료), 수요 신호·현장 피드백 집계 |
 | `/admin/field-list` | admin | 현장 확인 목록 생성·보내기·복사·내려받기 |
 | `/citizen` | citizen | 위치 한 줄(시트로 변경), 질문 말풍선, 답변, 번호 지도, 장소 카드 3개, 이번 주, 도움 패널, 공유·전화. 하단 고정 질문 바(마이크) |
@@ -131,6 +131,16 @@ scripts/          sync-geo.sh
 - 질문 응답의 `display.map.points` 는 칸 중심점이다. 관리자 유형 지도는 서버 GeoJSON 전체를 기준으로 색칠하고, 응답 points 의 `highlight` 칸만 굵은 테두리로 강조한다.
 - 시민 시설 목록은 `GET /api/v1/maps/facilities?region=...` allowlist에 포함된 시설만 표시한다. `fac_id`·`cell_id` 는 툴팁·카드에 쓰지 않고 조회 키로만 쓴다.
 - `cell_id`·`fac_id` 는 툴팁·카드에 쓰지 않고 조회 키로만 쓴다.
+
+### 관리자 지도 레이어
+
+| 레이어 | 데이터 | 색 | 범례·팝업 |
+| --- | --- | --- | --- |
+| 유형 | `GET /admin/maps/types` (`types_{지역}`) | 4유형 | 유형 범례(필터), 현장 확인 제외 보기 |
+| 후보 | `GET /admin/maps/candidates` (`candidates_{지역}`) | `persistent_months` 4/5/6 → 연한→진한 주황, `res_status` 용도미상은 점선 테두리 | 개월별 수, 격자 팝업(동네·지속 개월·거주 상태) |
+| 배치 | `GET /admin/maps/placements` (`sim_{지역}_k3_r{1000\|3000}`) | `covered` 1 파랑 / 0 주황 | 반경 1km·3km 전환, 커버 집계(배치 전 공백 → 후), 응답 거점 ★ + '닿는 N곳' 라벨 |
+
+레이어를 바꿔도 지도 위치·줌은 유지되고(범위는 지역이 바뀔 때만 맞춤), 질문 응답의 레이어(candidates → 후보, sites·interventions → 배치)에 맞춰 자동으로 전환된다. 목업 모드는 `public/geo` 파일을, 실제 모드는 지도 API 를 읽는다.
 
 ## 지킬 것 (agent/README.md 7절, engine/지도_규격.md)
 

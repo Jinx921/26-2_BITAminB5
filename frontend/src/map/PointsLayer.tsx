@@ -1,8 +1,8 @@
-import { CircleMarker, Marker, Polyline, Tooltip } from 'react-leaflet'
+import { CircleMarker, Marker, Polyline, Popup, Tooltip } from 'react-leaflet'
 import type { FacilityCollection } from '@/types/geo'
 import type { FacilitiesPoint, MapFragmentData, MapPoint } from '@/types/display'
-import { CHECK_LEVEL_COLOR, HIGHLIGHT_STROKE, MONTHS_COLOR, OPTION_COLORS, SELECTED_STROKE, SITE_COLOR, TYPE_COLOR } from './colors'
-import { badgeHtml, divIcon, facilityIcon, formatDistance, groupOfKind, homeIcon, inServiceArea, numberIcon } from './markers'
+import { CHECK_LEVEL_COLOR, HIGHLIGHT_STROKE, MONTHS_COLOR, OPTION_COLORS, SELECTED_STROKE, TYPE_COLOR } from './colors'
+import { badgeHtml, divIcon, facilityIcon, formatDistance, groupOfKind, homeIcon, inServiceArea, numberIcon, siteIcon } from './markers'
 
 export interface PointsLayerProps {
   map: MapFragmentData
@@ -58,10 +58,16 @@ export function PointsLayer({ map, selectedId, onSelect }: PointsLayerProps) {
       return (
         <>
           {map.points.map((p) => (
-            <Marker key={p.id} position={[p.lat, p.lon]} icon={divIcon(badgeHtml('★', SITE_COLOR, stroke(p), 30, 14), 30)} eventHandlers={click(p)}>
-              <Tooltip direction="top">
+            <Marker key={p.id} position={[p.lat, p.lon]} icon={siteIcon(p.covers, stroke(p))} eventHandlers={click(p)} zIndexOffset={400}>
+              <Tooltip direction="top" offset={[0, -14]}>
                 <b>{p.emd_name}</b> 거점 · 닿는 동네 {p.covers}곳
               </Tooltip>
+              <Popup closeButton={false}>
+                <div className="text-[13px]">
+                  <p className="font-bold">{p.emd_name} 거점</p>
+                  <p>닿는 동네 {p.covers}곳</p>
+                </div>
+              </Popup>
             </Marker>
           ))}
         </>
@@ -81,11 +87,16 @@ export function PointsLayer({ map, selectedId, onSelect }: PointsLayerProps) {
                 eventHandlers={click(p)}
               >
                 <Tooltip direction="top">
-                  <b>{p.name}</b>
-                  <br />
-                  {p.option}
-                  {p.facility_name && <> · {p.facility_name}</>}
+                  <b>{p.name}</b> · {p.option}
                 </Tooltip>
+                <Popup closeButton={false}>
+                  <div className="text-[13px]">
+                    <p className="font-bold">{p.name}</p>
+                    <p>{p.option}</p>
+                    <p className="text-ink-3">{p.emd_name}</p>
+                    {p.facility_name && <p>기존 시설: {p.facility_name}</p>}
+                  </div>
+                </Popup>
               </CircleMarker>
             )
           })}

@@ -143,6 +143,31 @@ async function newPage(viewport) {
   await page.goto(`${BASE}/admin/requests`)
   await settle(page, 2000)
   await page.screenshot({ path: file('admin-requests') })
+  // 지도 레이어 3종 × 지역 2
+  await page.goto(`${BASE}/admin`)
+  await settle(page, 2000)
+  for (const region of ['춘천', '강남']) {
+    await page.getByRole('radio', { name: region === '강남' ? '서울 강남구' : '춘천시' }).click()
+    await settle(page, 2000)
+    for (const [layer, key] of [['유형', 'types'], ['후보', 'candidates'], ['배치', 'sim']]) {
+      await page.getByRole('radio', { name: layer, exact: true }).click()
+      await settle(page, 2000)
+      await page.screenshot({ path: file(`admin-map-${region}-${key}`) })
+    }
+  }
+  // 응답과 함께: 후보 레이어 응답(주민 안내문) / 배치 레이어 응답(이동형 배치, 거점 마커)
+  await page.getByRole('radio', { name: '춘천시' }).click()
+  await settle(page, 1500)
+  await page.fill('input[aria-label=질문]', '춘천 외곽 이동형 건강상담을 알리는 주민 안내문 만들어 줘')
+  await page.keyboard.press('Enter')
+  await page.waitForSelector('[data-fragment=headline]', { timeout: 15000 })
+  await settle(page, 2500)
+  await page.screenshot({ path: file('admin-map-춘천-candidates-answer') })
+  await page.fill('input[aria-label=질문]', '춘천 외곽에 이동형 상담 2곳을 두려면 어디가 좋아?')
+  await page.keyboard.press('Enter')
+  await page.waitForSelector('[data-fragment=headline]', { timeout: 15000 })
+  await settle(page, 2500)
+  await page.screenshot({ path: file('admin-map-춘천-sim-answer') })
   await page.close()
 }
 

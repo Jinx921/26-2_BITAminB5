@@ -37,8 +37,12 @@ export const FACILITY_KIND_ICON: Record<string, string> = {
   보건: '🏥',
 }
 
-/** 후보 지도 persistent_months 4/5/6 → 연한→진한 (순차 색) */
-export const MONTHS_COLOR: Record<number, string> = { 4: '#fdba74', 5: '#f97316', 6: '#c2410c' }
+/** 후보 지도 persistent_months 4/5/6 → 연한→진한 (주황 한 색 순차) */
+export const MONTHS_COLOR: Record<number, string> = { 4: '#fdba74', 5: '#f97316', 6: '#c05621' }
+export const MONTHS_ORDER = [4, 5, 6]
+
+/** 배치 지도: 거점이 닿는 칸(파랑) / 공백(주황) */
+export const SIM_COLOR = { covered: '#1d4ed8', gap: '#c05621' } as const
 
 /** 현장 확인 level */
 export const CHECK_LEVEL_COLOR: Record<string, string> = { '꼭 확인': '#b91c1c', '확인 필요': '#d97706' }

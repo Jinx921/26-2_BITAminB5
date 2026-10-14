@@ -25,7 +25,7 @@ export function AdminFieldListPage() {
   const [copied, setCopied] = useState(false)
   const [selectedId, setSelectedId] = useState<string | null>(null)
 
-  const current = useQuery({ queryKey: ['field-check-list'], queryFn: () => api.fetchFieldCheckList() })
+  const current = useQuery({ queryKey: ['field-check-list'], queryFn: () => api.fetchFieldCheckList(), enabled: isMockMode })
   const ask = useAskQuestion()
   const publish = useMutation({ mutationFn: (list: FieldCheckList) => api.publishFieldCheckList(list), onSuccess: () => qc.invalidateQueries({ queryKey: ['field-check-list'] }) })
 
@@ -61,8 +61,13 @@ export function AdminFieldListPage() {
           {ask.isError && <ErrorState error={ask.error} title="목록을 받지 못했습니다" />}
           {ask.isPending && <Spinner label="에이전트가 현장 확인 목록을 만드는 중" />}
           {ask.isSuccess && !draft && !ask.isPending && <ErrorState error={new Error('응답에 현장 확인 동네가 없습니다. 다시 시도해 주세요.')} title="목록이 비어 있습니다" />}
-          {current.isPending && !list && <Spinner />}
-          {!list && !ask.isPending && !current.isPending && <EmptyState title="보낸 목록이 없습니다" description="지역을 고르고 '목록 만들기'를 누르면 에이전트가 판정이 애매한 동네와 확인 질문을 뽑습니다." />}
+          {current.isPending && isMockMode && !list && <Spinner />}
+          {!list && !ask.isPending && (!isMockMode || !current.isPending) && (
+            <EmptyState
+              title={isMockMode ? '보낸 목록이 없습니다' : '백엔드 전달 API가 없습니다'}
+              description={isMockMode ? "지역을 고르고 '목록 만들기'를 누르면 에이전트가 판정이 애매한 동네와 확인 질문을 뽑습니다." : "목록 생성은 가능하지만 백엔드의 현장 확인 목록 전달 API가 아직 없습니다. 생성한 목록을 .json으로 내려받아 현장 담당자에게 직접 전달해 주세요."}
+            />
+          )}
 
           {list && !ask.isPending && (
             <>
@@ -76,7 +81,7 @@ export function AdminFieldListPage() {
                 </div>
               </div>
               <div className="mb-3 flex items-center gap-2">
-                {isDraft && (
+                {isDraft && isMockMode && (
                   <Button size="sm" icon={<Send className="size-4" />} onClick={() => publish.mutate(list, { onSuccess: () => setDraft(null) })} loading={publish.isPending}>
                     현장 담당자에게 보내기
                   </Button>
@@ -91,7 +96,7 @@ export function AdminFieldListPage() {
                 />
               </div>
               {publish.isError && <ErrorState error={publish.error} title="보내지 못했습니다" />}
-              {!isMockMode && <p className="mb-3 text-xs text-ink-3">전달 API 가 아직 없어 .json 을 내려받아 현장 담당자 앱의 "목록 불러오기"에 넣는 방식으로 전달합니다.</p>}
+              {!isMockMode && <p className="mb-3 text-xs text-ink-3">백엔드 전달 API가 아직 없어 전송하지 않습니다. .json을 내려받아 현장 담당자가 직접 가져와야 합니다.</p>}
 
               <ol className="divide-y divide-line border-t border-line">
                 {list.cells.map((c) => (

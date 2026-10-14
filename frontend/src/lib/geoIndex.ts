@@ -1,4 +1,4 @@
-/** 내부 ID(fac_id, cell_id) → 사람에게 보여줄 이름. 두 지역 GeoJSON 을 읽어 만든다 */
+/** 내부 ID(fac_id, cell_id) → 사람에게 보여줄 이름. 두 지역 지도 API 응답으로 만든다 */
 import { useMemo } from 'react'
 import { useFacilitiesLayer, useTypesLayer } from '@/map/useGeoLayer'
 import type { FacilityProps } from '@/types/geo'

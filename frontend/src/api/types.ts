@@ -13,6 +13,8 @@ import type {
   User,
 } from '@/types/api'
 import type { Display } from '@/types/display'
+import type { RegionKey } from '@/config'
+import type { FacilityCollection, GridCollection } from '@/types/geo'
 
 export interface ApiClient {
   health(): Promise<{ status: string }>
@@ -34,14 +36,19 @@ export interface ApiClient {
   createFieldCheck(body: FieldCheckCreate): Promise<FieldCheck>
   listFieldChecks(cellId: string): Promise<FieldCheck[]>
 
+  // 지도: 시설은 citizen/admin, 유형·후보·배치는 admin 전용
+  getFacilitiesMap(region: RegionKey): Promise<FacilityCollection>
+  getAdminTypesMap(region: RegionKey, showExcluded?: boolean): Promise<GridCollection>
+  getAdminCandidatesMap(region: RegionKey): Promise<GridCollection>
+  getAdminPlacementsMap(region: RegionKey, radiusM: 1000 | 3000, sites: 3): Promise<GridCollection>
+
   // 관리자 집계
   getDemandSignals(): Promise<DemandSignal[]>
   getFieldFeedbackSummary(): Promise<FieldFeedbackSummary[]>
 
   /**
-   * 현장 확인 목록 전달. 백엔드 엔드포인트가 아직 없다.
-   * 목업: 브라우저 공유 저장소에 저장. 실제: 저장하지 않고 null 을 돌려주며 화면은 복사·내려받기로 대체한다.
-   * 엔드포인트가 생기면 이 두 함수만 바꾼다.
+   * 현장 확인 목록 전달. 백엔드 API가 없어 목업 모드에서만 공유 저장소를 사용한다.
+   * 실제 모드에서는 통합 보류 오류를 반환한다. 현장 담당자는 관리자가 내보낸 JSON을 직접 가져온다.
    */
   publishFieldCheckList(list: FieldCheckList): Promise<{ stored: boolean }>
   fetchFieldCheckList(): Promise<FieldCheckList | null>

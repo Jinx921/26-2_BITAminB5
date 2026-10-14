@@ -29,7 +29,7 @@ export function SegmentedControl<T extends string>({ options, value, onChange, s
             role="radio"
             aria-checked={on}
             onClick={() => onChange(o.value)}
-            className={`rounded-[8px] font-semibold transition-colors ${SIZE[size]} ${on ? 'bg-primary text-white' : 'text-ink-2 hover:bg-canvas'}`}
+            className={`whitespace-nowrap rounded-[8px] font-semibold transition-colors ${SIZE[size]} ${on ? 'bg-primary text-white' : 'text-ink-2 hover:bg-canvas'}`}
           >
             {o.label}
           </button>

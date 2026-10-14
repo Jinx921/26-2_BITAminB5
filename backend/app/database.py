@@ -314,6 +314,14 @@ class Database:
             ).fetchall()
             return [self._decode_field_check(dict(row)) for row in rows]
 
+    def list_all_field_checks(self) -> list[dict[str, Any]]:
+        with closing(sqlite3.connect(self.path, timeout=5)) as connection:
+            connection.row_factory = sqlite3.Row
+            rows = connection.execute(
+                "SELECT * FROM field_checks ORDER BY id DESC"
+            ).fetchall()
+            return [self._decode_field_check(dict(row)) for row in rows]
+
     @staticmethod
     def _decode_field_check(row: dict[str, Any]) -> dict[str, Any]:
         row["checklist"] = json.loads(row["checklist"])

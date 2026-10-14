@@ -13,11 +13,14 @@ const PREFIX = process.argv[3] ?? ''
 mkdirSync(OUT, { recursive: true })
 const file = (name) => join(OUT, `${PREFIX}${name}.png`)
 
+// 실제 백엔드로 찍을 때는 환경 변수로 계정을 넘긴다 (예: ADMIN_PASSWORD=... ONLY=maps node scripts/screenshot.mjs design real-)
 const ACCOUNTS = {
-  admin: ['admin@example.com', 'demo-admin-1234'],
-  citizen: ['citizen@example.com', 'demo-citizen-1234'],
-  field: ['field@example.com', 'demo-field-1234'],
+  admin: [process.env.ADMIN_EMAIL ?? 'admin@example.com', process.env.ADMIN_PASSWORD ?? 'demo-admin-1234'],
+  citizen: [process.env.CITIZEN_EMAIL ?? 'citizen@example.com', process.env.CITIZEN_PASSWORD ?? 'demo-citizen-1234'],
+  field: [process.env.FIELD_EMAIL ?? 'field@example.com', process.env.FIELD_PASSWORD ?? 'demo-field-1234'],
 }
+/** ONLY=maps: 관리자 지도 레이어 6장만 (질문 없이, 실제 API 점검용) */
+const ONLY = process.env.ONLY ?? ''
 
 async function login(page, role) {
   await page.goto(`${BASE}/login`)
@@ -45,6 +48,25 @@ async function newPage(viewport) {
   const page = await ctx.newPage()
   await page.setViewportSize(viewport)
   return page
+}
+
+if (ONLY === 'maps') {
+  const page = await newPage(DESKTOP)
+  await login(page, 'admin')
+  await settle(page, 2500)
+  for (const region of ['춘천', '강남']) {
+    await page.getByRole('radio', { name: region === '강남' ? '서울 강남구' : '춘천시' }).click()
+    await settle(page, 2500)
+    for (const [layer, key] of [['유형', 'types'], ['후보', 'candidates'], ['배치', 'sim']]) {
+      await page.getByRole('radio', { name: layer, exact: true }).click()
+      await settle(page, 2500)
+      await page.screenshot({ path: file(`admin-map-${region}-${key}`) })
+    }
+  }
+  await page.close()
+  await browser.close()
+  console.log(`saved maps to ${OUT}/ (prefix "${PREFIX}")`)
+  process.exit(0)
 }
 
 // ---- 로그인 (1440)

@@ -1,0 +1,15 @@
+{
+ "id": "admin_12_인사",
+ "mode": "admin",
+ "question": "안녕",
+ "region": null,
+ "display": {
+  "headline": "안녕하세요. 저는 강남구와 춘천시에서 낮 외출이 줄어든 어르신 동네를 찾아 먼저 확인할 곳을 제안해 드려요. 예를 들어 \"강남에서 어디부터 확인해야 해?\", \"춘천에 이동형 상담을 몇 곳 두면 좋아?\"처럼 물어보세요.",
+  "details": [],
+  "caution": "",
+  "confidence": null,
+  "map": null,
+  "chart": null,
+  "document": null
+ }
+}

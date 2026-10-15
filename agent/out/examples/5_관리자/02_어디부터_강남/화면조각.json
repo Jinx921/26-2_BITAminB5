@@ -1,0 +1,678 @@
+{
+ "mode": "admin",
+ "question": "강남에서 어디부터 확인해야 해?",
+ "region": "강남",
+ "display": {
+  "headline": "강남에서는 개포2동, 대치2동, 개포1동 순으로 먼저 확인하는 것을 권합니다. 이 동네들에 가장 먼저 방문이 필요한 동네(긴급방문형)가 많습니다.",
+  "details": [
+   "가장 먼저 방문이 필요한 동네(긴급방문형)는 강남에 13곳입니다. 많은 행정동 순서는 개포2동, 대치2동, 개포1동, 도곡2동, 대치1동, 도곡1동입니다. 이 동네들은 낮 활동이 몇 달째 줄어든 고령 거주 지역입니다. 공공 보건기관도 멀리 있습니다.",
+   "가까운 시설과 이어 주면 좋은 동네(연계형)는 38곳입니다. 수서동, 일원2동, 일원본동, 세곡동에 많습니다. 이곳은 낮 외출이 줄었지만 시설은 가까이 있습니다. 두 종류는 성격이 다르므로 합쳐서 세지 않았습니다.",
+   "먼저 개포2동과 대치2동부터 방문 안부 확인을 하면 좋습니다. 이동형 상담을 함께 검토해 볼 만합니다. 수서동과 일원동 일대는 경로당이나 프로그램에 동행해 연결하는 방식이 맞습니다.",
+   "강남은 지역 가게 결제 중 지역 주민 결제 비중이 39.9%입니다. 외부 방문객이 많은 방문 도시라, 주민을 위한 공공 거점과 이어 주는 방식이 어울립니다.",
+   "이 결과는 시설까지의 거리 기준과 낮 외출이 줄어든 기간에 따라 달라질 수 있습니다. 방문 전에 시설까지 실제로 가기 어려운지, 낮에 어르신이 밖에 나오시는지 확인해 주세요."
+  ],
+  "caution": "이 결과는 머무는 사람 기준이라 실제 거주자와 다를 수 있습니다. 방문 전에 실제로 사람이 사는 집인지 현장에서 확인해야 합니다. 보건기관 거리는 공공 보건기관만 반영했고 민간 의원은 빠져 있습니다. 지역 가게 결제 비중은 도시 성격을 구분하는 용도로만 썼습니다. 다른 지역에서 쓴 결제는 보이지 않습니다. 개인이 아니라 동네 단위 결과입니다.",
+  "document": null,
+  "confidence": {
+   "label": "보통",
+   "note": "방문 전에 현장 확인을 권합니다."
+  },
+  "map": {
+   "layer": "types",
+   "ref": "r2",
+   "points": [
+    {
+     "id": "3839_7770",
+     "lat": 37.482,
+     "lon": 127.0462,
+     "emd_name": "도곡2동",
+     "type": "긴급방문형",
+     "gap": "보건",
+     "highlight": false
+    },
+    {
+     "id": "3839_7771",
+     "lat": 37.4842,
+     "lon": 127.0461,
+     "emd_name": "도곡2동",
+     "type": "긴급방문형",
+     "gap": "보건",
+     "highlight": false
+    },
+    {
+     "id": "3843_7771",
+     "lat": 37.4843,
+     "lon": 127.0575,
+     "emd_name": "개포1동",
+     "type": "긴급방문형",
+     "gap": "보건",
+     "highlight": true
+    },
+    {
+     "id": "3844_7771",
+     "lat": 37.4843,
+     "lon": 127.0603,
+     "emd_name": "개포2동",
+     "type": "긴급방문형",
+     "gap": "보건",
+     "highlight": true
+    },
+    {
+     "id": "3846_7774",
+     "lat": 37.4911,
+     "lon": 127.0659,
+     "emd_name": "대치2동",
+     "type": "긴급방문형",
+     "gap": "보건",
+     "highlight": true
+    },
+    {
+     "id": "3847_7774",
+     "lat": 37.4911,
+     "lon": 127.0687,
+     "emd_name": "개포2동",
+     "type": "긴급방문형",
+     "gap": "보건",
+     "highlight": true
+    },
+    {
+     "id": "3847_7775",
+     "lat": 37.4933,
+     "lon": 127.0687,
+     "emd_name": "대치2동",
+     "type": "긴급방문형",
+     "gap": "보건",
+     "highlight": true
+    },
+    {
+     "id": "3845_7774",
+     "lat": 37.4911,
+     "lon": 127.0631,
+     "emd_name": "대치1동",
+     "type": "긴급방문형",
+     "gap": "보건",
+     "highlight": false
+    },
+    {
+     "id": "3846_7772",
+     "lat": 37.4866,
+     "lon": 127.0659,
+     "emd_name": "개포2동",
+     "type": "긴급방문형",
+     "gap": "보건",
+     "highlight": true
+    },
+    {
+     "id": "3838_7772",
+     "lat": 37.4865,
+     "lon": 127.0433,
+     "emd_name": "도곡1동",
+     "type": "긴급방문형",
+     "gap": "보건",
+     "highlight": false
+    },
+    {
+     "id": "3842_7770",
+     "lat": 37.482,
+     "lon": 127.0546,
+     "emd_name": "개포1동",
+     "type": "긴급방문형",
+     "gap": "보건",
+     "highlight": true
+    },
+    {
+     "id": "3846_7773",
+     "lat": 37.4888,
+     "lon": 127.0659,
+     "emd_name": "개포2동",
+     "type": "긴급방문형",
+     "gap": "보건",
+     "highlight": true
+    },
+    {
+     "id": "3846_7775",
+     "lat": 37.4933,
+     "lon": 127.0659,
+     "emd_name": "대치2동",
+     "type": "긴급방문형",
+     "gap": "보건",
+     "highlight": true
+    },
+    {
+     "id": "3847_7773",
+     "lat": 37.4888,
+     "lon": 127.0687,
+     "emd_name": "개포2동",
+     "type": "연계형",
+     "gap": "",
+     "highlight": true
+    },
+    {
+     "id": "3848_7775",
+     "lat": 37.4934,
+     "lon": 127.0715,
+     "emd_name": "개포2동",
+     "type": "연계형",
+     "gap": "",
+     "highlight": true
+    },
+    {
+     "id": "3849_7775",
+     "lat": 37.4934,
+     "lon": 127.0744,
+     "emd_name": "일원2동",
+     "type": "연계형",
+     "gap": "",
+     "highlight": false
+    },
+    {
+     "id": "3850_7776",
+     "lat": 37.4956,
+     "lon": 127.0772,
+     "emd_name": "일원2동",
+     "type": "연계형",
+     "gap": "",
+     "highlight": false
+    },
+    {
+     "id": "3851_7769",
+     "lat": 37.4799,
+     "lon": 127.0801,
+     "emd_name": "일원본동",
+     "type": "연계형",
+     "gap": "",
+     "highlight": false
+    },
+    {
+     "id": "3851_7776",
+     "lat": 37.4956,
+     "lon": 127.08,
+     "emd_name": "일원2동",
+     "type": "연계형",
+     "gap": "",
+     "highlight": false
+    },
+    {
+     "id": "3851_7777",
+     "lat": 37.4979,
+     "lon": 127.08,
+     "emd_name": "일원2동",
+     "type": "연계형",
+     "gap": "",
+     "highlight": false
+    },
+    {
+     "id": "3852_7769",
+     "lat": 37.4799,
+     "lon": 127.0829,
+     "emd_name": "일원본동",
+     "type": "연계형",
+     "gap": "",
+     "highlight": false
+    },
+    {
+     "id": "3853_7769",
+     "lat": 37.4799,
+     "lon": 127.0858,
+     "emd_name": "일원본동",
+     "type": "연계형",
+     "gap": "",
+     "highlight": false
+    },
+    {
+     "id": "3854_7770",
+     "lat": 37.4821,
+     "lon": 127.0886,
+     "emd_name": "일원본동",
+     "type": "연계형",
+     "gap": "",
+     "highlight": false
+    },
+    {
+     "id": "3854_7776",
+     "lat": 37.4957,
+     "lon": 127.0885,
+     "emd_name": "일원1동",
+     "type": "연계형",
+     "gap": "",
+     "highlight": false
+    },
+    {
+     "id": "3856_7773",
+     "lat": 37.4889,
+     "lon": 127.0942,
+     "emd_name": "수서동",
+     "type": "연계형",
+     "gap": "",
+     "highlight": false
+    },
+    {
+     "id": "3856_7774",
+     "lat": 37.4912,
+     "lon": 127.0942,
+     "emd_name": "수서동",
+     "type": "연계형",
+     "gap": "",
+     "highlight": false
+    },
+    {
+     "id": "3857_7773",
+     "lat": 37.4889,
+     "lon": 127.097,
+     "emd_name": "수서동",
+     "type": "연계형",
+     "gap": "",
+     "highlight": false
+    },
+    {
+     "id": "3857_7774",
+     "lat": 37.4912,
+     "lon": 127.097,
+     "emd_name": "수서동",
+     "type": "연계형",
+     "gap": "",
+     "highlight": false
+    },
+    {
+     "id": "3857_7775",
+     "lat": 37.4934,
+     "lon": 127.097,
+     "emd_name": "일원1동",
+     "type": "연계형",
+     "gap": "",
+     "highlight": false
+    },
+    {
+     "id": "3858_7772",
+     "lat": 37.4867,
+     "lon": 127.0999,
+     "emd_name": "수서동",
+     "type": "연계형",
+     "gap": "",
+     "highlight": false
+    },
+    {
+     "id": "3858_7773",
+     "lat": 37.4889,
+     "lon": 127.0998,
+     "emd_name": "수서동",
+     "type": "연계형",
+     "gap": "",
+     "highlight": false
+    },
+    {
+     "id": "3859_7772",
+     "lat": 37.4867,
+     "lon": 127.1027,
+     "emd_name": "수서동",
+     "type": "연계형",
+     "gap": "",
+     "highlight": false
+    },
+    {
+     "id": "3859_7773",
+     "lat": 37.489,
+     "lon": 127.1027,
+     "emd_name": "수서동",
+     "type": "연계형",
+     "gap": "",
+     "highlight": false
+    },
+    {
+     "id": "3860_7761",
+     "lat": 37.4619,
+     "lon": 127.1056,
+     "emd_name": "세곡동",
+     "type": "연계형",
+     "gap": "",
+     "highlight": false
+    },
+    {
+     "id": "3860_7762",
+     "lat": 37.4642,
+     "lon": 127.1056,
+     "emd_name": "세곡동",
+     "type": "연계형",
+     "gap": "",
+     "highlight": false
+    },
+    {
+     "id": "3860_7763",
+     "lat": 37.4664,
+     "lon": 127.1056,
+     "emd_name": "세곡동",
+     "type": "연계형",
+     "gap": "",
+     "highlight": false
+    },
+    {
+     "id": "3861_7762",
+     "lat": 37.4642,
+     "lon": 127.1085,
+     "emd_name": "세곡동",
+     "type": "연계형",
+     "gap": "",
+     "highlight": false
+    },
+    {
+     "id": "3849_7777",
+     "lat": 37.4979,
+     "lon": 127.0743,
+     "emd_name": "일원2동",
+     "type": "연계형",
+     "gap": "",
+     "highlight": false
+    },
+    {
+     "id": "3849_7778",
+     "lat": 37.5001,
+     "lon": 127.0743,
+     "emd_name": "일원2동",
+     "type": "연계형",
+     "gap": "",
+     "highlight": false
+    },
+    {
+     "id": "3853_7770",
+     "lat": 37.4821,
+     "lon": 127.0857,
+     "emd_name": "일원본동",
+     "type": "연계형",
+     "gap": "",
+     "highlight": false
+    },
+    {
+     "id": "3853_7771",
+     "lat": 37.4844,
+     "lon": 127.0857,
+     "emd_name": "일원본동",
+     "type": "연계형",
+     "gap": "",
+     "highlight": false
+    },
+    {
+     "id": "3856_7769",
+     "lat": 37.4799,
+     "lon": 127.0942,
+     "emd_name": "수서동",
+     "type": "연계형",
+     "gap": "",
+     "highlight": false
+    },
+    {
+     "id": "3858_7770",
+     "lat": 37.4822,
+     "lon": 127.0999,
+     "emd_name": "세곡동",
+     "type": "연계형",
+     "gap": "",
+     "highlight": false
+    },
+    {
+     "id": "3846_7768",
+     "lat": 37.4776,
+     "lon": 127.066,
+     "emd_name": "개포1동",
+     "type": "연계형",
+     "gap": "",
+     "highlight": true
+    },
+    {
+     "id": "3848_7776",
+     "lat": 37.4956,
+     "lon": 127.0715,
+     "emd_name": "대치2동",
+     "type": "연계형",
+     "gap": "",
+     "highlight": true
+    },
+    {
+     "id": "3849_7770",
+     "lat": 37.4821,
+     "lon": 127.0744,
+     "emd_name": "개포2동",
+     "type": "연계형",
+     "gap": "",
+     "highlight": true
+    },
+    {
+     "id": "3850_7777",
+     "lat": 37.4979,
+     "lon": 127.0772,
+     "emd_name": "일원2동",
+     "type": "연계형",
+     "gap": "",
+     "highlight": false
+    },
+    {
+     "id": "3851_7770",
+     "lat": 37.4821,
+     "lon": 127.0801,
+     "emd_name": "일원본동",
+     "type": "연계형",
+     "gap": "",
+     "highlight": false
+    },
+    {
+     "id": "3851_7778",
+     "lat": 37.5001,
+     "lon": 127.08,
+     "emd_name": "일원2동",
+     "type": "연계형",
+     "gap": "",
+     "highlight": false
+    },
+    {
+     "id": "3853_7776",
+     "lat": 37.4957,
+     "lon": 127.0857,
+     "emd_name": "일원1동",
+     "type": "연계형",
+     "gap": "",
+     "highlight": false
+    },
+    {
+     "id": "3855_7770",
+     "lat": 37.4822,
+     "lon": 127.0914,
+     "emd_name": "일원본동",
+     "type": "연계형",
+     "gap": "",
+     "highlight": false
+    }
+   ],
+   "geojson": null
+  },
+  "chart": null
+ },
+ "internal": {
+  "verification": {
+   "passed": true,
+   "attempts": 1,
+   "errors": [],
+   "warnings": []
+  },
+  "confidence_basis": {
+   "ref": "r3",
+   "threshold": 0.7,
+   "min_jaccard": 0.0,
+   "sensitive": [
+    {
+     "param": "far_health_m",
+     "value": 5000,
+     "urgent_jaccard": 0.0
+    },
+    {
+     "param": "night_scale",
+     "value": 1.3,
+     "urgent_jaccard": 0.3077
+    },
+    {
+     "param": "far_health_m",
+     "value": 2000,
+     "urgent_jaccard": 0.5
+    },
+    {
+     "param": "persist_min",
+     "value": 6,
+     "urgent_jaccard": 0.5385
+    },
+    {
+     "param": "persist_min",
+     "value": 5,
+     "urgent_jaccard": 0.6923
+    },
+    {
+     "param": "housing_thr",
+     "value": 400,
+     "urgent_jaccard": 0.6923
+    }
+   ]
+  },
+  "citations": [
+   {
+    "text": "13",
+    "op": "value",
+    "sources": [
+     {
+      "ref": "r2",
+      "metric": "n_긴급방문형"
+     }
+    ]
+   },
+   {
+    "text": "38",
+    "op": "value",
+    "sources": [
+     {
+      "ref": "r2",
+      "metric": "n_연계형"
+     }
+    ]
+   },
+   {
+    "text": "39.9%",
+    "op": "value",
+    "sources": [
+     {
+      "ref": "r4",
+      "metric": "local_payment_pct"
+     }
+    ]
+   }
+  ],
+  "caveats": [
+   {
+    "id": "c1",
+    "text": "통신 유동인구는 머무는 사람 기준이며 거주자와 같지 않다. 거주 여부는 현장 확인이 필요하다.",
+    "reflected": true
+   },
+   {
+    "id": "c2",
+    "text": "개인이 아니라 250m 칸 단위 집계 결과다.",
+    "reflected": true
+   },
+   {
+    "id": "c3",
+    "text": "거리는 칸 중심에서 시설까지 직선거리다. 실제 이동 시간·경사·교통편은 반영하지 않는다.",
+    "reflected": true
+   },
+   {
+    "id": "c4",
+    "text": "강남 보건 거리는 공공 보건기관(3곳)만 반영해 민간 의원 접근성은 빠져 있다.",
+    "reflected": true
+   },
+   {
+    "id": "c5",
+    "text": "거주 칸 = 팀 기준(야간 비중 + SGIS 1km 주택 수) 통과 칸 중 GIS 주거·용도미상 건물이 있는 칸.",
+    "reflected": false
+   },
+   {
+    "id": "c6",
+    "text": "SGIS 값(주택 수·고령·1인가구)은 1km 격자 단위라 같은 1km 안의 250m 칸이 같은 값을 공유한다. 춘천은 신뢰 격자가 적다.",
+    "reflected": false
+   },
+   {
+    "id": "c7",
+    "text": "긴급방문형·연계형은 활동 위축 신호가 있는 칸(정책 우선 대상)이고, 예방인프라형·관찰형은 위축 신호가 없는 일반 거주 칸의 자원 구조 지도다. 두 층을 같은 무게의 위험 숫자로 합쳐 말하지 않는다.",
+    "reflected": true
+   },
+   {
+    "id": "c8",
+    "text": "후보는 기준값마다 엔진이 다시 계산한다 (사랑 로직 이식, 군집은 고정).",
+    "reflected": false
+   },
+   {
+    "id": "c9",
+    "text": "카드·인구는 시군구 단위라 칸에 내리지 않고 해석 맥락으로만 쓴다.",
+    "reflected": false
+   },
+   {
+    "id": "c10",
+    "text": "로컬 결제 비율은 이 지역 가맹점 결제 중 같은 시도 거주자 비중이다. 주민이 다른 지역에서 쓴 결제는 보이지 않으므로 생활 반경·고립 신호로 해석하지 않고 도시 성격(강남 방문 도시 / 춘천 주민 생활권) 구분에만 쓴다.",
+    "reflected": true
+   }
+  ],
+  "tool_trace": [
+   {
+    "ref": "r1",
+    "tool": "find_candidates",
+    "args": {
+     "region": "강남"
+    }
+   },
+   {
+    "ref": "r2",
+    "tool": "classify",
+    "args": {
+     "region": "강남"
+    }
+   },
+   {
+    "ref": "r3",
+    "tool": "robustness",
+    "args": {
+     "region": "강남"
+    }
+   },
+   {
+    "ref": "r4",
+    "tool": "region_context",
+    "args": {
+     "region": "강남"
+    }
+   }
+  ],
+  "run": {
+   "model": "claude-sonnet-5-5",
+   "effort": "medium",
+   "end": "passed",
+   "passed": true,
+   "calls": [
+    {
+     "stop_reason": "tool_use",
+     "input_tokens": 4,
+     "output_tokens": 50,
+     "cache_read_input_tokens": 0,
+     "cache_creation_input_tokens": 10467
+    },
+    {
+     "stop_reason": "tool_use",
+     "input_tokens": 2,
+     "output_tokens": 137,
+     "cache_read_input_tokens": 10467,
+     "cache_creation_input_tokens": 745
+    },
+    {
+     "stop_reason": "tool_use",
+     "input_tokens": 2,
+     "output_tokens": 1232,
+     "cache_read_input_tokens": 11212,
+     "cache_creation_input_tokens": 2462
+    }
+   ],
+   "rejected": [],
+   "errors": []
+  }
+ }
+}

@@ -1,0 +1,8 @@
+{
+  "$schema": "https://openapi.vercel.sh/vercel.json",
+  "framework": "vite",
+  "rewrites": [{ "source": "/((?!geo/).*)", "destination": "/index.html" }],
+  "headers": [
+    { "source": "/geo/(.*)", "headers": [{ "key": "Cache-Control", "value": "public, max-age=86400" }] }
+  ]
+}

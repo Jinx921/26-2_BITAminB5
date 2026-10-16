@@ -10,10 +10,52 @@ from __future__ import annotations
 import os
 from pathlib import Path
 
+import logging
+from contextlib import asynccontextmanager
+
 from fastapi.responses import FileResponse
 from fastapi.staticfiles import StaticFiles
 
 from backend.app.main import app  # 백엔드 앱 그대로 (라우트·CORS·lifespan 포함)
+
+log = logging.getLogger("deploy")
+
+
+# ---- 시작 시 계정 만들기 (환경 변수로) ----
+# 호스팅에는 대화형 seed_user 를 돌릴 셸이 마땅치 않으므로, SEED_ADMIN_EMAIL/PASSWORD,
+# SEED_FIELD_EMAIL/PASSWORD 가 있으면 서버가 뜰 때 없는 계정만 만든다. 이미 있으면 건너뛴다.
+def _seed_accounts() -> None:
+    from backend.app.auth import password_hash
+
+    database = app.state.database
+    for role, prefix in (("admin", "SEED_ADMIN"), ("field_worker", "SEED_FIELD")):
+        email = (os.getenv(f"{prefix}_EMAIL") or "").strip().lower()
+        password = os.getenv(f"{prefix}_PASSWORD") or ""
+        if not email or not password:
+            continue
+        if len(password) < 12:
+            log.warning("%s_PASSWORD 는 12자 이상이어야 합니다. 건너뜀", prefix)
+            continue
+        if database.get_user_by_email(email):
+            continue
+        database.create_user(email, password_hash.hash(password), role=role)
+        log.info("seeded %s account: %s", role, email)
+
+
+_backend_lifespan = app.router.lifespan_context
+
+
+@asynccontextmanager
+async def _lifespan(app_):
+    async with _backend_lifespan(app_) as state:  # 백엔드 lifespan 먼저 (DB 초기화, 엔진·에이전트 준비)
+        try:
+            _seed_accounts()
+        except Exception:  # 계정 생성 실패가 서버를 막지 않게
+            log.exception("계정 시드 실패")
+        yield state
+
+
+app.router.lifespan_context = _lifespan
 
 DIST = Path(os.getenv("FRONTEND_DIST", Path(__file__).resolve().parents[1] / "frontend" / "dist"))
 INDEX = DIST / "index.html"

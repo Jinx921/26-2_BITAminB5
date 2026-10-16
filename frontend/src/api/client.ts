@@ -81,7 +81,9 @@ export interface RequestOptions {
 }
 
 function buildUrl(path: string, query?: RequestOptions['query']): string {
-  const url = new URL(path.startsWith('/') ? env.apiBaseUrl + path : path)
+  // VITE_API_BASE_URL 이 비어 있으면 프론트와 같은 서버(상대 경로)로 호출한다 (단일 배포)
+  const base = env.apiBaseUrl || window.location.origin
+  const url = new URL(path.startsWith('/') ? base + path : path)
   if (query) {
     for (const [k, v] of Object.entries(query)) {
       if (v !== undefined && v !== null && v !== '') url.searchParams.set(k, String(v))

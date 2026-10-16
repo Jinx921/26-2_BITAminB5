@@ -4,6 +4,7 @@
 const viteEnv: ImportMetaEnv = import.meta.env ?? {}
 
 export const env = {
+  /** 비어 있으면("") 같은 출처로 호출. 개발 기본값은 로컬 백엔드 */
   apiBaseUrl: (viteEnv.VITE_API_BASE_URL ?? 'http://127.0.0.1:8000').replace(/\/$/, ''),
   useMock: viteEnv.VITE_USE_MOCK === 'true',
   geoBaseUrl: (viteEnv.VITE_GEO_BASE_URL ?? '/geo').replace(/\/$/, ''),

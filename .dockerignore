@@ -1,0 +1,16 @@
+# 원천 데이터·산출물·프론트·개발 환경은 백엔드 이미지에 넣지 않는다
+data/
+frontend/
+notebooks/
+docs/
+.git/
+.venv*/
+venv/
+**/__pycache__/
+**/*.pyc
+**/.pytest_cache/
+backend/data/
+agent/.env
+.env
+*.md
+!README.md

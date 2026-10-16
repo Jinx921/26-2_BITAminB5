@@ -52,7 +52,7 @@ python -m backend.seed_user --role admin        # 관리자 계정 (대화형)
 python -m backend.seed_user --role field_worker # 현장 담당자 계정
 ```
 
-`.env`에서 `VITE_USE_MOCK=false` 로 바꾸고 개발 서버를 다시 띄운다. 브라우저는 `http://localhost:5173` 으로 연다 (백엔드 CORS 기본 허용 목록이 `localhost` 라 `127.0.0.1` 로 열면 요청이 막힌다). 시민 계정은 로그인 화면 안내대로 `POST /api/v1/auth/register` 로 만든다(비밀번호 12자 이상). 질문 API 는 `agent/.env` 의 Anthropic 키가 있어야 실제 답을 돌려준다.
+`.env`에서 `VITE_USE_MOCK=false` 로 바꾸고 개발 서버를 다시 띄운다. 브라우저는 `http://localhost:5173` 으로 연다 (백엔드 CORS 기본 허용 목록이 `localhost` 라 `127.0.0.1` 로 열면 요청이 막힌다). 시민 계정은 로그인 화면의 "시민 계정 만들기"로 가입한다(비밀번호 12자 이상). 관리자·현장 계정은 운영자가 만든다(`backend/seed_user.py` 또는 배포 환경 변수 `SEED_*`). 질문 API 는 `agent/.env` 의 Anthropic 키가 있어야 실제 답을 돌려준다.
 
 ## 시연 시나리오 (목업 모드)
 
@@ -100,7 +100,7 @@ scripts/          sync-geo.sh
 
 | 경로 | 역할 | 화면 |
 | --- | --- | --- |
-| `/login` | 공개 | 로그인 |
+| `/login` | 공개 | 로그인, 시민 가입 |
 | `/admin` | admin | 지도(유형 / 후보 / 배치 레이어 전환, 지역 공통) + 질문창 + 응답 조각, 현장 목록 보내기 |
 | `/admin/requests` | admin | 시민 요청 목록(승인·반려·완료), 수요 신호·현장 피드백 집계 |
 | `/admin/field-list` | admin | 현장 확인 목록 생성·보내기·복사·내려받기 |

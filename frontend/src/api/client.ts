@@ -160,7 +160,10 @@ export function describeError(e: unknown): string {
       case 'question_capacity_exceeded':
         return '지금 질문이 많아 잠시 기다려야 합니다. 잠시 후 다시 시도해 주세요.'
       case 'validation_error':
-        return '입력 내용을 다시 확인해 주세요.'
+        return '입력 내용을 다시 확인해 주세요. 이메일 형식과 비밀번호 길이(12자 이상)를 확인하세요.'
+      case 'account_unavailable':
+      case 'conflict':
+        return '이 이메일로는 계정을 만들 수 없습니다. 이미 가입했다면 로그인해 주세요.'
       case 'network_error':
         return e.message
       case 'internal_server_error':

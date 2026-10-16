@@ -23,12 +23,13 @@ log = logging.getLogger("deploy")
 
 # ---- 시작 시 계정 만들기 (환경 변수로) ----
 # 호스팅에는 대화형 seed_user 를 돌릴 셸이 마땅치 않으므로, SEED_ADMIN_EMAIL/PASSWORD,
-# SEED_FIELD_EMAIL/PASSWORD 가 있으면 서버가 뜰 때 없는 계정만 만든다. 이미 있으면 건너뛴다.
+# SEED_FIELD_EMAIL/PASSWORD, SEED_CITIZEN_EMAIL/PASSWORD 가 있으면 서버가 뜰 때 없는 계정만 만든다.
+# 이미 있으면 건너뛴다. 시민은 화면에서도 가입할 수 있어 시연용으로만 쓴다.
 def _seed_accounts() -> None:
     from backend.app.auth import password_hash
 
     database = app.state.database
-    for role, prefix in (("admin", "SEED_ADMIN"), ("field_worker", "SEED_FIELD")):
+    for role, prefix in (("admin", "SEED_ADMIN"), ("field_worker", "SEED_FIELD"), ("citizen", "SEED_CITIZEN")):
         email = (os.getenv(f"{prefix}_EMAIL") or "").strip().lower()
         password = os.getenv(f"{prefix}_PASSWORD") or ""
         if not email or not password:

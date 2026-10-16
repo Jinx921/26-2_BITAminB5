@@ -44,15 +44,29 @@ export const mockApi: ApiClient = {
 
   async register(email, password) {
     await delay(300)
+    const normalized = email.trim().toLowerCase()
     if (password.length < 12) throw new ApiError(422, 'validation_error', 'Request validation failed')
-    if (DEMO_ACCOUNTS.some((a) => a.email === email)) throw new ApiError(409, 'conflict', 'Unable to create account')
-    return { id: 100, email, role: 'citizen', created_at: new Date().toISOString() }
+    if (DEMO_ACCOUNTS.some((a) => a.email === normalized) || mockStore.get().users.some((u) => u.email === normalized))
+      throw new ApiError(409, 'account_unavailable', 'Unable to create account')
+    const user = { id: 100 + mockStore.nextId(), email: normalized, password, created_at: new Date().toISOString() }
+    mockStore.update((s) => s.users.push(user))
+    return { id: user.id, email: user.email, role: 'citizen', created_at: user.created_at }
   },
 
   async login(email, password) {
     await delay(400)
     const idx = DEMO_ACCOUNTS.findIndex((a) => a.email === email.toLowerCase() && a.password === password)
-    if (idx < 0) throw new ApiError(401, 'invalid_credentials', 'Invalid email or password')
+    if (idx < 0) {
+      // 화면에서 가입한 시민 계정
+      const u = mockStore.get().users.find((x) => x.email === email.toLowerCase() && x.password === password)
+      if (!u) throw new ApiError(401, 'invalid_credentials', 'Invalid email or password')
+      return {
+        access_token: `mock.citizen.${Date.now()}`,
+        token_type: 'bearer',
+        expires_in: 3600,
+        user: { id: u.id, email: u.email, role: 'citizen', created_at: u.created_at },
+      }
+    }
     const acc = DEMO_ACCOUNTS[idx]
     return {
       access_token: `mock.${acc.role}.${Date.now()}`,

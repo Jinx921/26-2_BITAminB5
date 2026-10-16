@@ -7,13 +7,15 @@ import type { FieldCheck, FieldCheckList, SupportRequest } from '@/types/api'
 const KEY = 'bitamin.mock.store.v1'
 
 interface MockState {
+  /** 화면에서 가입한 시민 계정 (목업 전용) */
+  users: { id: number; email: string; password: string; created_at: string }[]
   supportRequests: SupportRequest[]
   fieldChecks: FieldCheck[]
   fieldCheckList: FieldCheckList | null
   nextId: number
 }
 
-const initial: MockState = { supportRequests: [], fieldChecks: [], fieldCheckList: null, nextId: 1 }
+const initial: MockState = { users: [], supportRequests: [], fieldChecks: [], fieldCheckList: null, nextId: 1 }
 
 function load(): MockState {
   try {

@@ -2,10 +2,11 @@
 import { env } from '@/config'
 import { realApi } from './endpoints'
 import { mockApi } from './mock'
+import { shouldUseMockApi } from './mode'
 import type { ApiClient } from './types'
 
-export const api: ApiClient = env.useMock ? mockApi : realApi
-export const isMockMode = env.useMock
+export const isMockMode = shouldUseMockApi(import.meta.env.PROD, env.useMock)
+export const api: ApiClient = isMockMode ? mockApi : realApi
 
 export { ApiError, describeError, isApiError } from './client'
 export type { ApiClient } from './types'

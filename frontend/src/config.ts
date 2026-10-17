@@ -4,7 +4,7 @@
 const viteEnv: ImportMetaEnv = import.meta.env ?? {}
 
 export const env = {
-  /** 비어 있으면 현재 사이트의 출처로 호출한다. 별도 백엔드는 배포 빌드에서 지정한다. */
+  /** 비어 있으면 현재 사이트의 출처로 호출한다. Railway 단일 컨테이너 배포 기본값이다. */
   apiBaseUrl: (viteEnv.VITE_API_BASE_URL ?? '').replace(/\/$/, ''),
   useMock: viteEnv.VITE_USE_MOCK === 'true',
   geoBaseUrl: (viteEnv.VITE_GEO_BASE_URL ?? '/geo').replace(/\/$/, ''),

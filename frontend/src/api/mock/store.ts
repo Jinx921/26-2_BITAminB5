@@ -28,29 +28,36 @@ function load(): MockState {
   }
 }
 
-let state: MockState = load()
-
-function save() {
+function save(current: MockState) {
   try {
-    localStorage.setItem(KEY, JSON.stringify(state))
+    localStorage.setItem(KEY, JSON.stringify(current))
   } catch {
     /* ignore */
   }
 }
 
+let state: MockState | null = null
+
+function currentState(): MockState {
+  state ??= load()
+  return state
+}
+
 export const mockStore = {
-  get: () => state,
+  get: currentState,
   update(fn: (s: MockState) => void) {
-    fn(state)
-    save()
+    const current = currentState()
+    fn(current)
+    save(current)
   },
   nextId() {
-    const id = state.nextId++
-    save()
+    const current = currentState()
+    const id = current.nextId++
+    save(current)
     return id
   },
   reset() {
     state = structuredClone(initial)
-    save()
+    save(state)
   },
 }

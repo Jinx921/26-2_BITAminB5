@@ -2,6 +2,7 @@
 import { env } from '@/config'
 import type { ApiErrorBody } from '@/types/api'
 import { buildApiUrl } from './fieldCheckListSync'
+import { parseSuccessfulJson } from './response'
 
 export class ApiError extends Error {
   status: number
@@ -135,7 +136,15 @@ export async function request<T>(path: string, opts: RequestOptions = {}): Promi
     }
     throw err
   }
-  return json as T
+  try {
+    return parseSuccessfulJson(text) as T
+  } catch (error) {
+    throw new ApiError(
+      res.status,
+      'invalid_server_response',
+      `${error instanceof Error ? error.message : '응답 형식이 올바르지 않습니다.'} 백엔드 API 주소와 배포 경로를 확인해 주세요.`,
+    )
+  }
 }
 
 /** 사용자에게 보여줄 오류 문장 */

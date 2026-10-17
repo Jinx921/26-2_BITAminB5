@@ -315,9 +315,25 @@ class Database:
     def save_field_check_list(
         self, user_id: int, payload: dict[str, Any]
     ) -> dict[str, Any]:
-        encoded_payload = json.dumps(payload, ensure_ascii=False)
         with closing(sqlite3.connect(self.path, timeout=5)) as connection:
-            with connection:
+            connection.execute("BEGIN IMMEDIATE")
+            try:
+                row = connection.execute(
+                    "SELECT payload FROM field_check_lists WHERE user_id = ?",
+                    (user_id,),
+                ).fetchone()
+                existing = json.loads(row[0]) if row is not None else None
+                cells_by_id = {
+                    cell["id"]: cell for cell in (existing or {}).get("cells", [])
+                }
+                cells_by_id.update({cell["id"]: cell for cell in payload["cells"]})
+                merged_payload = {
+                    **payload,
+                    "cells": [
+                        {**cell, "order": index}
+                        for index, cell in enumerate(cells_by_id.values(), start=1)
+                    ],
+                }
                 connection.execute(
                     """
                     INSERT INTO field_check_lists (user_id, payload)
@@ -326,9 +342,13 @@ class Database:
                         payload = excluded.payload,
                         updated_at = CURRENT_TIMESTAMP
                     """,
-                    (user_id, encoded_payload),
+                    (user_id, json.dumps(merged_payload, ensure_ascii=False)),
                 )
-        return payload
+                connection.commit()
+            except Exception:
+                connection.rollback()
+                raise
+        return merged_payload
 
     def get_field_check_list(self, user_id: int) -> dict[str, Any] | None:
         with closing(sqlite3.connect(self.path, timeout=5)) as connection:

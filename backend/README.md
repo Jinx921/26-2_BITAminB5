@@ -25,6 +25,9 @@ python -m pytest agent/tests -q
 기본 로그 레벨은 `INFO`이며 요청 로그는 JSON 형식으로 출력된다.
 SQLite 파일은 기본 `backend/data/app.db`에 생성되며 `BACKEND_DB_PATH`로 경로를 바꿀 수 있다.
 DB와 `backend/data/`는 Git에서 제외된다.
+운영 배포에서는 해당 경로에 영속 볼륨을 연결해야 재배포 뒤에도 데이터가 유지된다.
+여러 백엔드 인스턴스를 운영할 때는 모든 요청이 같은 DB를 보도록 공유 DB를 사용해야 한다.
+인스턴스별 로컬 SQLite 파일은 서로 동기화되지 않는다.
 production에서는 `BACKEND_ENVIRONMENT=production` 및 `BACKEND_JWT_SECRET` 설정이 필수이며,
 키가 없으면 서버가 시작되지 않는다. development에서는 임시 키를 프로세스 시작 시 생성한다.
 

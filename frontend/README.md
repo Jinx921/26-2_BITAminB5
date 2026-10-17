@@ -26,7 +26,7 @@ npm run dev              # http://localhost:5173 (포트 고정, 사용 중이�
 
 | 변수 | 기본값 | 뜻 |
 | --- | --- | --- |
-| `VITE_API_BASE_URL` | 빈 값(프론트와 같은 출처) | FastAPI 백엔드 주소. 별도 도메인에 배포하면 빌드 시 API 주소를 명시 |
+| `VITE_API_BASE_URL` | 빈 값(프론트와 같은 출처) | FastAPI 백엔드 주소. Vercel 배포에서는 실제 백엔드 HTTPS 주소를 빌드 환경 변수로 필수 지정 |
 | `VITE_USE_MOCK` | `true` | `true`면 백엔드 없이 목업으로 전 화면 동작 |
 | `VITE_GEO_BASE_URL` | `/geo` | 목업 모드에서만 읽는 격자·시설 GeoJSON 위치 |
 
@@ -53,7 +53,7 @@ python -m backend.seed_user --role admin        # 관리자 계정 (대화형)
 python -m backend.seed_user --role field_worker # 현장 담당자 계정
 ```
 
-개발 모드에서는 `VITE_API_BASE_URL=http://localhost:8000 VITE_USE_MOCK=false npm run dev` 로 실행한다. 배포 기본값은 같은 출처이며, 프론트와 백엔드가 서로 다른 도메인이라면 프론트 빌드 시 `VITE_API_BASE_URL` 을 백엔드 주소로 지정하고 백엔드의 허용 출처 설정도 맞춰야 한다. 브라우저는 `http://localhost:5173` 으로 연다 (백엔드 CORS 기본 허용 목록이 `localhost` 라 `127.0.0.1` 로 열면 요청이 막힌다). 현장 확인 목록은 담당자 계정에 저장되며, 같은 계정의 새 기기 로그인에서 API를 다시 조회한다. 시민 계정은 로그인 화면의 "시민 계정 만들기"로 가입한다(비밀번호 12자 이상). 관리자·현장 계정은 운영자가 만든다(`backend/seed_user.py` 또는 배포 환경 변수 `SEED_*`). 질문 API 는 `agent/.env` 의 Anthropic 키가 있어야 실제 답을 돌려준다.
+개발 모드에서는 `VITE_API_BASE_URL=http://localhost:8000 VITE_USE_MOCK=false npm run dev` 로 실행한다. Docker 단일 컨테이너 배포는 같은 출처 API를 사용할 수 있다. Vercel 정적 배포에서는 Vercel 프로젝트의 빌드 환경 변수 `VITE_API_BASE_URL` 에 실제 백엔드 HTTPS 주소를 반드시 설정하고, 백엔드 `BACKEND_ALLOWED_ORIGINS` 에 프론트 출처를 허용해야 한다. Vercel 빌드는 해당 API 주소가 없거나 localhost이면 실패한다. API 경로는 SPA의 `index.html` fallback 대상에서 제외되며, JSON이 아닌 성공 응답은 프론트에서 저장 성공으로 처리하지 않는다. 백엔드는 모든 인스턴스가 동일한 영속 DB를 사용해야 한다. SQLite를 사용한다면 영속 볼륨을 연결하고 여러 인스턴스에 서로 다른 로컬 DB가 생기지 않도록 배포해야 한다. 브라우저는 로컬 개발에서 `http://localhost:5173` 으로 연다 (백엔드 CORS 기본 허용 목록이 `localhost` 라 `127.0.0.1` 로 열면 요청이 막힌다). 현장 확인 목록은 담당자 계정에 저장되며, 같은 계정의 새 기기 로그인에서 API를 다시 조회한다. 시민 계정은 로그인 화면의 "시민 계정 만들기"로 가입한다(비밀번호 12자 이상). 관리자·현장 계정은 운영자가 만든다(`backend/seed_user.py` 또는 배포 환경 변수 `SEED_*`). 질문 API 는 `agent/.env` 의 Anthropic 키가 있어야 실제 답을 돌려준다.
 
 ## 시연 시나리오 (목업 모드)
 

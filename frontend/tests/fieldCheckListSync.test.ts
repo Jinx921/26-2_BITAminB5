@@ -105,6 +105,62 @@ test('independent login sessions share the server list and trigger a fresh GET',
   assert.equal(FIELD_CHECK_LIST_QUERY_OPTIONS.refetchOnMount, 'always')
 })
 
+test('independent sessions see merged uploads with duplicate cells refreshed', async () => {
+  const serverLists = new Map<number, typeof sampleList>()
+  const secondFile = {
+    ...sampleList,
+    headline: '두 번째 테스트 목록',
+    cells: [
+      {
+        ...sampleList.cells[0],
+        emd_name: '갱신된 동네',
+        questions: ['새 파일의 질문'],
+      },
+      {
+        ...sampleList.cells[0],
+        id: 'new-cell',
+        order: 2,
+      },
+    ],
+  }
+
+  function sessionRequest(userId: number) {
+    return async <T>(
+      path: string,
+      options: { method?: 'GET' | 'PUT'; body?: unknown } = {},
+    ): Promise<T> => {
+      assert.equal(path, FIELD_CHECK_LIST_PATH)
+      if (options.method === 'PUT') {
+        const uploaded = options.body as typeof sampleList
+        const previous = serverLists.get(userId)
+        const cellsById = new Map((previous?.cells ?? []).map((cell) => [cell.id, cell]))
+        uploaded.cells.forEach((cell) => cellsById.set(cell.id, cell))
+        const merged = {
+          ...uploaded,
+          cells: [...cellsById.values()].map((cell, index) => ({
+            ...cell,
+            order: index + 1,
+          })),
+        }
+        serverLists.set(userId, merged)
+        return merged as T
+      }
+      return (serverLists.get(userId) ?? null) as T
+    }
+  }
+
+  const laptop = sessionRequest(17)
+  const phone = sessionRequest(17)
+  await saveFieldCheckList(laptop, sampleList)
+  assert.deepEqual(await fetchFieldCheckList(phone), sampleList)
+
+  const merged = await saveFieldCheckList(phone, secondFile)
+  assert.deepEqual(merged.cells.map((cell) => cell.id), ['4026_7935', 'new-cell'])
+  assert.equal(merged.cells[0].emd_name, '갱신된 동네')
+  assert.deepEqual(merged.cells[0].questions, ['새 파일의 질문'])
+  assert.deepEqual(await fetchFieldCheckList(sessionRequest(17)), merged)
+})
+
 test('failed server save rejects without creating a successful local result', async () => {
   const request = async <T>(): Promise<T> => {
     throw new Error('network unavailable')

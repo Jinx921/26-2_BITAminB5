@@ -54,6 +54,13 @@ class Database:
                         created_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP
                     );
 
+                    CREATE TABLE IF NOT EXISTS field_check_lists (
+                        user_id INTEGER PRIMARY KEY,
+                        payload TEXT NOT NULL,
+                        updated_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP,
+                        FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
+                    );
+
                     CREATE TABLE IF NOT EXISTS question_rate_limit_events (
                         user_id INTEGER NOT NULL,
                         requested_at REAL NOT NULL
@@ -304,6 +311,32 @@ class Database:
                     "SELECT * FROM field_checks WHERE id = ?", (cursor.lastrowid,)
                 ).fetchone()
                 return self._decode_field_check(dict(row))
+
+    def save_field_check_list(
+        self, user_id: int, payload: dict[str, Any]
+    ) -> dict[str, Any]:
+        encoded_payload = json.dumps(payload, ensure_ascii=False)
+        with closing(sqlite3.connect(self.path, timeout=5)) as connection:
+            with connection:
+                connection.execute(
+                    """
+                    INSERT INTO field_check_lists (user_id, payload)
+                    VALUES (?, ?)
+                    ON CONFLICT(user_id) DO UPDATE SET
+                        payload = excluded.payload,
+                        updated_at = CURRENT_TIMESTAMP
+                    """,
+                    (user_id, encoded_payload),
+                )
+        return payload
+
+    def get_field_check_list(self, user_id: int) -> dict[str, Any] | None:
+        with closing(sqlite3.connect(self.path, timeout=5)) as connection:
+            row = connection.execute(
+                "SELECT payload FROM field_check_lists WHERE user_id = ?",
+                (user_id,),
+            ).fetchone()
+            return json.loads(row[0]) if row is not None else None
 
     def list_field_checks(self, cell_id: str) -> list[dict[str, Any]]:
         with closing(sqlite3.connect(self.path, timeout=5)) as connection:

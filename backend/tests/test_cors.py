@@ -47,6 +47,7 @@ def test_allowed_origin_preflight_and_request_work_without_credentials() -> None
     assert preflight.status_code == 200
     assert preflight.headers["access-control-allow-origin"] == "http://localhost:5173"
     assert "POST" in preflight.headers["access-control-allow-methods"]
+    assert "PUT" in preflight.headers["access-control-allow-methods"]
     assert "authorization" in preflight.headers["access-control-allow-headers"].lower()
     assert preflight.headers.get("access-control-allow-credentials") != "true"
     assert response.status_code == 200

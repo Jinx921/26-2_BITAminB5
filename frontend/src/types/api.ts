@@ -93,10 +93,7 @@ export interface FieldFeedbackSummary {
   checklist_responses: { item_index: number; response_count: number }[]
 }
 
-/**
- * 관리자가 현장 담당자에게 보내는 확인 목록.
- * 백엔드 API 가 아직 없어 목업에서는 공유 저장소, 실제 모드에서는 복사·내려받기로 전달한다.
- */
+/** 관리자가 전달하고 현장 담당자가 계정에 저장하는 현장 확인 목록 JSON */
 export interface FieldCheckList {
   region: string | null
   headline: string

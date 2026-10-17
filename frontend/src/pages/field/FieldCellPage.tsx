@@ -2,7 +2,8 @@ import { useMemo, useState } from 'react'
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { Link, useNavigate, useParams } from 'react-router-dom'
 import { ChevronLeft } from 'lucide-react'
-import { api, isMockMode } from '@/api'
+import { api } from '@/api'
+import { useAuth } from '@/auth/useAuth'
 import { Button } from '@/components/ui/Button'
 import { EmptyState } from '@/components/ui/EmptyState'
 import { ErrorState } from '@/components/ui/ErrorState'
@@ -15,7 +16,6 @@ import { BaseMap, PointsLayer } from '@/map'
 import { COLUMN_WIDTH, useViewMode } from '@/features/viewMode'
 import { CHECK_LEVEL_COLOR } from '@/map/colors'
 import type { ChecklistAnswer, SupportNeededAnswer } from '@/types/api'
-import { readImportedFieldCheckList } from '@/features/field/importedFieldCheckList'
 
 /** 동네 하나의 확인 항목. 질문마다 세그먼트 한 줄, 메모 한 칸, 저장은 하단 고정 버튼 하나 */
 export function FieldCellPage() {
@@ -23,11 +23,12 @@ export function FieldCellPage() {
   const id = decodeURIComponent(cellId)
   const navigate = useNavigate()
   const qc = useQueryClient()
+  const { user } = useAuth()
   const { markDone } = useDoneCells()
 
   const list = useQuery({
-    queryKey: ['field-check-list'],
-    queryFn: () => isMockMode ? api.fetchFieldCheckList() : Promise.resolve(readImportedFieldCheckList()),
+    queryKey: ['field-check-list', user?.id],
+    queryFn: () => api.fetchFieldCheckList(),
   })
   const cell = list.data?.cells.find((c) => c.id === id)
   const history = useQuery({ queryKey: ['field-checks', id], queryFn: () => api.listFieldChecks(id), enabled: !!id })

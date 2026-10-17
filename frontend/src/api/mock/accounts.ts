@@ -24,3 +24,9 @@ export function roleFromMockToken(token: string | null | undefined): Role | null
   const role = token.split('.')[1]
   return role === 'admin' || role === 'citizen' || role === 'field_worker' ? role : null
 }
+
+export function userIdFromMockToken(token: string | null | undefined): number | null {
+  if (!token?.startsWith('mock.')) return null
+  const id = Number(token.split('.')[2])
+  return Number.isSafeInteger(id) && id > 0 ? id : null
+}

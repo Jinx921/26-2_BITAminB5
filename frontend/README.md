@@ -18,6 +18,7 @@ npm run dev              # http://localhost:5173 (포트 고정, 사용 중이�
 | `npm run build` | 타입 검사 후 `dist/` 빌드 |
 | `npm run typecheck` | `tsc -b` |
 | `npm run lint` | oxlint |
+| `npm test` | 현장 목록 API 경로·기기 간 동기화 테스트 |
 | `node scripts/screenshot.mjs [out-dir] [prefix]` | Playwright 로 화면별 스크린샷 (개발 서버 필요). 실제 API 점검은 `BASE_URL=http://localhost:5173 ADMIN_PASSWORD=... ONLY=maps node scripts/screenshot.mjs design real-` |
 | `npm run sync-geo` | `engine/out/*.geojson` → `public/geo/` 복사 (시설 지도는 `origin/hyunjun` 에서 추출) |
 
@@ -25,7 +26,7 @@ npm run dev              # http://localhost:5173 (포트 고정, 사용 중이�
 
 | 변수 | 기본값 | 뜻 |
 | --- | --- | --- |
-| `VITE_API_BASE_URL` | `http://127.0.0.1:8000` | FastAPI 백엔드 주소 |
+| `VITE_API_BASE_URL` | 빈 값(프론트와 같은 출처) | FastAPI 백엔드 주소. 별도 도메인에 배포하면 빌드 시 API 주소를 명시 |
 | `VITE_USE_MOCK` | `true` | `true`면 백엔드 없이 목업으로 전 화면 동작 |
 | `VITE_GEO_BASE_URL` | `/geo` | 목업 모드에서만 읽는 격자·시설 GeoJSON 위치 |
 
@@ -52,7 +53,7 @@ python -m backend.seed_user --role admin        # 관리자 계정 (대화형)
 python -m backend.seed_user --role field_worker # 현장 담당자 계정
 ```
 
-`.env`에서 `VITE_USE_MOCK=false` 로 바꾸고 개발 서버를 다시 띄운다. 브라우저는 `http://localhost:5173` 으로 연다 (백엔드 CORS 기본 허용 목록이 `localhost` 라 `127.0.0.1` 로 열면 요청이 막힌다). 시민 계정은 로그인 화면의 "시민 계정 만들기"로 가입한다(비밀번호 12자 이상). 관리자·현장 계정은 운영자가 만든다(`backend/seed_user.py` 또는 배포 환경 변수 `SEED_*`). 질문 API 는 `agent/.env` 의 Anthropic 키가 있어야 실제 답을 돌려준다.
+개발 모드에서는 `VITE_API_BASE_URL=http://localhost:8000 VITE_USE_MOCK=false npm run dev` 로 실행한다. 배포 기본값은 같은 출처이며, 프론트와 백엔드가 서로 다른 도메인이라면 프론트 빌드 시 `VITE_API_BASE_URL` 을 백엔드 주소로 지정하고 백엔드의 허용 출처 설정도 맞춰야 한다. 브라우저는 `http://localhost:5173` 으로 연다 (백엔드 CORS 기본 허용 목록이 `localhost` 라 `127.0.0.1` 로 열면 요청이 막힌다). 현장 확인 목록은 담당자 계정에 저장되며, 같은 계정의 새 기기 로그인에서 API를 다시 조회한다. 시민 계정은 로그인 화면의 "시민 계정 만들기"로 가입한다(비밀번호 12자 이상). 관리자·현장 계정은 운영자가 만든다(`backend/seed_user.py` 또는 배포 환경 변수 `SEED_*`). 질문 API 는 `agent/.env` 의 Anthropic 키가 있어야 실제 답을 돌려준다.
 
 ## 시연 시나리오 (목업 모드)
 

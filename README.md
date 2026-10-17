@@ -80,7 +80,7 @@ cd frontend && npm install && npm run dev
 ```bash
 # 테스트 (API 키 없이 동작)
 python -m pytest agent/tests engine/tests backend/tests -q
-cd frontend && npm run typecheck && npm run lint && npm run build
+cd frontend && npm test && npm run typecheck && npm run lint && npm run build
 ```
 
 ### 분석 코드

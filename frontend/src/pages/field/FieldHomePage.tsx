@@ -3,6 +3,7 @@ import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { Check, ChevronRight, Upload } from 'lucide-react'
 import { api, isMockMode } from '@/api'
 import { isApiError } from '@/api/client'
+import { FIELD_CHECK_LIST_QUERY_OPTIONS, fieldCheckListQueryKey } from '@/api/fieldCheckListSync'
 import { useAuth } from '@/auth/useAuth'
 import { Button } from '@/components/ui/Button'
 import { EmptyState } from '@/components/ui/EmptyState'
@@ -22,10 +23,11 @@ import type { FieldCheckList } from '@/types/api'
 export function FieldHomePage() {
   const qc = useQueryClient()
   const { user } = useAuth()
-  const listQueryKey = ['field-check-list', user?.id] as const
+  const listQueryKey = fieldCheckListQueryKey(user?.id)
   const list = useQuery({
     queryKey: listQueryKey,
     queryFn: () => api.fetchFieldCheckList(),
+    ...FIELD_CHECK_LIST_QUERY_OPTIONS,
   })
   const { done } = useDoneCells()
   const [importOpen, setImportOpen] = useState(false)

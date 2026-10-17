@@ -35,6 +35,7 @@ export interface ApiClient {
   // 현장 확인
   createFieldCheck(body: FieldCheckCreate): Promise<FieldCheck>
   listFieldChecks(cellId: string): Promise<FieldCheck[]>
+  saveFieldCheckList(list: FieldCheckList): Promise<FieldCheckList>
 
   // 지도: 시설은 citizen/admin, 유형·후보·배치는 admin 전용
   getFacilitiesMap(region: RegionKey): Promise<FacilityCollection>
@@ -46,10 +47,7 @@ export interface ApiClient {
   getDemandSignals(): Promise<DemandSignal[]>
   getFieldFeedbackSummary(): Promise<FieldFeedbackSummary[]>
 
-  /**
-   * 현장 확인 목록 전달. 백엔드 API가 없어 목업 모드에서만 공유 저장소를 사용한다.
-   * 실제 모드에서는 통합 보류 오류를 반환한다. 현장 담당자는 관리자가 내보낸 JSON을 직접 가져온다.
-   */
+  /** 관리자 목업 화면에서 목록을 공유한다. 실제 모드에서는 아직 제공하지 않는다. */
   publishFieldCheckList(list: FieldCheckList): Promise<{ stored: boolean }>
   fetchFieldCheckList(): Promise<FieldCheckList | null>
 }

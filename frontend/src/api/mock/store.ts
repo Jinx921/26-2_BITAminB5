@@ -12,10 +12,11 @@ interface MockState {
   supportRequests: SupportRequest[]
   fieldChecks: FieldCheck[]
   fieldCheckList: FieldCheckList | null
+  fieldCheckLists: Record<number, FieldCheckList>
   nextId: number
 }
 
-const initial: MockState = { users: [], supportRequests: [], fieldChecks: [], fieldCheckList: null, nextId: 1 }
+const initial: MockState = { users: [], supportRequests: [], fieldChecks: [], fieldCheckList: null, fieldCheckLists: {}, nextId: 1 }
 
 function load(): MockState {
   try {

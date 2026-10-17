@@ -6,6 +6,7 @@ import type {
   DemandSignal,
   FieldCheck,
   FieldCheckCreate,
+  FieldCheckList,
   FieldFeedbackSummary,
   LoginResponse,
   QuestionRequest,
@@ -45,6 +46,9 @@ export const realApi: ApiClient = {
 
   listFieldChecks: (cellId) => request<FieldCheck[]>('/api/v1/field-checks', { query: { cell_id: cellId } }),
 
+  saveFieldCheckList: (list: FieldCheckList) =>
+    request<FieldCheckList>('/api/v1/field-check-list', { method: 'PUT', body: list }),
+
   getFacilitiesMap: (region: RegionKey) =>
     request<FacilityCollection>('/api/v1/maps/facilities', { query: { region } }),
 
@@ -65,7 +69,6 @@ export const realApi: ApiClient = {
     throw new ApiError(501, 'integration_pending', '현장 확인 목록 전달 API가 백엔드에 아직 없습니다.')
   },
 
-  fetchFieldCheckList: async () => {
-    throw new ApiError(501, 'integration_pending', '현장 확인 목록 조회 API가 백엔드에 아직 없습니다.')
-  },
+  fetchFieldCheckList: () =>
+    request<FieldCheckList | null>('/api/v1/field-check-list'),
 }

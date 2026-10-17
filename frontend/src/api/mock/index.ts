@@ -1,10 +1,10 @@
 /** ApiClient 목업 구현. 실제 백엔드와 같은 권한 규칙·오류 코드를 흉내낸다. */
 import { ApiError, tokenStore } from '../client'
 import type { ApiClient } from '../types'
-import { DEMO_ACCOUNTS, demoUser, roleFromMockToken } from './accounts'
+import { DEMO_ACCOUNTS, demoUser, roleFromMockToken, userIdFromMockToken } from './accounts'
 import { mockAnswer } from './questions'
 import { mockStore } from './store'
-import type { DemandSignal, FieldCheck, FieldFeedbackSummary, Role, SupportRequest } from '@/types/api'
+import type { DemandSignal, FieldCheck, FieldCheckList, FieldFeedbackSummary, Role, SupportRequest } from '@/types/api'
 import { env, type RegionKey } from '@/config'
 import type { FacilityCollection, GridCollection } from '@/types/geo'
 
@@ -61,18 +61,19 @@ export const mockApi: ApiClient = {
       const u = mockStore.get().users.find((x) => x.email === email.toLowerCase() && x.password === password)
       if (!u) throw new ApiError(401, 'invalid_credentials', 'Invalid email or password')
       return {
-        access_token: `mock.citizen.${Date.now()}`,
+        access_token: `mock.citizen.${u.id}.${Date.now()}`,
         token_type: 'bearer',
         expires_in: 3600,
         user: { id: u.id, email: u.email, role: 'citizen', created_at: u.created_at },
       }
     }
     const acc = DEMO_ACCOUNTS[idx]
+    const user = demoUser(acc, idx + 1)
     return {
-      access_token: `mock.${acc.role}.${Date.now()}`,
+      access_token: `mock.${acc.role}.${user.id}.${Date.now()}`,
       token_type: 'bearer',
       expires_in: 3600,
-      user: demoUser(acc, idx + 1),
+      user,
     }
   },
 
@@ -205,9 +206,25 @@ export const mockApi: ApiClient = {
     return { stored: true }
   },
 
-  async fetchFieldCheckList() {
-    requireRole('field_worker', 'admin')
+  async saveFieldCheckList(list: FieldCheckList) {
+    requireRole('field_worker')
+    const userId = userIdFromMockToken(tokenStore.get()?.token)
+    if (!userId) throw new ApiError(401, 'unauthorized', 'Authentication required')
     await delay(200)
+    mockStore.update((s) => {
+      s.fieldCheckLists[userId] = list
+    })
+    return list
+  },
+
+  async fetchFieldCheckList() {
+    const role = requireRole('field_worker', 'admin')
+    await delay(200)
+    if (role === 'field_worker') {
+      const userId = userIdFromMockToken(tokenStore.get()?.token)
+      if (!userId) throw new ApiError(401, 'unauthorized', 'Authentication required')
+      return mockStore.get().fieldCheckLists[userId] ?? mockStore.get().fieldCheckList
+    }
     return mockStore.get().fieldCheckList
   },
 }

@@ -17,6 +17,7 @@ from backend.app.admin_signals import router as admin_signals_router
 from backend.app.database import Database
 from backend.app.errors import ApiError, AuthenticationError, error_response
 from backend.app.field_checks import router as field_checks_router
+from backend.app.field_check_lists import router as field_check_lists_router
 from backend.app.logging_setup import configure_logging
 from backend.app.maps import router as maps_router
 from backend.app.questions import router as questions_router
@@ -71,7 +72,7 @@ app.add_middleware(
     CORSMiddleware,
     allow_origins=list(settings.allowed_origins),
     allow_credentials=False,
-    allow_methods=["GET", "POST", "PATCH", "OPTIONS"],
+    allow_methods=["GET", "POST", "PUT", "PATCH", "OPTIONS"],
     allow_headers=["Authorization", "Content-Type"],
     expose_headers=["X-Request-ID"],
 )
@@ -81,6 +82,7 @@ app.include_router(questions_router)
 app.include_router(maps_router)
 app.include_router(support_requests_router)
 app.include_router(field_checks_router)
+app.include_router(field_check_lists_router)
 
 
 @app.middleware("http")

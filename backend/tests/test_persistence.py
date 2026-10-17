@@ -58,7 +58,7 @@ def test_database_initialization_preserves_existing_support_records(tmp_path) ->
             )
         }
     assert existing == ("f-1", "contact", 0)
-    assert {"support_requests", "field_checks", "users"} <= tables
+    assert {"support_requests", "field_checks", "field_check_lists", "users"} <= tables
     Database(database_path).initialize()
     with sqlite3.connect(database_path) as connection:
         assert connection.execute(

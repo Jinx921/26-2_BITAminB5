@@ -42,6 +42,8 @@ Authorization: Bearer <ACCESS_TOKEN>
 | GET | `/api/v1/support-requests?status=<STATUS>` | `admin` |
 | GET | `/api/v1/support-requests/<REQUEST_ID>` | `admin` |
 | PATCH | `/api/v1/support-requests/<REQUEST_ID>/status` | `admin` |
+| GET | `/api/v1/field-check-list` | `field_worker` |
+| PUT | `/api/v1/field-check-list` | `field_worker` |
 | POST | `/api/v1/field-checks` | `field_worker`, `admin` |
 | GET | `/api/v1/field-checks?cell_id=<CELL_ID>` | `field_worker`, `admin` |
 | GET | `/api/v1/admin/demand-signals` | `admin` |
@@ -192,6 +194,48 @@ display에는 `headline`, `details`, `caution`, `confidence`, `map` 등이 포�
 토큰 누락·무효는 `401`, 비관리자 접근은 `403`, ID가 없으면 `404`.
 
 ### 현장 확인
+
+#### 현장 확인 목록 동기화
+
+현장 담당자가 가져온 확인 목록은 담당자 계정별로 저장한다. 같은 계정으로 다른 기기에서
+로그인해도 목록을 다시 조회할 수 있다. 이 API는 요청 경로·본문에 사용자 ID를 받지 않고
+인증된 `field_worker` 본인 목록만 처리한다. 다른 현장 담당자는 자신의 목록만 보며,
+시민·관리자 역할은 저장·조회할 수 없다.
+
+목록은 `{ region, headline, created_at, cells }` 형식이며, 서버가 각 필드와 셀 항목을
+엄격히 검증한다. 알 수 없는 추가 필드, 필수 필드 누락, 빈 `cells`, 잘못된 좌표·순번,
+시간대가 없는 `created_at`은 `422 validation_error`를 반환한다.
+
+**GET `/api/v1/field-check-list`** — `field_worker`.
+
+현재 로그인한 담당자의 목록을 반환한다. 아직 저장된 목록이 없으면 `null`을 반환한다.
+토큰 누락·무효는 `401`, 다른 역할은 `403`이다.
+
+**PUT `/api/v1/field-check-list`** — `field_worker`.
+
+요청 및 성공 응답은 동일한 목록 JSON 형식이다. 기존 목록이 있으면 현재 담당자의 목록만
+교체한다. 파일 업로드는 검증과 저장이 성공한 뒤 화면에 반영한다. 백엔드 저장 실패 시
+화면의 저장된 목록으로 취급하지 않는다.
+
+```json
+{
+  "region": "춘천",
+  "headline": "테스트용 현장 확인 목록",
+  "created_at": "2026-10-18T01:00:00+09:00",
+  "cells": [
+    {
+      "id": "4026_7935",
+      "lat": 37.8546,
+      "lon": 127.5753,
+      "emd_name": "서면",
+      "level": "확인 필요",
+      "questions": ["실제로 사람이 사는 집이 있나요?"],
+      "order": 1,
+      "highlight": false
+    }
+  ]
+}
+```
 
 **POST `/api/v1/field-checks`** — `field_worker`, `admin`.
 

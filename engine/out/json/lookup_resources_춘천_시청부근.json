@@ -201,7 +201,64 @@
    "도서관": 1,
    "문화시설": 3,
    "체육시설(공공)": 33
-  }
+  },
+  "fallback_nearby": [
+   {
+    "fac_id": "CC_02447",
+    "kind": "체육시설(공공)",
+    "group": "social",
+    "name": "야외운동기구 소양동1",
+    "addr": "강원특별자치도 춘천시 공지로 591 (근화동)",
+    "dist_m": 36.0,
+    "lat": 37.8812,
+    "lon": 127.7302,
+    "beyond_radius": false
+   },
+   {
+    "fac_id": "CC_02559",
+    "kind": "문화시설",
+    "group": "social",
+    "name": "춘천미술관",
+    "addr": "강원특별자치도 춘천시 서부대성로 71",
+    "dist_m": 180.0,
+    "lat": 37.8824,
+    "lon": 127.7313,
+    "beyond_radius": false
+   },
+   {
+    "fac_id": "CC_00393",
+    "kind": "경로당",
+    "group": "social",
+    "name": "미도파아파트 경로당",
+    "addr": "강원특별자치도 춘천시 금강로 68-9",
+    "dist_m": 323.0,
+    "lat": 37.8785,
+    "lon": 127.7286,
+    "beyond_radius": false
+   },
+   {
+    "fac_id": "CC_02521",
+    "kind": "도서관",
+    "group": "social",
+    "name": "춘천교육문화관",
+    "addr": "강원특별자치도 춘천시중앙로 107번길 14",
+    "dist_m": 833.0,
+    "lat": 37.8756,
+    "lon": 127.7236,
+    "beyond_radius": false
+   },
+   {
+    "fac_id": "CC_00540",
+    "kind": "보건",
+    "group": "health",
+    "name": "춘천시보건소",
+    "addr": "강원특별자치도 춘천시 중앙로 135",
+    "dist_m": 1057.0,
+    "lat": 37.8756,
+    "lon": 127.7202,
+    "beyond_radius": true
+   }
+  ]
  },
  "evidence": [
   {

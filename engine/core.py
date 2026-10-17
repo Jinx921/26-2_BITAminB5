@@ -214,9 +214,14 @@ def lookup_resources(region: str, cell_id: str | None = None, lat: float | None 
     within = near[near.dist_m <= radius_m]
     nearest_by_kind = near.groupby('kind').head(1)[['kind', 'name', 'dist_m', 'addr', 'lat', 'lon']]
     lst = within.head(top * 3)[['fac_id', 'kind', 'group', 'name', 'addr', 'dist_m', 'lat', 'lon']]
+    # 화면 대체용 (10/18): 외곽은 반경 안이 비어 지도·카드가 사라진다 → 종류별 가장 가까운 곳 중 FALLBACK_MAX_M 이내
+    fb = near.groupby('kind').head(1)
+    fb = fb[fb.dist_m <= C.FALLBACK_MAX_M][['fac_id', 'kind', 'group', 'name', 'addr', 'dist_m', 'lat', 'lon']].copy()
+    fb['beyond_radius'] = fb.dist_m > radius_m
     return _pack('lookup_resources', region,
                  {'nearest_by_kind': nearest_by_kind.to_dict('records'), 'within_radius': lst.to_dict('records'),
-                  'count_within_radius': within.groupby('kind').size().to_dict()},
+                  'count_within_radius': within.groupby('kind').size().to_dict(),
+                  'fallback_nearby': fb.to_dict('records')},
                  [{'metric': f'nearest_{r.kind}_m', 'value': int(r.dist_m)} for r in nearest_by_kind.itertuples()] +
                  [{'metric': f'count_{k}_within_{radius_m}m', 'value': v} for k, v in within.groupby('kind').size().items()],
                  {'cell_id': cell_id, 'lat': lat, 'lon': lon, 'radius_m': radius_m},

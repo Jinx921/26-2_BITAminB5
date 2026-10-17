@@ -139,6 +139,17 @@ def test_caveats_consistent():
 def test_lookup_citizen():
     r = core.lookup_resources('춘천', lat=37.8813, lon=127.7298, radius_m=1000)
     assert r['result']['count_within_radius'].get('경로당', 0) > 0
+    fb = r['result']['fallback_nearby']
+    assert fb and not any(a['beyond_radius'] for a in fb if a['kind'] == '경로당')
+
+
+def test_lookup_rural_fallback():                   # 10/18 외곽: 반경 안이 비어도 종류별 가까운 곳(5km 안)은 나온다
+    r = core.lookup_resources('춘천', lat=37.9747, lon=127.9069, radius_m=1000)['result']   # 북산면
+    fb = r['fallback_nearby']
+    assert r['within_radius'] == [] and fb and all(a['beyond_radius'] for a in fb)
+    assert len({a['kind'] for a in fb}) == len(fb)                       # 종류마다 1곳
+    assert all(a['dist_m'] <= core.C.FALLBACK_MAX_M for a in fb)
+    assert {a['kind'] for a in r['nearest_by_kind']} - {a['kind'] for a in fb}   # 5km 밖 종류는 대체 목록에서만 빠짐
 
 
 def test_bad_inputs_return_json():                  # Codex 교차검토 10/1

@@ -65,6 +65,7 @@
 | `nearest_by_kind` | list | 시설 종류별 가장 가까운 곳 `kind, name, dist_m(정수 m), addr, lat, lon` |
 | `within_radius` | list | 반경 안 시설 `fac_id, kind, group(social/health), name, addr, dist_m, lat, lon` |
 | `count_within_radius` | {종류: int} | |
+| `fallback_nearby` | list | 화면 대체용: 종류별 가장 가까운 곳 중 5km(`config.FALLBACK_MAX_M`) 안. `within_radius`와 같은 필드 + `beyond_radius`(반경 밖이면 true). 외곽처럼 `within_radius`가 비었을 때 지도·카드에 쓴다. `nearest_by_kind`(거리 제한 없음)는 그대로 (10/18 추가) |
 
 ### classify: 유형 분류
 | 필드 | 형식 | 내용 |

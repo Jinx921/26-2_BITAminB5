@@ -43,6 +43,12 @@ def region_of(text):
     return np.select([t.str.contains('강남구'), t.str.contains('춘천')], ['강남', '춘천'], None)
 
 
+def senior_name(name):
+    """경로당 이름 표시용 정리 (10/17, 혜진 요청 1순위).
+    강남구 원천은 '아파트'를 ㉵(U+3275)로 줄여 쓴다 ('은마㉵' -> '은마아파트'). 그 외 이름·좌표·주소는 그대로."""
+    return s(name).str.replace('㉵', '아파트', regex=False).str.strip()
+
+
 def frame(kind, name, addr, lat, lon, source, extra=None):
     d = pd.DataFrame({'kind': kind, 'name': name, 'addr': addr,
                       'lat': pd.to_numeric(lat, errors='coerce'),
@@ -58,7 +64,7 @@ parts = []
 for f, reg in [('서울특별시_강남구_마을회관및경로당.csv', '강남'), ('강원특별자치도_춘천시_마을회관및경로당.csv', '춘천')]:
     d = read(f)
     d = d[d['영업상태명'].eq('영업') & (d['위도'] != d['경도'])]
-    parts.append(frame('경로당', d['시설명'], d['소재지도로명주소'], d['위도'], d['경도'], f, reg))
+    parts.append(frame('경로당', senior_name(d['시설명']), d['소재지도로명주소'], d['위도'], d['경도'], f, reg))
 
 # 2) 보건
 d = read('보건관련기관_좌표_데이터.csv')

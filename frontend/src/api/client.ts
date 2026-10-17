@@ -1,6 +1,7 @@
 /** fetch 래퍼. 토큰 첨부, 공통 오류 형식 파싱, Retry-After 처리를 한 곳에서 한다. */
 import { env } from '@/config'
 import type { ApiErrorBody } from '@/types/api'
+import { buildApiUrl } from './fieldCheckListSync'
 
 export class ApiError extends Error {
   status: number
@@ -81,15 +82,7 @@ export interface RequestOptions {
 }
 
 function buildUrl(path: string, query?: RequestOptions['query']): string {
-  // VITE_API_BASE_URL 이 비어 있으면 프론트와 같은 서버(상대 경로)로 호출한다 (단일 배포)
-  const base = env.apiBaseUrl || window.location.origin
-  const url = new URL(path.startsWith('/') ? base + path : path)
-  if (query) {
-    for (const [k, v] of Object.entries(query)) {
-      if (v !== undefined && v !== null && v !== '') url.searchParams.set(k, String(v))
-    }
-  }
-  return url.toString()
+  return buildApiUrl(path, query, env.apiBaseUrl, window.location.origin)
 }
 
 export async function request<T>(path: string, opts: RequestOptions = {}): Promise<T> {

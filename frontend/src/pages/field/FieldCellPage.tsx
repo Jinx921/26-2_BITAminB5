@@ -3,6 +3,7 @@ import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { Link, useNavigate, useParams } from 'react-router-dom'
 import { ChevronLeft } from 'lucide-react'
 import { api } from '@/api'
+import { FIELD_CHECK_LIST_QUERY_OPTIONS, fieldCheckListQueryKey } from '@/api/fieldCheckListSync'
 import { useAuth } from '@/auth/useAuth'
 import { Button } from '@/components/ui/Button'
 import { EmptyState } from '@/components/ui/EmptyState'
@@ -27,8 +28,9 @@ export function FieldCellPage() {
   const { markDone } = useDoneCells()
 
   const list = useQuery({
-    queryKey: ['field-check-list', user?.id],
+    queryKey: fieldCheckListQueryKey(user?.id),
     queryFn: () => api.fetchFieldCheckList(),
+    ...FIELD_CHECK_LIST_QUERY_OPTIONS,
   })
   const cell = list.data?.cells.find((c) => c.id === id)
   const history = useQuery({ queryKey: ['field-checks', id], queryFn: () => api.listFieldChecks(id), enabled: !!id })

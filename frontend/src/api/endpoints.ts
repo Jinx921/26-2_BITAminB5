@@ -1,5 +1,6 @@
 /** docs/api-contract.md 그대로 호출하는 실제 구현 */
 import { ApiError, request } from './client'
+import { fetchFieldCheckList, saveFieldCheckList } from './fieldCheckListSync'
 import type { RegionKey } from '@/config'
 import type { ApiClient } from './types'
 import type {
@@ -47,7 +48,7 @@ export const realApi: ApiClient = {
   listFieldChecks: (cellId) => request<FieldCheck[]>('/api/v1/field-checks', { query: { cell_id: cellId } }),
 
   saveFieldCheckList: (list: FieldCheckList) =>
-    request<FieldCheckList>('/api/v1/field-check-list', { method: 'PUT', body: list }),
+    saveFieldCheckList(request, list),
 
   getFacilitiesMap: (region: RegionKey) =>
     request<FacilityCollection>('/api/v1/maps/facilities', { query: { region } }),
@@ -70,5 +71,5 @@ export const realApi: ApiClient = {
   },
 
   fetchFieldCheckList: () =>
-    request<FieldCheckList | null>('/api/v1/field-check-list'),
+    fetchFieldCheckList(request),
 }

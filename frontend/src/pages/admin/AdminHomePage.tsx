@@ -35,6 +35,12 @@ const LAYER_EMPTY: Record<MapLayerKind, string> = {
   sim: '이 지역에는 배치 시뮬레이션 대상(긴급방문형) 동네가 없습니다.',
 }
 
+/** 칸 ID(UTM-K 좌표 ÷ 250 의 몫 "x_y") → 칸 중심 좌표(m). 칸 ID가 아니면(시설 ID 등) null */
+function cellCenter(id: string): [number, number] | null {
+  const m = /^(-?\d+)_(-?\d+)$/.exec(id)
+  return m ? [(Number(m[1]) + 0.5) * 250, (Number(m[2]) + 0.5) * 250] : null
+}
+
 function gridBounds(g: GridCollection): [[number, number], [number, number]] | null {
   let s = Infinity, n = -Infinity, w = Infinity, e = -Infinity
   for (const f of g.features) for (const [lon, lat] of f.geometry.coordinates[0] ?? []) { s = Math.min(s, lat); n = Math.max(n, lat); w = Math.min(w, lon); e = Math.max(e, lon) }
@@ -114,40 +120,48 @@ export function AdminHomePage() {
     if (!m || (m.layer !== 'sites' && m.layer !== 'interventions')) return null
     const radiusM = m.radius_m ?? null
     if (m.layer === 'sites') {
-      return { kind: 'sites' as const, radiusM, sites: m.points.length, covered: m.points.reduce((a, p) => a + (p.covers ?? 0), 0), options: undefined }
+      return { kind: 'sites' as const, radiusM, sites: m.points.length, options: undefined }
     }
     const names = [...new Set(m.points.map((p) => p.option))]
     const options = names.map((label, i) => ({ label, color: OPTION_COLORS[i] ?? '#334155', count: m.points.filter((p) => p.option === label).length }))
-    return { kind: 'interventions' as const, radiusM, sites: Math.max(0, ...options.map((o) => o.count)), covered: undefined, options }
+    return { kind: 'interventions' as const, radiusM, sites: Math.max(0, ...options.map((o) => o.count)), options }
   }, [display])
-  // 배경 파일은 엔진이 미리 만든 '거점 3곳' 배치뿐이다. 답변의 거점 수·반경과 다르면 닿는 칸 색을 칠하지 않는다
+  // 답변 거점이 닿는 칸을 화면에서 계산한다. 엔진 규칙과 같다: 거점 칸 중심 ↔ 대상 칸 중심 직선거리 ≤ 반경
+  // (칸 ID = UTM-K 좌표 ÷ 250 의 몫이라 칸 중심을 ID에서 바로 구한다. 개입안 비교는 이동형 거점(칸 ID)만 해당)
   const radiusMatches = placement !== null && (placement.radiusM == null || placement.radiusM === radius)
-  const placementMatches = placement !== null && placement.sites === 3 && radiusMatches
-  const simShown = useMemo(() => {
-    if (!sim.data || !placement || placementMatches) return sim.data
-    return { ...sim.data, features: sim.data.features.map((f) => ({ ...f, properties: { ...f.properties, covered: 0 as const } })) }
-  }, [sim.data, placement, placementMatches])
+  const answerCoverage = useMemo(() => {
+    const m = display?.map
+    if (!sim.data || !placement?.radiusM || !radiusMatches || !m) return null
+    const centers = m.points.map((p) => cellCenter(p.id)).filter((c): c is [number, number] => c !== null)
+    if (centers.length === 0) return null
+    const r2 = placement.radiusM ** 2
+    const features = sim.data.features.map((f) => {
+      const c = cellCenter(f.properties.cell_id)
+      const hit = c !== null && centers.some(([x, y]) => (x - c[0]) ** 2 + (y - c[1]) ** 2 <= r2)
+      return { ...f, properties: { ...f.properties, covered: (hit ? 1 : 0) as 0 | 1 } }
+    })
+    return { data: { ...sim.data, features }, covered: features.filter((f) => f.properties.covered === 1).length, total: features.length }
+  }, [display, sim.data, placement, radiusMatches])
+  const simShown = answerCoverage?.data ?? sim.data
   const simLegend = (() => {
     const fileStats = { covered: sim.data ? simStats.covered : undefined, total: sim.data ? simStats.total : undefined }
     if (!placement) return { ...fileStats, title: undefined, note: undefined, options: undefined }
     const km = placement.radiusM ? `${placement.radiusM / 1000}km` : ''
-    const radiusNote = !radiusMatches && km ? ` 답변은 반경 ${km} 기준입니다. ${km}를 누르면 답변과 같은 반경으로 볼 수 있습니다.` : ''
-    const bgNote = placementMatches ? '' : ' 배경에는 가장 먼저 방문이 필요한 동네 위치만 표시합니다.'
-    if (placement.kind === 'sites') {
+    if (!answerCoverage) {                                   // 반경을 바꿔 보는 중: 엔진 기본 배치(거점 3곳) 파일을 보여준다
       return {
-        title: `답변: 이동형 거점 ${placement.sites}곳${km ? ` · ${km}` : ''}`,
-        covered: radiusMatches ? placement.covered : undefined,
-        total: radiusMatches ? fileStats.total : undefined,
-        options: undefined,
-        note: `답변의 거점을 ★로 표시했습니다.${bgNote}${radiusNote}`,
+        ...fileStats, title: undefined, options: placement.options,
+        note: km ? `지금은 엔진 기본 배치(거점 3곳)입니다. 답변은 반경 ${km} 기준이라 ${km}를 누르면 답변 결과로 돌아갑니다.` : undefined,
       }
     }
+    const what = placement.kind === 'sites' ? `이동형 거점 ${placement.sites}곳` : `개입안별 거점 ${placement.sites}곳`
     return {
-      title: `답변: 개입안별 거점 ${placement.sites}곳${km ? ` · ${km}` : ''}`,
-      covered: placementMatches ? fileStats.covered : undefined,
-      total: placementMatches ? fileStats.total : undefined,
+      title: `답변: ${what}${km ? ` · ${km}` : ''}`,
+      covered: answerCoverage.covered,
+      total: answerCoverage.total,
       options: placement.options,
-      note: `점은 안별 거점 위치입니다. 닿는 동네 수 비교는 오른쪽 차트를 봐 주세요.${bgNote}${radiusNote}`,
+      note: placement.kind === 'sites'
+        ? '답변의 거점을 ★로, 거점이 닿는 동네를 파랗게 표시했습니다.'
+        : '점은 안별 거점 위치이고, 파란 동네는 이동형 거점이 닿는 곳입니다. 안별 비교는 오른쪽 차트를 봐 주세요.',
     }
   })()
 
@@ -191,7 +205,7 @@ export function AdminHomePage() {
             <GridLayer key={`candidates-${effectiveRegion}`} data={candidates.data} variant="candidates" highlightIds={highlightIds} secondaryIds={secondaryIds} selectedId={selectedId} onSelect={(p) => setSelectedId(p.cell_id)} />
           )}
           {layer === 'sim' && sim.data && (
-            <GridLayer key={`sim-${effectiveRegion}-${radius}-${placementMatches}`} data={simShown ?? sim.data} variant="sim" highlightIds={highlightIds} selectedId={selectedId} onSelect={(p) => setSelectedId(p.cell_id)} />
+            <GridLayer key={`sim-${effectiveRegion}-${radius}-${answerCoverage ? answerCoverage.covered : 'file'}`} data={simShown ?? sim.data} variant="sim" highlightIds={highlightIds} selectedId={selectedId} onSelect={(p) => setSelectedId(p.cell_id)} />
           )}
           {/* 후보 응답은 격자 테두리로 강조하므로 후보 지도 위에는 점을 따로 찍지 않는다 */}
           {display?.map && display.map.layer !== 'types' && !(display.map.layer === 'candidates' && layer === 'candidates') && (

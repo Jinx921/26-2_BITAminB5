@@ -5,7 +5,7 @@ import json
 import pytest
 
 from agent.engine_client import ENGINE_DIR, FIXTURE_DIR, FixtureEngine, LiveEngine
-from agent.location import cell_of, detect_region
+from agent.location import cell_of, detect_region, region_by_boundary
 from agent.screen import CITIZEN_NOTICE
 from agent.tools import service_regions, tools_for
 
@@ -50,8 +50,33 @@ def test_detect_region_own_cell_and_neighbor():
     assert detect_region(own, lat, lon, ['강남', '춘천']) == '춘천'
     neighbor = StubEngine({'춘천': {f'{cx + 1}_{cy}'}})                  # 자기 칸이 없고 옆 칸만 있음
     assert detect_region(neighbor, lat, lon, ['강남', '춘천']) == '춘천'
-    far = StubEngine({'춘천': {f'{cx + 2}_{cy}'}})                       # 두 칸 떨어지면 지역 밖
-    assert detect_region(far, lat, lon, ['강남', '춘천']) is None
+    lat2, lon2 = 37.5665, 126.9780                                      # 서울시청 (두 지역 경계 밖)
+    cx2, cy2 = cell_of(lat2, lon2)
+    far = StubEngine({'강남': {f'{cx2 + 2}_{cy2}'}})                     # 두 칸 떨어지고 경계도 밖이면 지역 밖
+    assert detect_region(far, lat2, lon2, ['강남', '춘천']) is None
+
+
+def test_detect_region_boundary_fallback():
+    """근처에 통신 칸이 없어도 시군구 경계 안이면 그 지역 (10/18 외곽 마을)."""
+    lat, lon = 37.9925, 127.9010                                        # 춘천 북산면 추전리
+    assert detect_region(StubEngine({}), lat, lon, ['강남', '춘천']) == '춘천'
+    assert detect_region(StubEngine({}), lat, lon, ['강남']) is None     # 서비스 지역 목록에 없으면 밖
+
+
+@pytest.mark.parametrize('lat, lon, expected', [
+    (37.9925, 127.9010, '춘천'),        # 북산면 추전리
+    (37.9690, 127.6380, '춘천'),        # 사북면
+    (37.7480, 127.6450, '춘천'),        # 남산면
+    (37.5006, 127.0364, '강남'),        # 역삼역 (강남역은 강남대로가 구 경계라 좌표가 서초 쪽)
+    (37.4650, 127.1050, '강남'),        # 세곡동 부근
+    (37.5133, 127.1001, None),          # 송파 잠실
+    (37.5045, 127.0050, None),          # 서초 반포
+    (37.8310, 127.5100, None),          # 가평읍
+    (38.1060, 127.7080, None),          # 화천읍
+    (37.6970, 127.8890, None),          # 홍천읍
+])
+def test_region_by_boundary(lat, lon, expected):
+    assert region_by_boundary(lat, lon, ['강남', '춘천']) == expected
 
 
 @pytest.mark.skipif(not (ENGINE_DIR / 'preprocessed' / 'cell_master.parquet').exists(), reason='엔진 데이터 없음')

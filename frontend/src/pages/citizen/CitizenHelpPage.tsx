@@ -17,12 +17,17 @@ const TYPE_LABEL: Record<SupportRequestType, { title: string; desc: string }> = 
   mobility: { title: '이동 도움 요청', desc: '혼자 가기 어려우면 차량이나 동행 도움을 요청할 수 있어요.' },
 }
 
+/** datetime-local 입력값 형식 (YYYY-MM-DDTHH:mm, 기기 시간대) */
+function toInputValue(d: Date): string {
+  const p = (n: number) => String(n).padStart(2, '0')
+  return `${d.getFullYear()}-${p(d.getMonth() + 1)}-${p(d.getDate())}T${p(d.getHours())}:${p(d.getMinutes())}`
+}
+
 function defaultWhen(): string {
   const d = new Date()
   d.setDate(d.getDate() + 2)
   d.setHours(10, 0, 0, 0)
-  const p = (n: number) => String(n).padStart(2, '0')
-  return `${d.getFullYear()}-${p(d.getMonth() + 1)}-${p(d.getDate())}T${p(d.getHours())}:${p(d.getMinutes())}`
+  return toInputValue(d)
 }
 
 const input = 'w-full rounded-btn border border-line-strong px-3 py-3 text-lg focus:border-primary focus:outline-none'
@@ -38,6 +43,7 @@ export function CitizenHelpPage() {
   const [contact, setContact] = useState('')
   const [consent, setConsent] = useState(false)
   const [when, setWhen] = useState(defaultWhen)
+  const [minWhen] = useState(() => toInputValue(new Date()))   // 화면을 연 시각 이전은 고를 수 없다
   const [note, setNote] = useState('')
 
   const create = useMutation({
@@ -106,7 +112,7 @@ export function CitizenHelpPage() {
         </label>
         <label className="block">
           <span className="mb-1 block text-base font-semibold">언제 가고 싶으세요?</span>
-          <input type="datetime-local" required value={when} onChange={(e) => setWhen(e.target.value)} className={input} />
+          <input type="datetime-local" required min={minWhen} value={when} onChange={(e) => setWhen(e.target.value)} className={input} />
         </label>
         <label className="flex items-start gap-3">
           <input type="checkbox" checked={consent} onChange={(e) => setConsent(e.target.checked)} className="mt-1 size-5 accent-primary" />

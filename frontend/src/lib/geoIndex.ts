@@ -20,8 +20,9 @@ export function useFacilityIndex() {
 }
 
 export function useCellIndex() {
-  const gn = useTypesLayer('강남')
-  const cc = useTypesLayer('춘천')
+  // 현장 확인으로 제외된 칸도 이름은 찾아야 하므로 제외된 칸까지 받는다
+  const gn = useTypesLayer('강남', true)
+  const cc = useTypesLayer('춘천', true)
   const index = useMemo(() => {
     const m = new Map<string, { emd_name: string; type?: string; region: '강남' | '춘천'; lat: number; lon: number }>()
     const add = (col: typeof gn.data, region: '강남' | '춘천') =>

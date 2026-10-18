@@ -38,6 +38,16 @@ export function AdminRequestsPage() {
     onSuccess: () => { qc.invalidateQueries({ queryKey: ['support-requests'] }); qc.invalidateQueries({ queryKey: ['demand-signals'] }) },
   })
   const facName = (id: string) => facilities.get(id)?.name ?? '시설 (이름 확인 중)'
+  // 현장 확인 기록은 250m 구역(칸)마다 오므로 행정동별로 합친다
+  const feedbackByEmd = Object.values(
+    (feedback.data ?? []).reduce<Record<string, { name: string; checks: number; cells: number }>>((acc, f) => {
+      const name = cells.get(f.cell_id)?.emd_name ?? '동네 (이름 확인 중)'
+      const row = (acc[name] ??= { name, checks: 0, cells: 0 })
+      row.checks += f.checked_count
+      row.cells += 1
+      return acc
+    }, {}),
+  ).sort((x, y) => y.checks - x.checks || x.name.localeCompare(y.name, 'ko'))
 
   return (
     <div className="mx-auto grid h-full max-w-7xl gap-8 overflow-y-auto px-6 py-5 lg:grid-cols-[minmax(0,3fr)_minmax(0,2fr)]">
@@ -114,15 +124,15 @@ export function AdminRequestsPage() {
         </section>
         <section>
           <h2 className="font-bold">현장 피드백 요약</h2>
-          <p className="mb-2 text-xs text-ink-3">동네별 확인 횟수</p>
+          <p className="mb-2 text-xs text-ink-3">동네(행정동)별 현장 확인 횟수와 확인한 250m 구역 수</p>
           {feedback.isPending && <Spinner />}
           {feedback.isError && <ErrorState error={feedback.error} onRetry={() => feedback.refetch()} />}
           {feedback.data && feedback.data.length === 0 && <p className="text-sm text-ink-3">아직 현장 확인 기록이 없습니다.</p>}
           {feedback.data && feedback.data.length > 0 && (
             <table className="w-full border-t border-line text-sm">
               <tbody className="divide-y divide-line">
-                {feedback.data.map((f) => (
-                  <tr key={f.cell_id}><td className="py-2 pr-3">{cells.get(f.cell_id)?.emd_name ?? '동네 (이름 확인 중)'}</td><td className="py-2 text-right tabular-nums text-ink-2">{f.checked_count}회 · 응답 항목 {f.checklist_responses?.length ?? 0}개</td></tr>
+                {feedbackByEmd.map((r) => (
+                  <tr key={r.name}><td className="py-2 pr-3">{r.name}</td><td className="py-2 text-right tabular-nums text-ink-2">{r.checks}회 · 구역 {r.cells}곳</td></tr>
                 ))}
               </tbody>
             </table>

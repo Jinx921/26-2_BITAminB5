@@ -18,7 +18,7 @@ export function ChartFragment({ fragment, mode }: FragmentProps<BarChartData>) {
               <span className="truncate text-ink-2">{item.label}</span>
               <div className="relative h-6 rounded-[6px] bg-canvas">
                 <div className="absolute inset-y-0 left-0 rounded-[6px] bg-primary group-hover:brightness-110" style={{ width: `${Math.max(pct, item.value > 0 ? 1 : 0)}%` }} aria-hidden />
-                <span className="absolute inset-y-0 flex items-center text-xs font-semibold tabular-nums" style={{ left: `${pct}%` }}>
+                <span className="absolute inset-y-0 flex items-center whitespace-nowrap text-xs font-semibold tabular-nums" style={{ left: `${pct}%` }}>
                   <span className={pct > 70 ? '-translate-x-full pr-2 text-white' : 'pl-2 text-ink'}>
                     {item.value}
                     {chart.unit}

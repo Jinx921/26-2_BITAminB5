@@ -111,6 +111,9 @@ class Digester:
         if near:
             lines.append('반경 안 시설 (가까운 순, 거리는 가장 가까운 시설만 evidence 에 있다):')
             lines += [row(r) for r in near]
+        elif res.get('fallback_nearby'):
+            lines.append('반경 안 시설은 없다. 화면 지도에는 종류별 가장 가까운 시설을 보여 준다. '
+                         '걸어가기엔 멀 수 있으니 거리를 함께 쉬운 말로 안내한다')
         lines.append('시설 이름·주소는 이 표기 그대로 쓴다')
         return lines
 

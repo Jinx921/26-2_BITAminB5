@@ -58,6 +58,9 @@ MAP_ROWS = {
     'lookup_resources': ('facilities', 'within_radius',
                          {'id': 'fac_id', 'lat': 'lat', 'lon': 'lon', 'name': 'name', 'kind': 'kind', 'dist_m': 'dist_m'}),
 }
+# 행 목록이 비었을 때 대신 쓰는 결과 (엔진 10/18: 외곽은 반경 안 시설이 없어 지도·시설 카드가 사라진다 →
+# 종류별 가장 가까운 시설 중 엔진이 정한 거리 안의 것)
+MAP_ROWS_FALLBACK = {'lookup_resources': 'fallback_nearby'}
 # 지도 점을 강조하는 기준: 화면 문장에 이 필드 값(시설 이름 / 행정동 이름)이 나오면 강조
 HIGHLIGHT_BY = {'facilities': 'name', 'types': 'emd_name', 'candidates': 'emd_name', 'sites': 'emd_name',
                 'checks': 'emd_name', 'interventions': 'emd_name'}
@@ -93,7 +96,7 @@ def _map(ctx: Context, map_ref: str | None, text: str = '') -> dict | None:
         return None
     s = st.get(ref)
     layer, rows_key, fields = MAP_ROWS[s.tool]
-    rows = s.data['result'].get(rows_key, [])
+    rows = s.data['result'].get(rows_key, []) or s.data['result'].get(MAP_ROWS_FALLBACK.get(s.tool, ''), [])
     if not rows:                                                  # 오류 결과 등 그릴 점이 없으면 지도 없음
         return None
     points = [{k: r.get(src) for k, src in fields.items()} for r in rows]

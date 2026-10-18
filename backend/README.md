@@ -190,7 +190,7 @@ python -m backend.seed_user --role field_worker
 
 - 비밀번호는 Argon2 해시로 저장한다. JWT secret은 환경 변수로만 제공하고 토큰·비밀번호·Authorization 헤더는 로그에 남기지 않는다.
 - 지원 요청은 `pending`으로 저장되며 자동 매칭·승인과 알림 기능은 구현하지 않았다.
-- 프론트엔드(`frontend/`)는 이 문서의 API에 연결되어 있다. 배포는 아직 구현하지 않았다.
+- 프론트엔드(`frontend/`)는 이 문서의 API에 연결되어 있다. 배포는 Railway 단일 컨테이너(루트 `Dockerfile`)로 하며, DB는 `/app/backend/data`에 붙인 Volume에 저장한다.
 - 현장 확인 기록은 에이전트 답변·엔진 원본 결과에는 자동 반영하지 않고, 관리자 유형 지도 응답에서만 최신 기록을 덮어써 표시한다.
 - 실제 사용자 데이터, 비밀번호, JWT secret, Anthropic API 키 및 `.env` 파일은 Git에 추가하거나 커밋하지 않는다.
   DB 파일과 `backend/data/`도 추적하지 않는다.

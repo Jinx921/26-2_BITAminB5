@@ -189,7 +189,7 @@ Sonnet ──▶ 도구 호출 ──▶ 권한 확인 → 기준값 인자 제�
 | `sites` | `id, lat, lon, emd_name, covers` | 이동형 거점 |
 | `interventions` | `id, lat, lon, emd_name, option, name, facility_name` | 개입안 비교 (안별 거점) |
 | `checks` | `id, lat, lon, emd_name, level, questions, order` | 현장 확인 목록 |
-| `facilities` | `id, lat, lon, name, kind (, dist_m)` | 주변 시설, 시설 검색 |
+| `facilities` | `id, lat, lon, name, kind (, dist_m)` | 주변 시설, 시설 검색. 반경 안에 시설이 없으면(외곽) 엔진 `fallback_nearby`의 종류별 가장 가까운 시설(5km 안) |
 
 - `id`는 칸 ID 또는 시설 ID다. 화면 글자로 보여주지 말고 상세 조회 키로만 쓴다.
 - 강조 기준: 관리자는 결론 문장에 나온 행정동, 시민은 답변 전체에 나온 시설, 시설 변화 질문은 실제로 뺀 시설만.
@@ -209,7 +209,7 @@ Sonnet ──▶ 도구 호출 ──▶ 권한 확인 → 기준값 인자 제�
 | 검증 | `verifier.py` | 숫자 대조·금지 표현·과정 수치·필수 한계·분량. 신뢰도는 코드가 정함 |
 | 화면 조각 | `screen.py` | `display`(프론트) / `internal`(로그) 분리. 검증 실패 시 문장 숨김 |
 | 오케스트레이터 | `orchestrator.py`, `prompts.py` | 직접 짠 도구 호출 반복(도구 결과를 가로채 요약·보관해야 해서). 프롬프트는 공통 + 모드별 |
-| 시민 모드 | `location.py`, `senior_hours` | 위치는 앱이 넘겨준 **찾을 위치**(가족이 대신 찾는 경우 포함). 지역 판단은 위치 → 칸 ID → 엔진 칸 확인, 칸이 없으면 옆 1칸까지. Sonnet 은 위치를 정하지 못하고 좌표도 받지 않음 |
+| 시민 모드 | `location.py`, `senior_hours` | 위치는 앱이 넘겨준 **찾을 위치**(가족이 대신 찾는 경우 포함). 지역 판단은 위치 → 칸 ID → 엔진 칸 확인, 칸이 없으면 옆 1칸까지, 그래도 없으면 시군구 경계(`geo/service_area.geojson`)로 판단(통신 칸이 없는 외곽 마을). Sonnet 은 위치를 정하지 못하고 좌표도 받지 않음 |
 | 관리자 질문 확장 | `find_facility`, 요약 보강 | 배치·시설 폐쇄·"믿어도 돼?" 지원. 강건성을 Sonnet 이 부르지 않으면 신뢰도용으로 코드가 부름 (짧은 답 제외) |
 | 현장 확인 목록 | `field_check.py` | 기준을 엔진 기본값 ±20%(위축 개월 +1)로 바꾼 54조합에서 긴급방문형 유지 비율 계산. 80% 이상 안정(목록 제외), 50~80% 확인 필요, 50% 미만 꼭 확인. 흔들리는 기준별 확인 질문 |
 | 개입안 비교 | `compare.py` | 경로당 거점 = 이동형 거점마다 가장 가까운 경로당(같은 수·같은 동네)에 보건 기능 추가 가정. 공통 지표 = 해소되는 긴급방문형 동네 수 |
@@ -239,7 +239,7 @@ Sonnet ──▶ 도구 호출 ──▶ 권한 확인 → 기준값 인자 제�
 | 제안서에 "동네를 중심으로 생활이 이뤄지는 도시"처럼 로컬 결제 비율을 생활 반경으로 바꿔 씀 (숫자는 맞아 검증은 통과) | 프롬프트에 "지역 가게를 누가 이용하는지"로만 말하라는 규칙과 금지 예 추가 |
 
 ### 최종 점검
-- 테스트 170개 (API 키 없이, 가짜 Sonnet 과 예시 응답 엔진 사용), 엔진 테스트 18개 통과. `engine/` 코드는 수정하지 않았다.
+- 테스트 186개 (API 키 없이, 가짜 Sonnet 과 예시 응답 엔진 사용), 엔진 테스트 19개 통과. `engine/` 코드는 수정하지 않았다.
 - 마지막 코드 점검에서 짧은 답이 두 번 실패하면 멈추던 문제, 다시 쓰기 안내가 늘 `submit_answer`를 가리키던 문제, 도구 없이 제안서·보고를 쓸 수 있던 문제를 고쳤다.
 - 백엔드 연결 전 점검: 백엔드처럼 `ask()`를 15가지 경우(전체 도구·시민·지역 밖·잘못된 인자)로 불러 모두 JSON 화면 조각이 나오는 것과 동시 요청을 확인했다. 지도가 없는데 "지도에 표시"라고 안내하던 문제, 점 0개 지도, 비어 있는 위치 값을 고쳤다. 짧은 답에는 신뢰도가 없으므로 신뢰도용 강건성 점검을 자동으로 부르지 않게 했다.
 - 도시 성격 보강 후 실제 Sonnet·엔진으로 예시 6개(어디부터 춘천·강남, 이동형 배치, 개입안 비교 춘천·강남, 제안서)를 다시 만들었다. 모두 검증을 통과했고(제안서는 2회 제출), 도시 성격 문장과 한계 문장을 직접 읽어 확인했다.
@@ -278,8 +278,8 @@ Sonnet ──▶ 도구 호출 ──▶ 권한 확인 → 기준값 인자 제�
 |---|---|
 | 공개 도구 | `core.TOOLS` 의 도구 이름·인자, 응답 공통 형식, `engine/tool_schemas.py` 의 `SCHEMAS`(지역 목록 포함) |
 | evidence 이름 | `n_긴급방문형` 등 유형 수, `*_gap_*`, `covered_senior_share_kN`, `covered_cells_kN`, `senior60_card_time_*`, `local_payment_pct`, `oat_*` 등. Sonnet 이 이 이름으로 인용한다 |
-| result 필드 | 요약·지도에 쓰는 것: `classify`(`type_counts`, `layers`, `type_actions`, `by_emd_withdrawn`, `table`), `find_candidates`(`by_emd`, `cells`), `robustness`(`one_at_a_time`), `simulate_placement`(`chosen_sites`, `covered_cells`, `type_after`), `facility_change`(`removed`, `transitions`, `changed_cells`), `region_context`(`senior60_card_time_pct`, `lens`), `lookup_resources`(`nearest_by_kind`, `within_radius`) |
-| `lookup_resources` | 다른 지역의 `cell_id`를 넣으면 `result.error`를 돌려주는 동작을 **시민 위치의 지역 판단**에 쓴다. 칸 ID = UTM-K(EPSG:5179) 좌표 ÷ 250 의 몫이라는 규칙도 쓴다 |
+| result 필드 | 요약·지도에 쓰는 것: `classify`(`type_counts`, `layers`, `type_actions`, `by_emd_withdrawn`, `table`), `find_candidates`(`by_emd`, `cells`), `robustness`(`one_at_a_time`), `simulate_placement`(`chosen_sites`, `covered_cells`, `type_after`), `facility_change`(`removed`, `transitions`, `changed_cells`), `region_context`(`senior60_card_time_pct`, `lens`), `lookup_resources`(`nearest_by_kind`, `within_radius`, `fallback_nearby`) |
+| `lookup_resources` | 다른 지역의 `cell_id`를 넣으면 `result.error`를 돌려주는 동작을 **시민 위치의 지역 판단**에 쓴다 (근처에 칸이 없으면 시군구 경계로 판단). 칸 ID = UTM-K(EPSG:5179) 좌표 ÷ 250 의 몫이라는 규칙도 쓴다 |
 | caveat 문구 | 필수 한계 판정에 문장 속 구절을 쓴다: "거주자와 같지 않다", "두 층", "공공 보건기관", "고립 감소 효과를 뜻하지 않는다", "직선거리", "세부 프로그램은 기관 확인", "생활 반경·고립 신호로 해석하지 않고" |
 | 예외 3가지 | ① `field_check`가 `core._universe`와 `config`(교류·보건 거리, 위축 개월, 주택 기준 기본값)를 씀 ② `find_facility`·`compare`가 `preprocessed/facility.parquet`(`fac_id, region, group, kind, name, addr, lat, lon`)을 읽음 ③ `senior_industries`가 `outputs/tables/18·19·23·24` 표를 읽음 |
 

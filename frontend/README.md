@@ -157,24 +157,19 @@ scripts/          sync-geo.sh
 | --- | --- | --- |
 | 지도 조회 | 실제 모드: 시민 시설·관리자 유형/후보/배치 API, 목업: `public/geo/` 정적 복사본 | `api/types.ts`, `api/endpoints.ts`, `api/mock/index.ts` |
 | 현장 판정 덮어쓰기 | 실제 모드: 관리자 유형 지도 응답의 `field_status`, `engine_type`, `engine_priority`, `field_checked_at` 사용 | `map/useGeoLayer.ts`, `map/GridLayer.tsx` |
-| 현장 확인 목록 전달 | 목업: 공유 저장소 / 실제: 전달·조회 API 미지원. JSON 직접 다운로드·가져오기만 가능 | 백엔드 API가 제공되면 `publishFieldCheckList`, `fetchFieldCheckList` 연결 |
+| 현장 확인 목록 전달 | 목업: 공유 저장소 / 실제: 관리자 → 현장 바로 전달 API는 없어 JSON 다운로드 → 현장 화면에서 가져오기. 가져온 목록은 `/api/v1/field-check-list`로 담당자 계정에 저장돼 다른 기기에서도 다시 불러온다 | 전달 API가 생기면 `publishFieldCheckList` (`api/endpoints.ts`) |
 | 시민 일정, 큰 글씨 설정 | 기기 localStorage | 필요하면 백엔드 |
 | 시설 전화번호 | 데이터에 없어 카드에 전화 버튼 없음 | 시설 데이터에 전화 필드가 생기면 `PlaceCard` |
 | 주민센터 전화 | `src/config.ts` `communityCenterPhone` 비어 있음(버튼 숨김) | 번호 확인 후 채우기 |
 
-## 백엔드와 확인된 것 (2026-10-12, 실제 서버에 curl)
+## 백엔드와 확인된 것
 
 - 회원가입·로그인·401/403 오류 형식·CORS(localhost:5173) 모두 계약서대로 동작. 이메일은 `.local` 같은 예약 도메인을 거부하므로 `example.com` 등을 쓴다.
 - 지원 요청 생성/목록/상태 변경, 현장 기록 생성/조회: 프론트가 보내는 payload 그대로 201/200.
 - checklist 는 현장기록 규격의 문자열 값(`yes/no/unknown`, `needed/not_needed/unsure`)으로 저장되고 그대로 조회된다.
 - 시민 시설 지도는 `GET /api/v1/maps/facilities?region=...`, 관리자 지도는 유형·후보·배치별 관리자 API를 사용한다. 시민 시설 응답은 allowlist 속성만 포함하며 `fac_id`는 화면에 표시하지 않는다.
 - 관리자 유형 지도는 서버가 처리한 최신 현장기록을 사용한다. `has_residents=no`가 제외 우선이고 `support_needed=not_needed`는 관찰형/우선순위 4로 표시된다. 원본 엔진 값은 별도 속성에 보존한다.
-- 관리자와 현장 담당자 사이의 목록 전달 API는 아직 없다. 실제 모드의 목록은 JSON 직접 전달이며, 현장 앱에서 가져온 목록은 현재 탭 세션에만 보관한다.
-- `GET /admin/field-feedback-summary` 응답 키는 `checklist_responses` (계약서에는 키 이름이 없었음). `unknown` 답도 응답으로 센다 → 채원에게 전달.
+- 관리자와 현장 담당자 사이의 목록 전달 API는 없다. 실제 모드의 목록은 JSON 직접 전달이며, 현장 앱에서 가져온 목록은 담당자 계정에 저장된다(`/api/v1/field-check-list`).
+- `GET /admin/field-feedback-summary` 응답 키는 `checklist_responses`. `unknown` 답도 응답으로 센다.
 - 날짜 `created_at` 은 `"YYYY-MM-DD HH:MM:SS"` (UTC, 시간대 없음) 형식이라 `lib/datetime.ts` 에서 보정한다.
 - 질문 API 는 Anthropic 키가 없으면 500 `internal_server_error` 를 돌려준다. 프론트는 안내 문구로 바꿔 보여준다.
-
-## 팀에 전달할 것
-
-- `types` 레이어 points 50개 제한(hyunjun 10/12 수정분이 sarang 의 engine 복사본에 반영됐는지), 시설 좌표 이상치 4건.
-- 현장 확인 목록 전달 API, 현장 판정 덮어쓰기(백엔드), GeoJSON 정적 서빙 여부.

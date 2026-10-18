@@ -83,6 +83,13 @@ python -m pytest agent/tests engine/tests backend/tests -q
 cd frontend && npm test && npm run typecheck && npm run lint && npm run build
 ```
 
+### 배포
+
+- 주소: https://bigcontest-production.up.railway.app
+- Railway 단일 컨테이너(`Dockerfile`): 프론트 빌드 결과와 백엔드(에이전트·엔진 포함)를 한 서버에서 서빙한다.
+- SQLite DB(`/app/backend/data/app.db`)는 Railway Volume에 저장해 재배포 후에도 계정·요청 기록이 유지된다.
+- 환경 변수: `ANTHROPIC_API_KEY`, `BACKEND_JWT_SECRET`, `BACKEND_ALLOWED_ORIGINS` (값은 커밋하지 않는다)
+
 ### 분석 코드
 
 주피터에서는 커널 **Python (BITAmin B5)** 을 고른다. (`python -m ipykernel install --user --name bitamin-b5`) </br>

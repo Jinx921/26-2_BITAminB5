@@ -16,7 +16,7 @@ r['geojson']                       # 'out/types_춘천.geojson'    → 프론트
 ```
 
 - 전체 예시 생성: `python run_demo.py` → `out/json/*.json`, `out/*.png`, `out/*.geojson`
-- 검증: `python -m pytest tests -q` (18개: 팀 후보·민감도 재현·결정성·규격·MCLP 전수탐색 대조·시설변화·caveat·잘못된 입력)
+- 검증: `python -m pytest tests -q` (19개: 팀 후보·민감도 재현·결정성·규격·MCLP 전수탐색 대조·시설변화·caveat·잘못된 입력·외곽 대체 시설)
 - Claude tool use 정의: `out/tool_schemas.json` (혜진: 에이전트에 그대로)
 - **JSON 규격 (혜진·채원·사랑용): [`JSON_규격.md`](JSON_규격.md)**
 

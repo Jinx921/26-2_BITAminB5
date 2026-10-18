@@ -64,8 +64,8 @@ export function AdminFieldListPage() {
           {current.isPending && isMockMode && !list && <Spinner />}
           {!list && !ask.isPending && (!isMockMode || !current.isPending) && (
             <EmptyState
-              title={isMockMode ? '보낸 목록이 없습니다' : '백엔드 전달 API가 없습니다'}
-              description={isMockMode ? "지역을 고르고 '목록 만들기'를 누르면 에이전트가 판정이 애매한 동네와 확인 질문을 뽑습니다." : "목록 생성은 가능하지만 백엔드의 현장 확인 목록 전달 API가 아직 없습니다. 생성한 목록을 .json으로 내려받아 현장 담당자에게 직접 전달해 주세요."}
+              title={isMockMode ? '보낸 목록이 없습니다' : '아직 만든 목록이 없습니다'}
+              description={isMockMode ? "지역을 고르고 '목록 만들기'를 누르면 에이전트가 판정이 애매한 동네와 확인 질문을 뽑습니다." : "지역을 고르고 '목록 만들기'를 누르면 에이전트가 판정이 애매한 동네와 확인 질문을 뽑습니다. 만든 목록은 .json으로 내려받아 현장 담당자에게 전달합니다."}
             />
           )}
 
@@ -74,7 +74,7 @@ export function AdminFieldListPage() {
               <div className="mb-3 flex items-start justify-between gap-2">
                 <div className="min-w-0">
                   <p className="flex items-center gap-2 text-sm">
-                    <span className={`rounded-full px-2 py-0.5 text-xs font-semibold ${isDraft ? 'bg-amber-50 text-amber-ink' : 'bg-green-soft text-green'}`}>{isDraft ? '아직 안 보냄' : '보낸 목록'}</span>
+                    {isMockMode && <span className={`rounded-full px-2 py-0.5 text-xs font-semibold ${isDraft ? 'bg-amber-50 text-amber-ink' : 'bg-green-soft text-green'}`}>{isDraft ? '아직 안 보냄' : '보낸 목록'}</span>}
                     <span className="text-ink-3">{list.region ?? ''} · {list.cells.length}곳 · {formatDateTime(list.created_at)}</span>
                   </p>
                   <p className="mt-1 text-sm text-ink-2">{list.headline}</p>
@@ -96,7 +96,7 @@ export function AdminFieldListPage() {
                 />
               </div>
               {publish.isError && <ErrorState error={publish.error} title="보내지 못했습니다" />}
-              {!isMockMode && <p className="mb-3 text-xs text-ink-3">백엔드 전달 API가 아직 없어 전송하지 않습니다. .json을 내려받아 현장 담당자가 직접 가져와야 합니다.</p>}
+              {!isMockMode && <p className="mb-3 text-xs text-ink-3">내려받기 → '.json 내려받기 (현장 앱용)'으로 받은 파일을 현장 담당자가 현장 화면에서 불러오면 담당자 계정에 저장됩니다.</p>}
 
               <ol className="divide-y divide-line border-t border-line">
                 {list.cells.map((c) => (

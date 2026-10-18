@@ -265,7 +265,7 @@ export function AdminHomePage() {
                   ) : (
                     <ErrorState error={new Error('이 답변에서 현장 확인 목록을 만들 수 없습니다.')} title="목록을 내려받지 못했습니다" />
                   )}
-                  <p className="mt-1 text-xs text-ink-3">백엔드 전달 API는 아직 없습니다. 내려받은 JSON을 현장 담당자에게 직접 전달해 주세요.</p>
+                  <p className="mt-1 text-xs text-ink-3">내려받은 파일을 현장 담당자가 현장 화면에서 불러오면 담당자 계정에 저장됩니다.</p>
                 </div>
               )}
             </div>

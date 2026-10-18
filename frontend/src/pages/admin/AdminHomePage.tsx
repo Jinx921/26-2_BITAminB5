@@ -19,7 +19,7 @@ import { FragmentRenderer } from '@/fragments'
 import { downloadTextFile } from '@/lib/download'
 import { useAskQuestion } from '@/lib/useAskQuestion'
 import { BaseMap, GridLayer, PointsLayer, useCandidatesLayer, useSimLayer, useTypesLayer } from '@/map'
-import { TYPE_ORDER } from '@/map/colors'
+import { OPTION_COLORS, TYPE_ORDER } from '@/map/colors'
 import type { GridCollection } from '@/types/geo'
 import type { IsolationType, MapPoint } from '@/types/display'
 
@@ -108,7 +108,48 @@ export function AdminHomePage() {
     if (m && m.layer === 'candidates' && layer === 'candidates') m.points.forEach((p) => s.add(p.id))
     return s
   }, [display, layer])
-  const siteCount = display?.map && (display.map.layer === 'sites' || display.map.layer === 'interventions') ? display.map.points.length : 0
+  // 배치·개입안 비교 답변: 범례를 답변 기준으로 맞춘다
+  const placement = useMemo(() => {
+    const m = display?.map
+    if (!m || (m.layer !== 'sites' && m.layer !== 'interventions')) return null
+    const radiusM = m.radius_m ?? null
+    if (m.layer === 'sites') {
+      return { kind: 'sites' as const, radiusM, sites: m.points.length, covered: m.points.reduce((a, p) => a + (p.covers ?? 0), 0), options: undefined }
+    }
+    const names = [...new Set(m.points.map((p) => p.option))]
+    const options = names.map((label, i) => ({ label, color: OPTION_COLORS[i] ?? '#334155', count: m.points.filter((p) => p.option === label).length }))
+    return { kind: 'interventions' as const, radiusM, sites: Math.max(0, ...options.map((o) => o.count)), covered: undefined, options }
+  }, [display])
+  // 배경 파일은 엔진이 미리 만든 '거점 3곳' 배치뿐이다. 답변의 거점 수·반경과 다르면 닿는 칸 색을 칠하지 않는다
+  const radiusMatches = placement !== null && (placement.radiusM == null || placement.radiusM === radius)
+  const placementMatches = placement !== null && placement.sites === 3 && radiusMatches
+  const simShown = useMemo(() => {
+    if (!sim.data || !placement || placementMatches) return sim.data
+    return { ...sim.data, features: sim.data.features.map((f) => ({ ...f, properties: { ...f.properties, covered: 0 as const } })) }
+  }, [sim.data, placement, placementMatches])
+  const simLegend = (() => {
+    const fileStats = { covered: sim.data ? simStats.covered : undefined, total: sim.data ? simStats.total : undefined }
+    if (!placement) return { ...fileStats, title: undefined, note: undefined, options: undefined }
+    const km = placement.radiusM ? `${placement.radiusM / 1000}km` : ''
+    const radiusNote = !radiusMatches && km ? ` 답변은 반경 ${km} 기준입니다. ${km}를 누르면 답변과 같은 반경으로 볼 수 있습니다.` : ''
+    const bgNote = placementMatches ? '' : ' 배경에는 가장 먼저 방문이 필요한 동네 위치만 표시합니다.'
+    if (placement.kind === 'sites') {
+      return {
+        title: `답변: 이동형 거점 ${placement.sites}곳${km ? ` · ${km}` : ''}`,
+        covered: radiusMatches ? placement.covered : undefined,
+        total: radiusMatches ? fileStats.total : undefined,
+        options: undefined,
+        note: `답변의 거점을 ★로 표시했습니다.${bgNote}${radiusNote}`,
+      }
+    }
+    return {
+      title: `답변: 개입안별 거점 ${placement.sites}곳${km ? ` · ${km}` : ''}`,
+      covered: placementMatches ? fileStats.covered : undefined,
+      total: placementMatches ? fileStats.total : undefined,
+      options: placement.options,
+      note: `점은 안별 거점 위치입니다. 닿는 동네 수 비교는 오른쪽 차트를 봐 주세요.${bgNote}${radiusNote}`,
+    }
+  })()
 
   const onSelectPoint = (p: MapPoint) => setSelectedId(p.id)
   function submit(question: string) {
@@ -121,7 +162,11 @@ export function AdminHomePage() {
         onSuccess: (d) => {
           const l = d.map?.layer
           if (l === 'candidates') setLayer('candidates')
-          else if (l === 'sites' || l === 'interventions') setLayer('sim')
+          else if (l === 'sites' || l === 'interventions') {
+            setLayer('sim')
+            const r = (d.map as { radius_m?: number | null }).radius_m
+            if (r === 1000 || r === 3000) setRadius(r)                    // 배치 지도 반경을 답변에 맞춘다
+          }
           else if (l === 'types' || l === 'checks') setLayer('types')
         },
       },
@@ -146,10 +191,10 @@ export function AdminHomePage() {
             <GridLayer key={`candidates-${effectiveRegion}`} data={candidates.data} variant="candidates" highlightIds={highlightIds} secondaryIds={secondaryIds} selectedId={selectedId} onSelect={(p) => setSelectedId(p.cell_id)} />
           )}
           {layer === 'sim' && sim.data && (
-            <GridLayer key={`sim-${effectiveRegion}-${radius}`} data={sim.data} variant="sim" highlightIds={highlightIds} selectedId={selectedId} onSelect={(p) => setSelectedId(p.cell_id)} />
+            <GridLayer key={`sim-${effectiveRegion}-${radius}-${placementMatches}`} data={simShown ?? sim.data} variant="sim" highlightIds={highlightIds} selectedId={selectedId} onSelect={(p) => setSelectedId(p.cell_id)} />
           )}
           {/* 후보 응답은 격자 테두리로 강조하므로 후보 지도 위에는 점을 따로 찍지 않는다 */}
-          {display?.map && display.map.layer !== 'types' && display.map.layer !== 'facilities' && !(display.map.layer === 'candidates' && layer === 'candidates') && (
+          {display?.map && display.map.layer !== 'types' && !(display.map.layer === 'candidates' && layer === 'candidates') && (
             <PointsLayer map={display.map} selectedId={selectedId} onSelect={onSelectPoint} />
           )}
         </BaseMap>
@@ -169,7 +214,7 @@ export function AdminHomePage() {
             </>
           )}
           {layer === 'candidates' && <CandidatesLegend counts={monthCounts} total={candidates.data?.features.length} />}
-          {layer === 'sim' && <SimLegend radius={radius} onRadiusChange={setRadius} covered={sim.data ? simStats.covered : undefined} total={sim.data ? simStats.total : undefined} siteCount={siteCount} />}
+          {layer === 'sim' && <SimLegend radius={radius} onRadiusChange={setRadius} covered={simLegend.covered} total={simLegend.total} title={simLegend.title} options={simLegend.options} note={simLegend.note} />}
         </div>
       </section>
 

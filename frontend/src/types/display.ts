@@ -59,8 +59,8 @@ export type MapPoint =
 export type MapFragmentData =
   | { layer: 'types'; ref: string; geojson: string | null; points: TypesPoint[] }
   | { layer: 'candidates'; ref: string; geojson: string | null; points: CandidatesPoint[] }
-  | { layer: 'sites'; ref: string; geojson: string | null; points: SitesPoint[] }
-  | { layer: 'interventions'; ref: string; geojson: string | null; points: InterventionsPoint[] }
+  | { layer: 'sites'; ref: string; geojson: string | null; points: SitesPoint[]; radius_m?: number | null }
+  | { layer: 'interventions'; ref: string; geojson: string | null; points: InterventionsPoint[]; radius_m?: number | null }
   | { layer: 'checks'; ref: string; geojson: string | null; points: ChecksPoint[] }
   | { layer: 'facilities'; ref: string; geojson: string | null; points: FacilitiesPoint[] }
 

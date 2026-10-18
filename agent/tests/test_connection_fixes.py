@@ -52,3 +52,16 @@ def test_brief_skips_auto_robustness():
     screen, turn = Orchestrator(engine, client=client).ask('부산은 어때?')
     assert turn.end == 'passed' and [t for t, _ in engine.called] == ['region_context']
     assert screen['display']['confidence'] is None
+
+
+def test_placement_map_carries_radius():
+    """배치·개입안 비교 지도에는 반경이 함께 간다 (프론트가 배치 지도 반경을 답변에 맞춘다)."""
+    st = ResultStore()
+    st.put('simulate_placement', {'region': '춘천'}, {'tool': 'simulate_placement', 'region': '춘천', 'evidence': [], 'caveats': [],
+                                                     'figures': [], 'geojson': None, 'params': {'k': 2, 'radius_m': 3000},
+                                                     'result': {'chosen_sites': [{'cell_id': '1_1', 'lat': 37.9, 'lon': 127.7,
+                                                                                  'emd_name': '사북면', 'covers': 10}]}})
+    m = build_screen('질문', 'admin', None, None, Context(st, {}, {}, '질문', 'admin'))['display']['map']
+    assert m['layer'] == 'sites' and m['radius_m'] == 3000
+    assert 'radius_m' not in build_screen('질문', 'admin', None, None,
+                                          _ctx_with('field_check', {'cells': [CHECK_ROW]}))['display']['map']

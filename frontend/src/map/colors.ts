@@ -47,8 +47,8 @@ export const SIM_COLOR = { covered: '#1d4ed8', gap: '#c05621' } as const
 /** 현장 확인 level */
 export const CHECK_LEVEL_COLOR: Record<string, string> = { '꼭 확인': '#b91c1c', '확인 필요': '#d97706' }
 
-/** 개입안 비교: 옵션 등장 순서대로 고정 배정 (순환하지 않음) */
-export const OPTION_COLORS = ['#b91c1c', '#d97706', '#1d4ed8']
+/** 개입안 비교: 옵션 등장 순서대로 고정 배정 (순환하지 않음). 유형 색·배치 지도 색과 겹치지 않는 색을 쓴다 */
+export const OPTION_COLORS = ['#7c3aed', '#0f766e', '#be185d']
 
 export const SITE_COLOR = '#1d4ed8'
 export const HIGHLIGHT_STROKE = '#111827'

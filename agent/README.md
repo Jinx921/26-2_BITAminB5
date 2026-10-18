@@ -176,7 +176,7 @@ Sonnet ──▶ 도구 호출 ──▶ 권한 확인 → 기준값 인자 제�
 |---|---|
 | `headline`, `details`, `caution` | 결론 / 문단 목록 / 확인할 점. 검증 실패 시 `headline`에 안내 문구, 나머지는 비어 있음. 짧은 답은 `headline`만 있고 지도·신뢰도는 `null` |
 | `confidence` | 관리자만. 시민 화면은 `null` |
-| `map` | 지도 레이어와 점 목록 (아래 표). 그릴 결과가 없으면 `null` |
+| `map` | 지도 레이어와 점 목록 (아래 표). 그릴 결과가 없으면 `null`. `sites`·`interventions` 레이어에는 거점 반경 `radius_m`(m)이 함께 온다 |
 | `chart` | 개입안 비교 질문일 때만: `{type: "bar", title, unit, total, items: [{label, value, remaining}]}` |
 | `document` | 문서 요청일 때만: `{type, type_name, title, sections: [{heading, body}], markdown}` |
 

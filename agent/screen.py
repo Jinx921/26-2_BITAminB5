@@ -109,7 +109,10 @@ def _map(ctx: Context, map_ref: str | None, text: str = '') -> dict | None:
             p['highlight'] = p.get('id') in removed
         else:
             p['highlight'] = bool(key) and p.get(key) in hit      # 답변에서 언급한 곳 (프론트가 강조)
-    return {'layer': layer, 'ref': ref, 'points': points, 'geojson': s.data.get('geojson')}
+    out = {'layer': layer, 'ref': ref, 'points': points, 'geojson': s.data.get('geojson')}
+    if layer in ('sites', 'interventions'):                       # 화면이 배치 지도 반경을 답변에 맞추도록
+        out['radius_m'] = (s.data.get('params') or {}).get('radius_m')
+    return out
 
 
 def _chart(ctx: Context) -> dict | None:

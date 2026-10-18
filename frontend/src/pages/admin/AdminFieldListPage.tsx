@@ -89,6 +89,7 @@ export function AdminFieldListPage() {
                 <Button size="sm" variant="outline" icon={<Copy className="size-4" />} onClick={copy}>{copied ? '복사됨' : '글로 복사'}</Button>
                 <Menu
                   label="내려받기"
+                  align="left"
                   items={[
                     { label: '.md 내려받기', onSelect: () => downloadTextFile(`현장확인목록_${list.region ?? ''}.md`, fieldListToMarkdown(list), 'text/markdown;charset=utf-8') },
                     { label: '.json 내려받기 (현장 앱용)', onSelect: () => downloadTextFile(`현장확인목록_${list.region ?? ''}.json`, JSON.stringify(list, null, 2), 'application/json') },

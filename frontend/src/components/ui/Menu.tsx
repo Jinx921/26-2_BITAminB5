@@ -7,8 +7,8 @@ export interface MenuItem {
   danger?: boolean
 }
 
-/** 점 세 개 메뉴. 로그아웃처럼 자주 안 쓰는 동작을 넣는다 */
-export function Menu({ items, label = '메뉴', header }: { items: MenuItem[]; label?: string; header?: ReactNode }) {
+/** 점 세 개 메뉴. 로그아웃처럼 자주 안 쓰는 동작을 넣는다. align: 펼친 상자를 버튼의 어느 쪽 끝에 맞출지 */
+export function Menu({ items, label = '메뉴', header, align = 'right' }: { items: MenuItem[]; label?: string; header?: ReactNode; align?: 'left' | 'right' }) {
   const [open, setOpen] = useState(false)
   const ref = useRef<HTMLDivElement>(null)
   useEffect(() => {
@@ -25,7 +25,7 @@ export function Menu({ items, label = '메뉴', header }: { items: MenuItem[]; l
         <MoreHorizontal className="size-5" />
       </button>
       {open && (
-        <div role="menu" className="absolute right-0 z-30 mt-1 min-w-44 overflow-hidden rounded-card border border-line bg-surface py-1 shadow-card">
+        <div role="menu" className={`absolute ${align === 'left' ? 'left-0' : 'right-0'} z-30 mt-1 min-w-44 overflow-hidden rounded-card border border-line bg-surface py-1 shadow-card`}>
           {header && <div className="border-b border-line px-3 py-2 text-xs text-ink-3">{header}</div>}
           {items.map((it, i) => (
             <button

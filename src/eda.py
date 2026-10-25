@@ -193,11 +193,13 @@ def card2_tables() -> list[tuple[str, pd.DataFrame, str]]:
     def local_rate(g):
         return g[g.local].USE_CNT.sum() / g.USE_CNT.sum() * 100
 
-    t = d.pivot_table(index='CLN_SGG_CD', columns='region', values='USE_CNT', aggfunc='sum')
+    # 거주지 '정보없음'(결제 건수 0.05%)은 빼고 비중을 낸다 — 엔진 local_payment_pct 와 같은 기준
+    known = d[d.CLN_SGG_CD != '정보없음']
+    t = known.pivot_table(index='CLN_SGG_CD', columns='region', values='USE_CNT', aggfunc='sum')
     t = (t / t.sum() * 100).round(2).sort_values('춘천', ascending=False)
     out.append(('가맹점 지역별 고객 거주지 분포 (%)', t.reset_index(),
-                '춘천 가맹점 결제의 82.1%가 강원 거주자인 반면, 강남은 39.9%만 서울 거주자다. '
-                '춘천은 닫힌 생활권, 강남은 외지 유입이 60%인 상업 중심지다.'))
+                '춘천 가맹점 결제의 82.2%가 강원 거주자인 반면, 강남은 39.9%만 서울 거주자다. '
+                '춘천은 닫힌 생활권, 강남은 외지 유입이 60%인 상업 중심지다. (거주지 정보없음 제외)'))
 
     t = (d.groupby(['region', 'AGE_CCD'], observed=True).apply(local_rate, include_groups=False)
            .unstack('region').round(2))

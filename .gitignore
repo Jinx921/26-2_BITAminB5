@@ -27,6 +27,7 @@ outputs/**/*.pkl
 preprocessed/sgis_grid.parquet
 preprocessed/cell_grid_map.parquet
 preprocessed/card2_clean.parquet
+preprocessed/card_clean.parquet
 submissions/
 models/
 reports/*.html

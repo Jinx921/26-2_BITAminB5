@@ -27,7 +27,7 @@ export function Sheet({ open, onClose, title, children, className = '' }: SheetP
 
   if (!open) return null
   return createPortal(
-    <div className="fixed inset-0 z-50 flex items-end justify-center sm:items-center" role="dialog" aria-modal="true" aria-label={title}>
+    <div className="fixed inset-0 z-[2000] flex items-end justify-center sm:items-center" role="dialog" aria-modal="true" aria-label={title}>
       <button type="button" className="absolute inset-0 bg-navy/40" aria-label="닫기" onClick={onClose} />
       <div className={`relative max-h-[90dvh] w-full max-w-[430px] overflow-y-auto rounded-t-[20px] bg-surface p-5 pb-[calc(1.25rem+env(safe-area-inset-bottom))] sm:rounded-card ${className}`}>
         <div className="mb-3 flex items-center justify-between">
